@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ŠAKAL — Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Surfaces — warm neutral workshop, not cream stationery */
+    --paper:      #F2F1ED;
+    --card:       #FFFFFF;
+    --card-2:     #FAF9F6;
+    --ink:        #16150F;
+    --ink-soft:   #2A2822;
+    --ink-rail:   #1C1B14;
+
+    /* Hairlines */
+    --line:       #E4E1D9;
+    --line-soft:  #EFEDE6;
+    --line-dark:  rgba(255,255,255,0.10);
+
+    /* Type */
+    --text:       #16150F;
+    --muted:      #6E6A61;
+    --faint:      #A29D93;
+
+    /* Antique gold — the accent, spent sparingly */
+    --gold:       #A8842F;
+    --gold-lift:  #C9A24E;
+    --gold-soft:  #F4EDDA;
+    --gold-line:  #E3D5AC;
+
+    /* Functional status colours — deliberately unchanged.
+       Staff already read these at a glance; recolouring costs more than it gains. */
+    --st-fabric:  #8A6200;  --st-fabric-bg:  #FFF8E1;  --st-fabric-ln: #F0B429;
+    --st-bin:     #B86C10;  --st-bin-bg:     #FFF4E5;  --st-bin-ln:    #E0913A;
+    --st-batam:   #2D50D6;  --st-batam-bg:   #E8F0FE;  --st-batam-ln:  #4A6CF7;
+    --st-delta:   #6C3483;  --st-delta-bg:   #F3E8FE;  --st-delta-ln:  #9B59B6;
+    --st-store:   #1A8A4A;  --st-store-bg:   #E6F9F0;  --st-store-ln:  #2ECC71;
+    --st-home:    #FFFFFF;  --st-home-bg:    #16150F;  --st-home-ln:   #16150F;
+    --danger:     #C0392B;  --danger-bg:     #FDECEA;  --danger-ln:    #E74C3C;
+    --ok:         #1A8A4A;
+
+    --r-lg: 14px; --r-md: 10px; --r-sm: 7px;
+    --rail: 236px;
+    --tap: 44px;
+
+    --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-ui: 'Jost', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-data: ui-monospace, 'SF Mono', 'Roboto Mono', Menlo, monospace;
+
+    --shadow-card: 0 1px 2px rgba(22,21,15,0.04), 0 1px 8px rgba(22,21,15,0.03);
+    --shadow-pop:  0 24px 70px rgba(22,21,15,0.22);
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--paper);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+  input, textarea, select, button { font-family: inherit; font-size: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+
+  /* ══ SHELL ══════════════════════════════════════════ */
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ── Rail ── */
+  .rail {
+    width: var(--rail); min-width: var(--rail);
+    background: var(--ink-rail); color: #fff;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .rail-head { padding: 22px 20px 18px; border-bottom: 1px solid var(--line-dark); }
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: 27px; letter-spacing: 0.22em; line-height: 1;
+    color: #fff; display: block; padding-left: 2px;
+  }
+  .wordmark-sub {
+    display: block; margin-top: 7px;
+    font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500;
+  }
+  .rail-new {
+    margin: 16px 14px 6px; width: calc(100% - 28px); height: var(--tap);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--gold); color: #16150F; border: none; border-radius: var(--r-md);
+    font-size: 13.5px; font-weight: 600; letter-spacing: 0.03em; cursor: pointer;
+    transition: filter .15s, transform .1s;
+  }
+  .rail-new:hover { filter: brightness(1.07); }
+  .rail-new:active { transform: scale(.98); }
+  .rail-nav { flex: 1; overflow-y: auto; padding: 10px 10px 14px; }
+  .rail-group {
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.34); padding: 14px 10px 7px;
+  }
+  .nav-item {
+    width: 100%; display: flex; align-items: center; gap: 11px;
+    height: 42px; padding: 0 11px; margin-bottom: 2px;
+    background: none; border: none; border-radius: var(--r-sm);
+    color: rgba(255,255,255,0.66); font-size: 13.5px; letter-spacing: 0.015em;
+    cursor: pointer; text-align: left; position: relative;
+    transition: background .14s, color .14s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-item.on { background: rgba(255,255,255,0.09); color: #fff; font-weight: 500; }
+  .nav-item.on::before {
+    content: ''; position: absolute; left: -10px; top: 9px; bottom: 9px;
+    width: 3px; background: var(--gold); border-radius: 0 3px 3px 0;
+  }
+  .nav-ico { width: 17px; flex-shrink: 0; opacity: .82; display: flex; }
+  .nav-ico svg { width: 17px; height: 17px; }
+  .nav-label { flex: 1; }
+  .nav-count {
+    font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 20px;
+    background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.7);
+    font-variant-numeric: tabular-nums;
+  }
+  .nav-item.on .nav-count { background: var(--gold); color: #16150F; }
+  .rail-foot { border-top: 1px solid var(--line-dark); padding: 12px 14px 16px; }
+  .sync-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; flex-shrink: 0; }
+  .sync-dot.warn { background: #F0B429; }
+  .sync-dot.bad  { background: #E74C3C; }
+  .sync-text { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: .02em; }
+  .rail-refresh {
+    width: 100%; height: 36px; background: rgba(255,255,255,0.07);
+    border: 1px solid var(--line-dark); border-radius: var(--r-sm);
+    color: rgba(255,255,255,0.78); font-size: 12.5px; cursor: pointer; transition: background .15s;
+  }
+  .rail-refresh:hover { background: rgba(255,255,255,0.13); }
+
+  /* ── Main ── */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .topbar {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 18px;
+    padding: 26px 30px 18px; border-bottom: 1px solid var(--line); background: var(--paper);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .topbar-titles { min-width: 0; }
+  .eyebrow {
+    font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 5px;
+  }
+  .page-title {
+    font-family: var(--font-display); font-size: 30px; font-weight: 500;
+    letter-spacing: 0.005em; line-height: 1.1; color: var(--ink);
+  }
+  .topbar-actions { display: flex; gap: 9px; flex-shrink: 0; }
+  .pane { padding: 22px 30px 60px; flex: 1; }
+
+  /* ══ CONTROLS ══════════════════════════════════════ */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    height: 38px; padding: 0 15px; border-radius: var(--r-sm);
+    border: 1px solid var(--line); background: var(--card); color: var(--muted);
+    font-size: 12.5px; letter-spacing: .02em; cursor: pointer; white-space: nowrap;
+    transition: background .14s, border-color .14s, color .14s;
+  }
+  .btn:hover { background: var(--card-2); border-color: #D6D2C8; color: var(--text); }
+  .btn.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .btn.gold { background: var(--gold); border-color: var(--gold); color: #16150F; font-weight: 600; }
+  .btn.gold:hover { filter: brightness(1.07); background: var(--gold); color: #16150F; }
+  .btn.ghost-danger:hover { background: var(--danger-bg); border-color: var(--danger-ln); color: var(--danger); }
+  .btn.sm { height: 32px; padding: 0 11px; font-size: 12px; }
+  .btn.tall { height: var(--tap); padding: 0 20px; font-size: 13.5px; }
+  .btn svg { width: 14px; height: 14px; }
+
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: var(--r-sm);
+    border: 1px solid var(--line); background: var(--card); color: var(--faint);
+    cursor: pointer; transition: all .14s; flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--card-2); color: var(--text); border-color: #D6D2C8; }
+  .icon-btn.danger:hover { background: var(--danger-bg); border-color: var(--danger-ln); color: var(--danger); }
+  .icon-btn svg { width: 15px; height: 15px; }
+
+  .field-label {
+    display: block; font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 6px;
+  }
+  .field {
+    width: 100%; height: var(--tap); padding: 0 13px;
+    border: 1px solid var(--line); border-radius: var(--r-sm);
+    background: var(--card); color: var(--text); font-size: 14px; outline: none;
+    transition: border-color .14s, box-shadow .14s; -webkit-appearance: none;
+  }
+  .field::placeholder { color: var(--faint); }
+  .field:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,132,47,0.13); }
+  .field.err { border-color: var(--danger-ln); background: var(--danger-bg); }
+  textarea.field { height: auto; padding: 11px 13px; resize: vertical; line-height: 1.55; }
+  select.field { cursor: pointer; }
+  .field-err { color: var(--danger); font-size: 11.5px; margin-top: 5px; display: none; }
+  .field-err.show { display: block; }
+  .field-hint { font-size: 11px; color: var(--faint); margin-top: 5px; }
+
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap .field { padding-left: 38px; height: 40px; }
+  .search-ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; display: flex; }
+  .search-ico svg { width: 15px; height: 15px; }
+  .search-x {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--faint); cursor: pointer;
+    padding: 5px 7px; line-height: 1; display: none;
+  }
+  .search-x:hover { color: var(--text); }
+  .search-x.show { display: block; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .toolbar-label { font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+  .toolbar-sep { width: 1px; height: 22px; background: var(--line); flex-shrink: 0; }
+
+  /* ══ CARDS & EMPTY ═════════════════════════════════ */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-card); }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    margin-bottom: 11px;
+  }
+  .section-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); }
+  .empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 68px 24px; background: var(--card);
+    border: 1px dashed var(--line); border-radius: var(--r-lg); color: var(--muted);
+  }
+  .empty-mark { color: var(--line); margin-bottom: 14px; }
+  .empty-mark svg { width: 38px; height: 38px; }
+  .empty-title { font-family: var(--font-display); font-size: 21px; color: var(--ink); margin-bottom: 6px; }
+  .empty-body { font-size: 13px; color: var(--muted); max-width: 340px; line-height: 1.6; }
+  .empty .btn { margin-top: 18px; }
+</style>
+<style>
+  /* ══ ORDER CARD ════════════════════════════════════ */
+  .order-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-card); margin-bottom: 11px; overflow: hidden;
+  }
+  .order-card.flag-due { border-color: #EFC7C1; }
+  .oc-head {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 14px 18px; background: var(--card-2); border-bottom: 1px solid var(--line-soft);
+  }
+  .oc-ref { display: flex; flex-direction: column; gap: 2px; min-width: 96px; }
+  .oc-ref-label { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+  .oc-num { font-size: 17px; font-weight: 600; letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+  .oc-meta { display: flex; gap: 10px 18px; flex-wrap: wrap; flex: 1 1 300px; min-width: 0; }
+  .meta-cell { display: flex; flex-direction: column; gap: 2px; min-width: 86px; }
+  .meta-cell.tap { cursor: pointer; border-radius: var(--r-sm); }
+  .meta-cell.tap:hover .meta-val { color: var(--gold); }
+  .meta-key { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+  .meta-val { font-size: 13px; color: var(--text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .meta-val.soft { color: var(--muted); }
+  .meta-val.alarm { color: var(--danger); font-weight: 600; }
+  .meta-cell input[type=date] {
+    display: none; height: 34px; padding: 0 9px; border: 1px solid var(--gold);
+    border-radius: var(--r-sm); font-size: 13px; background: var(--card); outline: none; -webkit-appearance: none;
+  }
+  .oc-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+
+  /* ── SIGNATURE: the fitting thread ──
+     Three basting notches on a hairline. Reads left to right the way a
+     garment moves through the shop: baste → fitting → final. */
+  .thread { display: flex; align-items: flex-start; gap: 0; padding: 2px 4px 0; }
+  .thread-stage {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    width: 62px; position: relative;
+  }
+  .thread-stage::before {
+    content: ''; position: absolute; top: 7px; left: -31px; width: 62px; height: 1px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 4px, transparent 4px 8px);
+  }
+  .thread-stage:first-child::before { display: none; }
+  .thread-stage.done::before { background: var(--ink); }
+  .notch {
+    width: 15px; height: 15px; border-radius: 50%; position: relative; z-index: 1;
+    background: var(--paper); border: 1.5px solid var(--line); transition: all .2s;
+  }
+  .thread-stage.tap { cursor: pointer; }
+  .thread-stage.tap:hover .notch { border-color: var(--gold); }
+  .notch.s1 { background: #E74C3C; border-color: #C0392B; }
+  .notch.s2 { background: #F39C12; border-color: #D68910; }
+  .notch.s3 { background: #2ECC71; border-color: #27AE60; }
+  .thread-date { font-size: 9px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; height: 12px; }
+  .thread-name { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+  .thread-cut {
+    width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--card); color: var(--faint); font-size: 9px; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .thread-cut:hover { background: var(--danger-bg); border-color: var(--danger-ln); color: var(--danger); }
+  .thread-spacer { height: 15px; }
+
+  /* ── Garment rows ── */
+  .g-row {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 11px 18px; border-bottom: 1px solid var(--line-soft);
+  }
+  .g-row:last-child { border-bottom: none; }
+  .g-name { font-size: 13.5px; font-weight: 500; min-width: 96px; flex-shrink: 0; }
+  .g-cloth { font-size: 12px; color: var(--muted); flex: 1; min-width: 140px; }
+  .g-cloth b { font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
+  .g-tools { display: flex; align-items: center; gap: 7px; margin-left: auto; flex-shrink: 0; }
+  .oc-note {
+    padding: 9px 18px; font-size: 12px; color: var(--muted);
+    background: var(--card-2); border-top: 1px solid var(--line-soft); line-height: 1.55;
+  }
+
+  /* ── Status pills ── */
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 30px; min-width: 78px; padding: 0 11px; border-radius: 20px;
+    border: 1px solid var(--line); background: var(--card); color: var(--faint);
+    font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+    cursor: pointer; user-select: none; white-space: nowrap; transition: all .15s;
+  }
+  .pill:hover { border-color: #D6D2C8; }
+  .pill:active { transform: scale(.97); }
+  .pill.st-fabric { background: var(--st-fabric-bg); border-color: var(--st-fabric-ln); color: var(--st-fabric); }
+  .pill.st-bin    { background: var(--st-bin-bg);    border-color: var(--st-bin-ln);    color: var(--st-bin); }
+  .pill.st-batam  { background: var(--st-batam-bg);  border-color: var(--st-batam-ln);  color: var(--st-batam); }
+  .pill.st-delta  { background: var(--st-delta-bg);  border-color: var(--st-delta-ln);  color: var(--st-delta); }
+  .pill.st-store  { background: var(--st-store-bg);  border-color: var(--st-store-ln);  color: var(--st-store); }
+  .pill.st-home   { background: var(--st-home-bg);   border-color: var(--st-home-ln);   color: #fff; }
+  .pill.st-stuck  { background: var(--danger-bg);    border-color: var(--danger-ln);    color: var(--danger); font-weight: 600; }
+  .pill.st-paid   { background: var(--ok);           border-color: var(--ok);           color: #fff; font-weight: 600; }
+  .pill.st-unpaid { background: #FBE9E7;             border-color: var(--danger-ln);    color: var(--danger); }
+  .tag {
+    display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 20px;
+    font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--card-2); border: 1px solid var(--line); color: var(--muted);
+  }
+  .tag.gold  { background: var(--gold-soft); border-color: var(--gold-line); color: #7A5F1E; }
+  .tag.green { background: var(--st-store-bg); border-color: var(--st-store-ln); color: var(--st-store); }
+  .tag.red   { background: var(--danger-bg); border-color: var(--danger-ln); color: var(--danger); }
+  .tag.blue  { background: var(--st-batam-bg); border-color: var(--st-batam-ln); color: var(--st-batam); }
+  .tag.ink   { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  /* ══ STAT STRIP ════════════════════════════════════ */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 11px; margin-bottom: 18px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 15px 17px; box-shadow: var(--shadow-card); }
+  .stat-key { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); margin-bottom: 7px; }
+  .stat-val { font-family: var(--font-display); font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .stat-val.alarm { color: var(--danger); }
+  .stat-val.ok { color: var(--ok); }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* ══ TABLE ═════════════════════════════════════════ */
+  .table-wrap { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.grid { width: 100%; border-collapse: collapse; min-width: 720px; }
+  table.grid thead th {
+    text-align: left; padding: 11px 14px; background: var(--card-2);
+    border-bottom: 1px solid var(--line); font-size: 9.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--faint); font-weight: 500; white-space: nowrap;
+  }
+  table.grid td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+  table.grid tbody tr:last-child td { border-bottom: none; }
+  table.grid tbody tr:hover { background: var(--card-2); }
+  table.grid td.num, table.grid th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.grid td.acts { text-align: right; white-space: nowrap; }
+  .cell-strong { font-weight: 500; }
+  .cell-sub { font-size: 11.5px; color: var(--faint); margin-top: 2px; }
+  .row-low td { background: #FFFBF0; }
+  .row-low:hover td { background: #FFF6E0; }
+
+  /* ══ SPLIT (list + detail) ═════════════════════════ */
+  .split { display: grid; grid-template-columns: 292px 1fr; gap: 16px; align-items: start; }
+  .split-list { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-card); position: sticky; top: 116px; max-height: calc(100vh - 140px); display: flex; flex-direction: column; }
+  .split-list-head { padding: 12px; border-bottom: 1px solid var(--line-soft); }
+  .split-list-body { overflow-y: auto; flex: 1; }
+  .list-row {
+    display: block; width: 100%; text-align: left; padding: 12px 14px;
+    border: none; border-bottom: 1px solid var(--line-soft); border-left: 3px solid transparent;
+    background: none; cursor: pointer; transition: background .13s;
+  }
+  .list-row:hover { background: var(--card-2); }
+  .list-row.on { background: var(--gold-soft); border-left-color: var(--gold); }
+  .list-row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .list-row-name { font-size: 13.5px; font-weight: 500; }
+  .list-row-num { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .list-row-sub { font-size: 11.5px; color: var(--faint); margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ══ MEASUREMENT SHEET ═════════════════════════════ */
+  .sheet { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+  .sheet-head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .sheet-title { font-family: var(--font-display); font-size: 24px; line-height: 1.15; }
+  .sheet-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .garment-tabs { display: flex; gap: 4px; padding: 0 22px; border-bottom: 1px solid var(--line); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .gtab {
+    height: 44px; padding: 0 16px; background: none; border: none;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    font-size: 13px; color: var(--faint); cursor: pointer; white-space: nowrap; transition: all .14s;
+  }
+  .gtab:hover { color: var(--muted); }
+  .gtab.on { color: var(--ink); border-bottom-color: var(--gold); font-weight: 500; }
+  .gtab-mark { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); margin-left: 7px; vertical-align: middle; }
+  .sheet-body { padding: 20px 22px 24px; }
+  .block { margin-bottom: 26px; }
+  .block:last-child { margin-bottom: 0; }
+  .block-title {
+    font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint);
+    padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); margin-bottom: 14px;
+  }
+  .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 11px; }
+  .mfield label { display: block; font-size: 9.5px; letter-spacing: .11em; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; }
+  .mfield input {
+    width: 100%; height: 40px; padding: 0 11px; border: 1px solid var(--line);
+    border-radius: var(--r-sm); background: var(--card); font-size: 14.5px;
+    font-variant-numeric: tabular-nums; outline: none; text-align: center;
+    transition: border-color .14s, box-shadow .14s; -webkit-appearance: none;
+  }
+  .mfield input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,132,47,.13); }
+  .mfield input:not(:placeholder-shown) { background: var(--gold-soft); border-color: var(--gold-line); font-weight: 500; }
+  .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); gap: 2px 26px; }
+  .opt-set { margin-bottom: 15px; }
+  .opt-set:last-child { margin-bottom: 0; }
+  .opt-set-label { font-size: 9.5px; letter-spacing: .11em; text-transform: uppercase; color: var(--faint); margin-bottom: 7px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    height: 34px; padding: 0 13px; border-radius: 20px; border: 1px solid var(--line);
+    background: var(--card); color: var(--muted); font-size: 12.5px; cursor: pointer;
+    transition: all .14s; white-space: nowrap;
+  }
+  .chip:hover { border-color: #D6D2C8; color: var(--text); }
+  .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  /* ══ INVOICE ═══════════════════════════════════════ */
+  .inv-lines { width: 100%; border-collapse: collapse; }
+  .inv-lines th { text-align: left; padding: 8px 10px; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--faint); font-weight: 500; border-bottom: 1px solid var(--line); }
+  .inv-lines th.num, .inv-lines td.num { text-align: right; }
+  .inv-lines td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .inv-lines input {
+    width: 100%; height: 38px; padding: 0 10px; border: 1px solid var(--line);
+    border-radius: var(--r-sm); background: var(--card); font-size: 13.5px; outline: none; -webkit-appearance: none;
+  }
+  .inv-lines input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,132,47,.13); }
+  .inv-lines input.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .totals { margin-left: auto; width: 100%; max-width: 320px; margin-top: 16px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; font-size: 13px; }
+  .total-row span:last-child { font-variant-numeric: tabular-nums; }
+  .total-row.rule { border-top: 1px solid var(--line); margin-top: 5px; padding-top: 12px; }
+  .total-row.grand { font-family: var(--font-display); font-size: 22px; border-top: 2px solid var(--ink); margin-top: 6px; padding-top: 13px; }
+  .total-row.balance { color: var(--danger); font-weight: 600; }
+  .total-row.settled { color: var(--ok); font-weight: 600; }
+
+  /* ══ DRAWER ════════════════════════════════════════ */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(22,21,15,.44); z-index: 90;
+    opacity: 0; pointer-events: none; transition: opacity .22s; backdrop-filter: blur(2px);
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 100vw;
+    background: var(--paper); z-index: 100; display: flex; flex-direction: column;
+    transform: translateX(100%); transition: transform .26s cubic-bezier(.32,.72,0,1);
+    box-shadow: var(--shadow-pop);
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    padding: 20px 22px 16px; border-bottom: 1px solid var(--line); background: var(--card);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .drawer-title { font-family: var(--font-display); font-size: 23px; line-height: 1.15; }
+  .drawer-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 20px 22px 26px; }
+  .drawer-foot {
+    padding: 14px 22px calc(14px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line); background: var(--card); display: flex; gap: 9px;
+  }
+  .drawer-foot .btn { flex: 1; }
+  .stack { display: flex; flex-direction: column; gap: 15px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .date-pair { display: flex; gap: 8px; align-items: center; }
+  .date-pair .field { flex: 1; }
+
+  .garment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .garment-btn {
+    height: 52px; border-radius: var(--r-md); border: 1px solid var(--line);
+    background: var(--card); cursor: pointer; font-size: 13px; color: var(--muted);
+    transition: all .14s; -webkit-tap-highlight-color: transparent;
+  }
+  .garment-btn:hover { border-color: #D6D2C8; color: var(--text); }
+  .garment-btn.on { background: var(--ink); border-color: var(--ink); color: #fff; font-weight: 500; }
+  .cloth-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 13px; margin-bottom: 8px; }
+  .cloth-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cloth-name { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  .cloth-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+  .cloth-row:last-child { margin-bottom: 0; }
+  .cloth-row label { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); min-width: 44px; }
+  .cloth-row input { flex: 1; height: 40px; padding: 0 11px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--card); font-size: 14px; outline: none; -webkit-appearance: none; }
+  .cloth-row input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,132,47,.13); }
+  .cloth-row input.want { border-color: var(--st-bin-ln); background: #FFFBF3; }
+
+  /* ══ MODAL ═════════════════════════════════════════ */
+  .modal-wrap {
+    display: none; position: fixed; inset: 0; background: rgba(22,21,15,.48); z-index: 200;
+    align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(3px);
+  }
+  .modal-wrap.open { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 16px; width: 560px; max-width: 100%;
+    max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-pop);
+  }
+  .modal.narrow { width: 400px; }
+  .modal-head { padding: 22px 24px 16px; border-bottom: 1px solid var(--line-soft); }
+  .modal-title { font-family: var(--font-display); font-size: 22px; line-height: 1.2; }
+  .modal-msg { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin-top: 7px; }
+  .modal-body { padding: 20px 24px; }
+  .modal-foot {
+    padding: 14px 24px 18px; border-top: 1px solid var(--line-soft);
+    display: flex; justify-content: flex-end; gap: 9px; position: sticky; bottom: 0; background: var(--card);
+  }
+  .modal-foot .btn { height: var(--tap); padding: 0 20px; font-size: 13.5px; }
+  .btn-danger { background: var(--danger-ln); border-color: var(--danger-ln); color: #fff; font-weight: 600; }
+  .btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .btn-ink { background: var(--ink); border-color: var(--ink); color: #fff; font-weight: 600; }
+  .btn-ink:hover { background: var(--ink-soft); border-color: var(--ink-soft); color: #fff; }
+  .btn-ok { background: var(--ok); border-color: var(--ok); color: #fff; font-weight: 600; }
+  .btn-ok:hover { filter: brightness(1.08); background: var(--ok); color: #fff; }
+
+  /* ══ TOAST ═════════════════════════════════════════ */
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; z-index: 300;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--ink); color: #fff; padding: 12px 22px; border-radius: 30px;
+    font-size: 13px; opacity: 0; pointer-events: none; white-space: nowrap;
+    transition: opacity .22s, transform .22s; box-shadow: 0 10px 34px rgba(22,21,15,.3);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ══ RESPONSIVE ════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .split { grid-template-columns: 1fr; }
+    .split-list { position: static; max-height: 320px; }
+  }
+  @media (max-width: 940px) {
+    .shell { display: block; }
+    .rail { width: 100%; min-width: 0; height: auto; position: sticky; top: 0; z-index: 60; }
+    .rail-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; }
+    .wordmark { font-size: 22px; }
+    .wordmark-sub { display: none; }
+    .rail-new { display: none; }
+    .rail-nav {
+      display: flex; gap: 4px; padding: 8px 12px; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      border-top: 1px solid var(--line-dark);
+    }
+    .rail-nav::-webkit-scrollbar { display: none; }
+    .rail-group { display: none; }
+    .nav-item { width: auto; flex-shrink: 0; height: 38px; margin: 0; }
+    .nav-item.on::before { left: 0; right: 0; top: auto; bottom: -8px; width: auto; height: 2px; border-radius: 0; }
+    .rail-foot { display: none; }
+    .topbar { padding: 18px 18px 14px; position: static; }
+    .page-title { font-size: 24px; }
+    .pane { padding: 16px 18px 60px; }
+  }
+  @media (max-width: 620px) {
+    .oc-head { gap: 12px; }
+    .oc-meta { gap: 14px; width: 100%; }
+    .oc-tools { width: 100%; margin-left: 0; padding-top: 11px; border-top: 1px dashed var(--line); flex-wrap: wrap; }
+    .g-row { flex-direction: column; align-items: flex-start; gap: 9px; }
+    .g-tools { margin-left: 0; width: 100%; flex-wrap: wrap; }
+    .thread { width: 100%; padding-bottom: 6px; }
+    .pill { min-width: 66px; height: 32px; }
+    .drawer { width: 100vw; }
+    .row2 { grid-template-columns: 1fr; }
+    .mgrid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+    .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
+    .topbar-actions .btn { flex: 1; }
+    .sheet-head, .sheet-body, .garment-tabs { padding-left: 15px; padding-right: 15px; }
+    /* iOS zooms the page if a focused input is under 16px */
+    .field, .mfield input, .cloth-row input, .inv-lines input,
+    input[type=text], input[type=date], input[type=number], textarea, select { font-size: 16px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+
+  /* ══ PRINT — measurement sheet & invoice ═══════════ */
+  @media print {
+    .rail, .topbar-actions, .toolbar, .drawer, .scrim, .toast, .no-print { display: none !important; }
+    body { background: #fff; }
+    .shell { display: block; }
+    .pane { padding: 0; }
+    .card, .sheet, .table-wrap { box-shadow: none; border-color: #ccc; }
+    .split { grid-template-columns: 1fr; }
+    .split-list { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ RAIL ═══ -->
+  <aside class="rail">
+    <div class="rail-head">
+      <div>
+        <span class="wordmark">ŠAKAL</span>
+        <span class="wordmark-sub">Workshop</span>
+      </div>
+      <button class="rail-new" onclick="openDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+        New order
+      </button>
+    </div>
+
+    <nav class="rail-nav">
+      <div class="rail-group">Floor</div>
+      <button class="nav-item on" id="nav-orders" onclick="go('orders')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 12h8M8 16h5"/></svg></span>
+        <span class="nav-label">Orders</span><span class="nav-count" id="ct-orders">0</span>
+      </button>
+      <button class="nav-item" id="nav-measure" onclick="go('measure')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 8.7 8.7 21.3a1 1 0 0 1-1.4 0l-4.6-4.6a1 1 0 0 1 0-1.4L15.3 2.7a1 1 0 0 1 1.4 0l4.6 4.6a1 1 0 0 1 0 1.4Z"/><path d="m7.5 10.5 2 2M11 7l2 2M14.5 3.5l2 2M4 14l2 2"/></svg></span>
+        <span class="nav-label">Measurements</span><span class="nav-count" id="ct-measure">0</span>
+      </button>
+      <button class="nav-item" id="nav-stock" onclick="go('stock')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg></span>
+        <span class="nav-label">Stock</span><span class="nav-count" id="ct-stock">0</span>
+      </button>
+      <button class="nav-item" id="nav-invoice" onclick="go('invoice')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18l2.5-1.6L9 21l2.5-1.6L14 21l2.5-1.6L19 21V3l-2.5 1.6L14 3l-2.5 1.6L9 3 6.5 4.6 4 3Z"/><path d="M8 8h8M8 12h8M8 16h4"/></svg></span>
+        <span class="nav-label">Invoicing</span><span class="nav-count" id="ct-invoice">0</span>
+      </button>
+      <div class="rail-group">Closed</div>
+      <button class="nav-item" id="nav-archive" onclick="go('archive')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M10 13h4"/></svg></span>
+        <span class="nav-label">Archive</span><span class="nav-count" id="ct-archive">0</span>
+      </button>
+    </nav>
+
+    <div class="rail-foot">
+      <div class="sync-row"><span class="sync-dot" id="sync-dot"></span><span class="sync-text" id="sync-text">Ready</span></div>
+      <button class="rail-refresh" onclick="fetchOrdersFromServer()">Refresh from sheet</button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-titles">
+        <div class="eyebrow" id="page-eyebrow">Floor</div>
+        <h1 class="page-title" id="page-title">Orders</h1>
+      </div>
+      <div class="topbar-actions" id="page-actions"></div>
+    </header>
+
+    <!-- ─── ORDERS ─── -->
+    <section class="pane" id="pane-orders">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input class="field" type="text" id="order-search" placeholder="Order no., name, contact, cloth, lining, notes…" oninput="renderOrders()" autocomplete="off">
+          <button class="search-x" id="order-search-x" onclick="clearSearch()">✕</button>
+        </div>
+        <button class="btn" id="btn-filters" onclick="toggleFilters()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+          Filters
+        </button>
+      </div>
+
+      <div id="filter-panel" style="display:none">
+        <div class="toolbar">
+          <span class="toolbar-label">Sort</span>
+          <button class="btn sm" data-sort="newest" onclick="setSort('newest')">Newest</button>
+          <button class="btn sm" data-sort="oldest" onclick="setSort('oldest')">Oldest</button>
+          <div class="toolbar-sep"></div>
+          <span class="toolbar-label">Due</span>
+          <button class="btn sm" data-sort="due-asc" onclick="toggleDueSort()">Earliest first</button>
+          <div class="toolbar-sep"></div>
+          <span class="toolbar-label">Fitting</span>
+          <button class="btn sm" data-sort="fit-asc" onclick="toggleFitSort()">Earliest first</button>
+        </div>
+        <div class="toolbar">
+          <span class="toolbar-label">Garment</span>
+          <button class="btn sm gfilter" data-product="Jacket" onclick="toggleProductFilter('Jacket')">Jacket</button>
+          <button class="btn sm gfilter" data-product="Trousers" onclick="toggleProductFilter('Trousers')">Trousers</button>
+          <button class="btn sm gfilter" data-product="Shirt" onclick="toggleProductFilter('Shirt')">Shirt</button>
+          <button class="btn sm gfilter" data-product="Vest" onclick="toggleProductFilter('Vest')">Vest</button>
+          <button class="btn sm gfilter" data-product="Safari Jacket" onclick="toggleProductFilter('Safari Jacket')">Safari</button>
+          <button class="btn sm gfilter" data-product="Overcoat" onclick="toggleProductFilter('Overcoat')">Overcoat</button>
+        </div>
+        <div class="toolbar">
+          <span class="toolbar-label">Stage</span>
+          <button class="btn sm sfilter" data-status="Fabric Ordered" onclick="toggleStatusFilter('Fabric Ordered')">Cloth ordered</button>
+          <button class="btn sm sfilter" data-status="Bin" onclick="toggleStatusFilter('Bin')">Bin</button>
+          <button class="btn sm sfilter" data-status="Delta" onclick="toggleStatusFilter('Delta')">Delta</button>
+          <button class="btn sm sfilter" data-status="Batam" onclick="toggleStatusFilter('Batam')">Batam</button>
+          <button class="btn sm sfilter" data-status="In-store" onclick="toggleStatusFilter('In-store')">In-store</button>
+          <button class="btn sm sfilter" data-status="Take Home" onclick="toggleStatusFilter('Take Home')">Take home</button>
+          <div class="toolbar-sep"></div>
+          <button class="btn sm" id="filter-stuck" onclick="toggleStuckFilter()">Stuck</button>
+          <button class="btn sm" id="filter-unpaid" onclick="toggleUnpaidFilter()">Unpaid</button>
+        </div>
+        <div class="toolbar">
+          <span class="toolbar-label">Ordered</span>
+          <input type="date" class="btn sm" id="filter-ordered-from" style="padding:0 9px" oninput="applyDateFilter()">
+          <span style="color:var(--faint)">→</span>
+          <input type="date" class="btn sm" id="filter-ordered-to" style="padding:0 9px" oninput="applyDateFilter()">
+          <div class="toolbar-sep"></div>
+          <span class="toolbar-label">Due</span>
+          <input type="date" class="btn sm" id="filter-due-from" style="padding:0 9px" oninput="applyDateFilter()">
+          <span style="color:var(--faint)">→</span>
+          <input type="date" class="btn sm" id="filter-due-to" style="padding:0 9px" oninput="applyDateFilter()">
+          <div class="toolbar-sep"></div>
+          <button class="btn sm" onclick="clearAllFilters()">Clear all</button>
+        </div>
+      </div>
+
+      <div id="orders-content"></div>
+    </section>
+
+    <!-- ─── MEASUREMENTS ─── -->
+    <section class="pane" id="pane-measure" style="display:none">
+      <div class="split">
+        <div class="split-list">
+          <div class="split-list-head">
+            <div class="search-wrap">
+              <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+              <input class="field" type="text" id="measure-search" placeholder="Find a client…" oninput="renderMeasureList()" autocomplete="off">
+            </div>
+          </div>
+          <div class="split-list-body" id="measure-list"></div>
+        </div>
+        <div id="measure-detail"></div>
+      </div>
+    </section>
+
+    <!-- ─── STOCK ─── -->
+    <section class="pane" id="pane-stock" style="display:none">
+      <div class="stats" id="stock-stats"></div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input class="field" type="text" id="stock-search" placeholder="Cloth no., mill, colour, shelf…" oninput="renderStock()" autocomplete="off">
+        </div>
+        <button class="btn sm" data-stockfilter="all" onclick="setStockFilter('all')">All</button>
+        <button class="btn sm" data-stockfilter="Suiting" onclick="setStockFilter('Suiting')">Suiting</button>
+        <button class="btn sm" data-stockfilter="Shirting" onclick="setStockFilter('Shirting')">Shirting</button>
+        <button class="btn sm" data-stockfilter="Lining" onclick="setStockFilter('Lining')">Lining</button>
+        <div class="toolbar-sep"></div>
+        <button class="btn sm" data-stockfilter="low" onclick="setStockFilter('low')">Running low</button>
+      </div>
+      <div id="stock-content"></div>
+    </section>
+
+    <!-- ─── INVOICING ─── -->
+    <section class="pane" id="pane-invoice" style="display:none">
+      <div class="stats" id="invoice-stats"></div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input class="field" type="text" id="invoice-search" placeholder="Invoice no., order no., client…" oninput="renderInvoices()" autocomplete="off">
+        </div>
+        <button class="btn sm" data-invfilter="all" onclick="setInvoiceFilter('all')">All</button>
+        <button class="btn sm" data-invfilter="Draft" onclick="setInvoiceFilter('Draft')">Draft</button>
+        <button class="btn sm" data-invfilter="Sent" onclick="setInvoiceFilter('Sent')">Sent</button>
+        <button class="btn sm" data-invfilter="Part paid" onclick="setInvoiceFilter('Part paid')">Part paid</button>
+        <button class="btn sm" data-invfilter="Paid" onclick="setInvoiceFilter('Paid')">Paid</button>
+        <div class="toolbar-sep"></div>
+        <button class="btn sm" data-invfilter="Overdue" onclick="setInvoiceFilter('Overdue')">Overdue</button>
+      </div>
+      <div id="invoice-content"></div>
+    </section>
+
+    <!-- ─── ARCHIVE ─── -->
+    <section class="pane" id="pane-archive" style="display:none">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input class="field" type="text" id="archive-search" placeholder="Search the archive…" oninput="renderArchive()" autocomplete="off">
+          <button class="search-x" id="archive-search-x" onclick="clearArchiveSearch()">✕</button>
+        </div>
+        <button class="btn sm" data-archive-sort="newest" onclick="setArchiveSort('newest')">Newest</button>
+        <button class="btn sm" data-archive-sort="oldest" onclick="setArchiveSort('oldest')">Oldest</button>
+        <button class="btn sm" data-archive-sort="due-asc" onclick="toggleArchiveDueSort()">By due date</button>
+      </div>
+      <div id="archive-content"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══ NEW-ORDER DRAWER ═══ -->
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-label="New order">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title">New order</div>
+      <div class="drawer-sub">Everything except the order number can be filled in later.</div>
+    </div>
+    <button class="icon-btn" onclick="closeDrawer()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body">
+    <div class="stack">
+      <div>
+        <label class="field-label" for="ordernum-input">Order no.</label>
+        <input class="field" type="text" id="ordernum-input" placeholder="260227" autocomplete="off">
+        <div class="field-err" id="ordernum-error">Give the order a number before saving.</div>
+      </div>
+      <div class="row2">
+        <div>
+          <label class="field-label" for="customername-input">Client</label>
+          <input class="field" type="text" id="customername-input" placeholder="Eugene Lee" autocomplete="off">
+        </div>
+        <div>
+          <label class="field-label" for="customercontact-input">Contact</label>
+          <input class="field" type="text" id="customercontact-input" placeholder="+65 8123 4567" autocomplete="off">
+        </div>
+      </div>
+      <div>
+        <label class="field-label" for="fittingdate-input">Fitting date</label>
+        <div class="date-pair">
+          <input class="field" type="date" id="fittingdate-input">
+          <button type="button" class="btn tall" id="fittingdate-none-btn" onclick="toggleNoneDate('fittingdate')">Not set</button>
+        </div>
+      </div>
+      <div>
+        <label class="field-label" for="duedate-input">Due date</label>
+        <div class="date-pair">
+          <input class="field" type="date" id="duedate-input">
+          <button type="button" class="btn tall" id="duedate-none-btn" onclick="toggleNoneDate('duedate')">Not set</button>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Garments</label>
+        <div class="garment-grid">
+          <button class="garment-btn" id="btn-jacket" onclick="addProduct('Jacket')">Jacket</button>
+          <button class="garment-btn" id="btn-trousers" onclick="addProduct('Trousers')">Trousers</button>
+          <button class="garment-btn" id="btn-shirt" onclick="addProduct('Shirt')">Shirt</button>
+          <button class="garment-btn" id="btn-vest" onclick="addProduct('Vest')">Vest</button>
+          <button class="garment-btn" id="btn-safari" onclick="addProduct('Safari Jacket')">Safari Jacket</button>
+          <button class="garment-btn" id="btn-overcoat" onclick="addProduct('Overcoat')">Overcoat</button>
+        </div>
+        <div class="field-hint">Tap a garment again to add a second of the same.</div>
+      </div>
+      <div id="cloth-fields"></div>
+      <div>
+        <label class="field-label" for="remarks-input">Notes</label>
+        <textarea class="field" id="remarks-input" rows="3" placeholder="Baste fitting 30 May · client travelling until 12 Jun"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn tall" onclick="closeDrawer()">Cancel</button>
+    <button class="btn tall gold" onclick="submitOrder()">Save order</button>
+  </div>
+</aside>
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-wrap" id="confirm-modal">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <div class="modal-title" id="confirm-title">Archive this order?</div>
+      <div class="modal-msg" id="confirm-msg"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn btn-ink" id="confirm-go">Archive</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="del-modal">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <div class="modal-title">Delete for good?</div>
+      <div class="modal-msg" id="del-msg"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeDelModal()">Keep it</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="tl-modal">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <div class="modal-title" id="tl-title">Record fitting</div>
+      <div class="modal-msg" id="tl-sub">Which day did this happen?</div>
+    </div>
+    <div class="modal-body">
+      <label class="field-label" for="tl-date">Date</label>
+      <input class="field" type="date" id="tl-date">
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeTlModal()">Cancel</button>
+      <button class="btn btn-ink" onclick="saveTlModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="edit-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Edit order</div></div>
+    <div class="modal-body">
+      <div class="stack">
+        <div>
+          <label class="field-label" for="modal-ordernum">Order no.</label>
+          <input class="field" type="text" id="modal-ordernum">
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="modal-customername">Client</label><input class="field" type="text" id="modal-customername"></div>
+          <div><label class="field-label" for="modal-customercontact">Contact</label><input class="field" type="text" id="modal-customercontact"></div>
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="modal-fittingdate">Fitting date</label><input class="field" type="date" id="modal-fittingdate"></div>
+          <div><label class="field-label" for="modal-duedate">Due date</label><input class="field" type="date" id="modal-duedate"></div>
+        </div>
+        <div>
+          <label class="field-label" for="modal-remarks">Notes</label>
+          <textarea class="field" id="modal-remarks" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="field-label">Garments &amp; cloth</label>
+          <div id="modal-items"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-ink" onclick="saveEditModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="stock-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="stock-modal-title">Add cloth</div></div>
+    <div class="modal-body">
+      <div class="stack">
+        <div class="row2">
+          <div>
+            <label class="field-label" for="sk-code">Cloth no.</label>
+            <input class="field" type="text" id="sk-code" placeholder="50.D0364/6790">
+            <div class="field-err" id="sk-code-err">Give the cloth a number.</div>
+          </div>
+          <div>
+            <label class="field-label" for="sk-type">Type</label>
+            <select class="field" id="sk-type">
+              <option>Suiting</option><option>Shirting</option><option>Lining</option><option>Trimming</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="sk-mill">Mill</label><input class="field" type="text" id="sk-mill" placeholder="Reda"></div>
+          <div><label class="field-label" for="sk-desc">Colour / weave</label><input class="field" type="text" id="sk-desc" placeholder="Teal, plain twill"></div>
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="sk-qty">Metres on hand</label><input class="field num" type="number" step="0.1" min="0" id="sk-qty" placeholder="0"></div>
+          <div><label class="field-label" for="sk-reorder">Reorder at</label><input class="field num" type="number" step="0.1" min="0" id="sk-reorder" placeholder="3"></div>
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="sk-shelf">Shelf</label><input class="field" type="text" id="sk-shelf" placeholder="A-04"></div>
+          <div><label class="field-label" for="sk-cost">Cost per metre (S$)</label><input class="field num" type="number" step="0.01" min="0" id="sk-cost" placeholder="0.00"></div>
+        </div>
+        <div>
+          <label class="field-label" for="sk-note">Note</label>
+          <input class="field" type="text" id="sk-note" placeholder="Reserved for Nov wedding party">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost-danger" id="sk-delete" onclick="deleteStockRow()">Delete</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="closeStockModal()">Cancel</button>
+      <button class="btn btn-ink" onclick="saveStockForm()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="invoice-modal">
+  <div class="modal" style="width:720px">
+    <div class="modal-head">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div>
+          <div class="modal-title" id="inv-modal-title">Invoice</div>
+          <div class="modal-msg" id="inv-modal-sub"></div>
+        </div>
+        <button class="btn sm no-print" onclick="window.print()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>
+          Print
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="stack">
+        <div class="row2">
+          <div><label class="field-label" for="inv-client">Client</label><input class="field" type="text" id="inv-client"></div>
+          <div><label class="field-label" for="inv-order">Order no.</label><input class="field" type="text" id="inv-order"></div>
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="inv-issued">Issued</label><input class="field" type="date" id="inv-issued"></div>
+          <div><label class="field-label" for="inv-due">Payment due</label><input class="field" type="date" id="inv-due"></div>
+        </div>
+        <div>
+          <label class="field-label">Line items</label>
+          <table class="inv-lines">
+            <thead><tr><th style="width:44%">Description</th><th class="num" style="width:15%">Qty</th><th class="num" style="width:23%">Unit (S$)</th><th class="num" style="width:18%">Amount</th></tr></thead>
+            <tbody id="inv-lines-body"></tbody>
+          </table>
+          <button class="btn sm" style="margin-top:10px" onclick="addInvLine()">+ Add line</button>
+        </div>
+        <div class="row2">
+          <div><label class="field-label" for="inv-discount">Discount (S$)</label><input class="field num" type="number" step="0.01" min="0" id="inv-discount" value="0" oninput="recalcInvoice()"></div>
+          <div><label class="field-label" for="inv-paid">Amount received (S$)</label><input class="field num" type="number" step="0.01" min="0" id="inv-paid" value="0" oninput="recalcInvoice()"></div>
+        </div>
+        <div>
+          <label class="field-label" for="inv-note">Note on the invoice</label>
+          <input class="field" type="text" id="inv-note" placeholder="50% deposit received on order">
+        </div>
+        <div class="totals" id="inv-totals"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost-danger" id="inv-delete" onclick="deleteInvoice()">Delete</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="closeInvoiceModal()">Cancel</button>
+      <button class="btn btn-ink" onclick="saveInvoice()">Save invoice</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   ŠAKAL Workshop
+   Orders + Archive sync to the Apps Script sheet, exactly as before.
+   Measurements / Stock / Invoicing are stored on this device for now —
+   see SYNC STUB at the bottom of this file to wire them to the sheet.
+   ══════════════════════════════════════════════════════════════ */
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbwZWtY4PJPmF69WmEPkWYwQdHVISV41-8A0dP6U0a4IcOi-t6Ml2MLT2V10QKv1g-yi/exec';
+
+/* ── Constants ── */
+var PRODUCTS     = ['Jacket','Trousers','Shirt','Vest','Safari Jacket','Overcoat'];
+var PRODUCT_IDS  = {'Jacket':'jacket','Trousers':'trousers','Shirt':'shirt','Vest':'vest','Safari Jacket':'safari','Overcoat':'overcoat'};
+var NEEDS_LINING = ['Jacket','Vest','Overcoat'];
+var STATUS_STATES_NO_DELTA = ['','Fabric Ordered','Bin','Batam','In-store','Take Home'];
+var STATUS_STATES_NO_BATAM = ['','Fabric Ordered','Bin','Delta','In-store','Take Home'];
+var NO_DELTA_PRODUCTS = ['Jacket','Overcoat','Vest'];
+var NO_BATAM_PRODUCTS = ['Shirt','Trousers'];
+var TL_LABELS = ['','Baste fitting','Fitting','Final / take home'];
+var TL_SHORT  = ['','Baste','Fitting','Final'];
+
+var PAGES = {
+  orders:  { eyebrow:'Floor',  title:'Orders' },
+  measure: { eyebrow:'Floor',  title:'Measurements' },
+  stock:   { eyebrow:'Floor',  title:'Stock' },
+  invoice: { eyebrow:'Floor',  title:'Invoicing' },
+  archive: { eyebrow:'Closed', title:'Archive' }
+};
+
+/* ── State ── */
+var selectedItems = [], orders = [], archivedOrders = [];
+var measurements = {}, stock = [], invoices = [];
+var currentSort = 'newest', currentArchiveSort = 'newest', currentPage = 'orders';
+var activeStatusFilter = null, activeStuckFilter = false, activeUnpaidFilter = false, activeProductFilters = {};
+var filterOrderedFrom='', filterOrderedTo='', filterDueFrom='', filterDueTo='';
+var editIdx = -1, delPendingType = '', delPendingOi = -1, delPendingIi = -1;
+var tlPendingOi = -1, tlPendingNext = 0, tlEditingExisting = false;
+var arcTlPendingIdx = -1, arcTlPendingNext = 0, arcTlEditingExisting = false;
+var archivePendingIdx = -1, restorePendingIdx = -1;
+var filtersOpen = false;
+
+/* ── Small helpers ── */
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function $(id) { return document.getElementById(id); }
+function money(n) { n = Number(n) || 0; return n.toLocaleString('en-SG', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function todayYMD() { var t = new Date(); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function showToast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+function setSync(state, text) {
+  var d = $('sync-dot'); if (d) d.className = 'sync-dot' + (state ? ' ' + state : '');
+  var s = $('sync-text'); if (s) s.textContent = text;
+}
+
+/* ── Dates ── */
+function parseToYMD(val) {
+  if (!val) return '';
+  var s = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if (/^\d{4}-\d{2}-\d{2}T/.test(s)) return s.substring(0, 10);
+  var m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m1) return m1[3] + '-' + m1[2].padStart(2,'0') + '-' + m1[1].padStart(2,'0');
+  var months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  var m2 = s.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
+  if (m2) { var mo = months[m2[1].toLowerCase().substring(0,3)]; if (mo) return m2[3]+'-'+String(mo).padStart(2,'0')+'-'+m2[2].padStart(2,'0'); }
+  var m3 = s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+  if (m3) { var mo2 = months[m3[2].toLowerCase().substring(0,3)]; if (mo2) return m3[3]+'-'+String(mo2).padStart(2,'0')+'-'+m3[1].padStart(2,'0'); }
+  var m4 = s.match(/^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+  if (m4) { var mo3 = months[m4[1].toLowerCase()]; if (mo3) return m4[3]+'-'+String(mo3).padStart(2,'0')+'-'+m4[2].padStart(2,'0'); }
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+  return '';
+}
+function formatDisplayDate(val) {
+  if (!val) return '—';
+  var ymd = parseToYMD(val); if (!ymd) return '—';
+  var p = ymd.split('-');
+  var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return parseInt(p[2],10) + ' ' + M[parseInt(p[1],10)-1] + ' ' + p[0];
+}
+function shortDate(val) {
+  var ymd = parseToYMD(val); if (!ymd) return '';
+  var p = ymd.split('-');
+  var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return parseInt(p[2],10) + ' ' + M[parseInt(p[1],10)-1];
+}
+function isDueSoon(val) {
+  if (!val) return false;
+  var ymd = parseToYMD(val); if (!ymd) return false;
+  var d = new Date(ymd), n = new Date(); n.setHours(0,0,0,0);
+  var diff = (d - n) / 86400000; return diff >= 0 && diff <= 3;
+}
+function isOverdue(val) {
+  if (!val) return false;
+  var ymd = parseToYMD(val); if (!ymd) return false;
+  return new Date(ymd) < new Date(todayYMD());
+}
+
+function normalizeOrder(o) {
+  o.orderNum        = String(o.orderNum || '').trim();
+  o.customerName    = typeof o.customerName === 'string' ? o.customerName : '';
+  o.customerContact = typeof o.customerContact === 'string' ? o.customerContact : '';
+  o.date            = parseToYMD(o.date);
+  o.dueDate         = parseToYMD(o.dueDate);
+  o.fittingDate     = parseToYMD(o.fittingDate);
+  o.remarks         = typeof o.remarks === 'string' ? o.remarks : '';
+  o.fitted          = parseInt(o.fitted, 10) || 0;
+  o.fittedDates     = (o.fittedDates && typeof o.fittedDates === 'object') ? o.fittedDates : {};
+  o.archived        = o.archived === true || o.archived === 'true';
+  o.lastUpdated     = o.lastUpdated || '';
+  o.baseVersion     = o.lastUpdated;
+  return o;
+}
+
+/* ── Sync (orders + archive → Apps Script) ── */
+var lastSyncTime = 0, syncTimers = {}, pendingWrites = 0;
+function hasPendingSync() { return pendingWrites > 0 || Object.keys(syncTimers).length > 0; }
+
+function flushPendingSyncs() {
+  Object.keys(syncTimers).forEach(function(key) {
+    clearTimeout(syncTimers[key]); delete syncTimers[key];
+    var latest = orders.find(function(o){ return o.orderNum === key; })
+              || archivedOrders.find(function(o){ return o.orderNum === key; });
+    if (latest) _doSync(Object.assign({}, latest, {baseVersion: latest.baseVersion || ''}), false);
+  });
+}
+
+function syncToServer(orderData, isDelete) {
+  if (!orderData || !orderData.orderNum) { console.warn('syncToServer: bad payload', orderData); return; }
+  isDelete = isDelete || false;
+  saveToLocalStorage();
+  lastSyncTime = Date.now();
+  if (isDelete) { setSync('warn','Deleting…'); _doSync({action:'DELETE', orderNum: orderData.orderNum}, true); return; }
+  var key = orderData.orderNum;
+  setSync('warn','Saving…');
+  if (syncTimers[key]) clearTimeout(syncTimers[key]);
+  syncTimers[key] = setTimeout(function() {
+    delete syncTimers[key];
+    var latest = orders.find(function(o){ return o.orderNum === key; })
+              || archivedOrders.find(function(o){ return o.orderNum === key; });
+    if (!latest) return;
+    _doSync(Object.assign({}, latest, {baseVersion: latest.baseVersion || ''}), false);
+  }, 1500);
+}
+
+async function _doSync(payload, isDelete) {
+  pendingWrites++;
+  try {
+    var r = await fetch(API_URL, {method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'text/plain;charset=utf-8'}, redirect:'follow'});
+    var text = await r.text(); var result = {};
+    try { result = JSON.parse(text); } catch(_) { result = {status: text.indexOf('success') !== -1 ? 'success' : 'error'}; }
+
+    if (result.status === 'conflict') {
+      setSync('warn','Changed elsewhere — reloading');
+      showToast('This order changed on another device. Reloading.');
+      await fetchOrdersFromServer();
+      return;
+    }
+    if (result.status === 'success') {
+      var t = orders.concat(archivedOrders).find(function(o){ return o.orderNum === payload.orderNum; });
+      var dateChanged = false;
+      if (t) {
+        if (result.lastUpdated) { t.lastUpdated = result.lastUpdated; t.baseVersion = result.lastUpdated; }
+        if (result.date && t.date !== result.date) { t.date = result.date; dateChanged = true; }
+      }
+      saveToLocalStorage();
+      if (dateChanged) renderOrders();
+      setSync('', isDelete ? 'Deleted' : 'All changes saved');
+      showToast(isDelete ? 'Deleted' : 'Saved');
+    } else {
+      setSync('bad','Not saved');
+      showToast('Not saved. Hit refresh and try again.');
+    }
+  } catch(err) {
+    console.error('Sync error:', err);
+    setSync('bad','No connection — local only');
+    showToast('No connection. The change is on this device only.');
+  } finally {
+    pendingWrites = Math.max(0, pendingWrites - 1);
+  }
+}
+
+async function fetchOrdersFromServer() {
+  setSync('warn','Loading…');
+  try {
+    var r = await fetch(API_URL, {redirect:'follow'});
+    var _t = await r.text(); var result = {};
+    try { result = JSON.parse(_t); } catch(_) { result = {status: _t.indexOf('success') !== -1 ? 'success' : 'error'}; }
+    if (result.status === 'success') {
+      orders = []; archivedOrders = [];
+      (result.data || []).forEach(function(o) {
+        normalizeOrder(o);
+        if (o.archived) archivedOrders.push(o); else orders.push(o);
+      });
+      renderAll();
+      setSync('','All changes saved');
+      showToast('Up to date');
+      saveToLocalStorage();
+    } else { throw new Error('API error'); }
+  } catch(err) {
+    console.error('Fetch error:', err);
+    setSync('bad','Offline — showing cache');
+    showToast('Could not reach the sheet. Showing the last cached copy.');
+    loadFromLocalStorage();
+  }
+}
+
+/* ── Local storage ── */
+function loadFromLocalStorage() {
+  try {
+    var saved = localStorage.getItem('sakal-orders');
+    if (saved) {
+      var data = JSON.parse(saved);
+      orders         = (data.orders   || []).map(normalizeOrder);
+      archivedOrders = (data.archived || []).map(normalizeOrder);
+    }
+  } catch(e) { console.log('Cache read failed:', e); }
+  renderAll();
+}
+function saveToLocalStorage() {
+  try { localStorage.setItem('sakal-orders', JSON.stringify({orders:orders, archived:archivedOrders, lastSaved:new Date().toISOString()})); }
+  catch(e) { console.log('Cache write failed'); }
+}
+function loadLocalModules() {
+  try { measurements = JSON.parse(localStorage.getItem('sakal-measurements') || '{}'); } catch(e) { measurements = {}; }
+  try { stock        = JSON.parse(localStorage.getItem('sakal-stock')        || '[]'); } catch(e) { stock = []; }
+  try { invoices     = JSON.parse(localStorage.getItem('sakal-invoices')     || '[]'); } catch(e) { invoices = []; }
+}
+function persistMeasurements() { try { localStorage.setItem('sakal-measurements', JSON.stringify(measurements)); } catch(e){} syncModule('measurements', measurements); }
+function persistStock()        { try { localStorage.setItem('sakal-stock',        JSON.stringify(stock));        } catch(e){} syncModule('stock', stock); }
+function persistInvoices()     { try { localStorage.setItem('sakal-invoices',     JSON.stringify(invoices));     } catch(e){} syncModule('invoices', invoices); }
+
+/* ── SYNC STUB ──────────────────────────────────────────────
+   Measurements, stock and invoices live on this device only.
+   To share them across the shop's devices, add three sheets to the
+   same Apps Script (measurements / stock / invoices), then replace
+   the body of this function with a POST, e.g.:
+
+     fetch(API_URL, { method:'POST',
+       headers:{'Content-Type':'text/plain;charset=utf-8'},
+       body: JSON.stringify({ action:'SAVE_MODULE', module: name, payload: data }) });
+
+   Nothing else in this file needs to change.
+   ──────────────────────────────────────────────────────────── */
+function syncModule(name, data) { /* not wired yet — see note above */ }
+
+/* ── Navigation ── */
+function go(page) {
+  currentPage = page;
+  Object.keys(PAGES).forEach(function(p) {
+    var pane = $('pane-' + p), nav = $('nav-' + p);
+    if (pane) pane.style.display = (p === page) ? '' : 'none';
+    if (nav)  nav.classList.toggle('on', p === page);
+  });
+  $('page-eyebrow').textContent = PAGES[page].eyebrow;
+  $('page-title').textContent   = PAGES[page].title;
+  renderPageActions(page);
+  if (page === 'orders')  renderOrders();
+  if (page === 'archive') renderArchive();
+  if (page === 'measure') { renderMeasureList(); renderMeasureDetail(); }
+  if (page === 'stock')   renderStock();
+  if (page === 'invoice') renderInvoices();
+  window.scrollTo(0, 0);
+}
+
+function renderPageActions(page) {
+  var el = $('page-actions'), h = '';
+  if (page === 'orders')  h = '<button class="btn gold" onclick="openDrawer()">+ New order</button>';
+  if (page === 'stock')   h = '<button class="btn gold" onclick="openStockModal()">+ Add cloth</button>';
+  if (page === 'invoice') h = '<button class="btn gold" onclick="openInvoiceModal()">+ New invoice</button>';
+  if (page === 'measure') h = '<button class="btn" onclick="window.print()">Print sheet</button>';
+  el.innerHTML = h;
+}
+
+function renderAll() {
+  renderOrders(); renderArchive(); renderMeasureList(); renderMeasureDetail();
+  renderStock(); renderInvoices(); updateCounts();
+}
+
+function updateCounts() {
+  var today = new Date(todayYMD());
+  var active = orders.filter(function(o) {
+    var items = o.items || [];
+    var allDone = items.length > 0 && items.every(function(it){ return it.status === 'Take Home'; });
+    if (allDone) { var ref = o.dueDate || o.fittingDate; if (ref && new Date(ref) < today) return false; }
+    return true;
+  }).length;
+  $('ct-orders').textContent  = active;
+  $('ct-archive').textContent = archivedOrders.length;
+  $('ct-measure').textContent = Object.keys(measurements).filter(function(k){ return sheetHasData(measurements[k]); }).length;
+  $('ct-stock').textContent   = stock.length;
+  $('ct-invoice').textContent = invoices.filter(function(v){ return invoiceStatus(v) !== 'Paid'; }).length;
+}
+</script>
+<script>
+/* ══ NEW-ORDER DRAWER ══════════════════════════════ */
+function openDrawer()  { $('scrim').classList.add('open'); $('drawer').classList.add('open'); document.body.style.overflow='hidden'; setTimeout(function(){ $('ordernum-input').focus(); },300); }
+function closeDrawer() { $('scrim').classList.remove('open'); $('drawer').classList.remove('open'); document.body.style.overflow=''; }
+
+function getStatusStates(p) {
+  if (NO_DELTA_PRODUCTS.indexOf(p) !== -1) return STATUS_STATES_NO_DELTA;
+  if (NO_BATAM_PRODUCTS.indexOf(p) !== -1) return STATUS_STATES_NO_BATAM;
+  return ['','Fabric Ordered','Bin','Batam','Delta','In-store','Take Home'];
+}
+function needsLining(p) { return NEEDS_LINING.indexOf(p) !== -1; }
+function addProduct(name) { selectedItems.push({product:name, fabric:'', lining:''}); renderClothFields(); updateProductButtons(); }
+function removeItem(idx)  { syncFabrics(); selectedItems.splice(idx,1); renderClothFields(); updateProductButtons(); }
+function syncFabrics() {
+  selectedItems.forEach(function(item,i) {
+    var f = $('cloth-input-'+i); if (f) item.fabric = f.value;
+    var l = $('lining-input-'+i); if (l) item.lining = l.value;
+  });
+}
+function updateProductButtons() {
+  var counts = {};
+  selectedItems.forEach(function(it){ counts[it.product] = (counts[it.product]||0)+1; });
+  PRODUCTS.forEach(function(p) {
+    var btn = $('btn-'+PRODUCT_IDS[p]); if (!btn) return;
+    var c = counts[p] || 0;
+    btn.classList.toggle('on', c > 0);
+    btn.textContent = c > 1 ? p + ' ×' + c : p;
+  });
+}
+function renderClothFields() {
+  syncFabrics();
+  var c = $('cloth-fields');
+  if (selectedItems.length === 0) { c.innerHTML = ''; return; }
+  var html = '<label class="field-label">Cloth &amp; lining</label>';
+  selectedItems.forEach(function(item,i) {
+    html += '<div class="cloth-card"><div class="cloth-head"><span class="cloth-name">'+esc(item.product)+'</span>'
+      + '<button class="icon-btn danger" onclick="removeItem('+i+')" aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'
+      + '<div class="cloth-row"><label>Cloth</label><input type="text" id="cloth-input-'+i+'" placeholder="Cloth no." value="'+esc(item.fabric)+'" oninput="onClothInput()" class="'+(item.fabric?'':'want')+'"></div>'
+      + (needsLining(item.product)
+          ? '<div class="cloth-row"><label>Lining</label><input type="text" id="lining-input-'+i+'" placeholder="Lining no." value="'+esc(item.lining||'')+'" oninput="onClothInput()" class="'+(item.lining?'':'want')+'"></div>'
+          : '')
+      + '</div>';
+  });
+  c.innerHTML = html;
+}
+function onClothInput() {
+  syncFabrics();
+  selectedItems.forEach(function(item,i) {
+    var f = $('cloth-input-'+i); if (f) f.classList.toggle('want', !f.value);
+    var l = $('lining-input-'+i); if (l && needsLining(item.product)) l.classList.toggle('want', !l.value);
+  });
+}
+function toggleNoneDate(f) {
+  var i = $(f+'-input'), b = $(f+'-none-btn');
+  if (i.value) { i.value=''; b.classList.add('on'); b.textContent='Not set'; }
+  else { b.classList.toggle('on'); }
+}
+
+function submitOrder() {
+  var orderNum = $('ordernum-input').value.trim();
+  var errNum = $('ordernum-error'); errNum.classList.remove('show');
+  $('ordernum-input').classList.remove('err');
+  if (!orderNum) { errNum.classList.add('show'); $('ordernum-input').classList.add('err'); $('ordernum-input').focus(); return; }
+  if (orders.concat(archivedOrders).some(function(o){ return o.orderNum === orderNum; })) {
+    errNum.textContent = 'Order ' + orderNum + ' already exists. Use a different number.';
+    errNum.classList.add('show'); $('ordernum-input').classList.add('err'); return;
+  }
+  errNum.textContent = 'Give the order a number before saving.';
+  if (selectedItems.length === 0) { showToast('Add at least one garment.'); return; }
+  syncFabrics();
+  if (selectedItems.some(function(i){ return !String(i.fabric||'').trim(); })
+   || selectedItems.some(function(i){ return needsLining(i.product) && !String(i.lining||'').trim(); })) {
+    showToast('Fill in every cloth and lining number.'); onClothInput(); return;
+  }
+  var newItems = selectedItems.map(function(it){
+    return {product:it.product, fabric:it.fabric, lining:it.lining, status:'', paid:false, invoice:false, stuck:false};
+  });
+  var newOrder = {
+    orderNum: orderNum,
+    customerName: $('customername-input').value.trim(),
+    customerContact: $('customercontact-input').value.trim(),
+    dueDate: $('duedate-input').value,
+    fittingDate: $('fittingdate-input').value,
+    items: newItems, date: todayYMD(), fitted: 0,
+    remarks: $('remarks-input').value.trim(), archived: false
+  };
+  orders.unshift(newOrder);
+  showToast('Order ' + orderNum + ' saved');
+  ['ordernum-input','customername-input','customercontact-input','remarks-input','fittingdate-input','duedate-input']
+    .forEach(function(id){ $(id).value=''; });
+  selectedItems = []; renderClothFields(); updateProductButtons();
+  closeDrawer(); go('orders'); renderOrders(); updateCounts();
+  syncToServer(newOrder);
+}
+
+/* ══ FITTING THREAD ════════════════════════════════ */
+function threadHtml(o, idx, isArchive) {
+  var fitted = o.fitted || 0, dates = o.fittedDates || {};
+  var tone = ['','s1','s2','s3'];
+  var editFn = isArchive ? 'editArcTlDate' : 'editTlDate';
+  var advFn  = isArchive ? 'toggleArchiveFitted' : 'toggleOrderFitted';
+  var cutFn  = isArchive ? 'deleteArcTlDot' : 'deleteTlDot';
+  var html = '<div class="thread">';
+  for (var k = 0; k < 3; k++) {
+    var level = k+1, lit = k < fitted, next = level === fitted + 1;
+    var d = dates[level] ? shortDate(dates[level]) : '';
+    var click = lit  ? 'onclick="event.stopPropagation();'+editFn+'('+idx+','+level+')"'
+              : next ? 'onclick="event.stopPropagation();'+advFn+'('+idx+')"' : '';
+    html += '<div class="thread-stage'+(lit?' done':'')+(lit||next?' tap':'')+'" '+click+' title="'+esc(TL_LABELS[level])+'">'
+         +    '<div class="notch '+(lit?tone[level]:'')+'"></div>'
+         +    '<span class="thread-date">'+esc(d)+'</span>'
+         +    '<span class="thread-name">'+esc(TL_SHORT[level])+'</span>'
+         +    (lit && level === fitted
+                   ? '<button class="thread-cut" title="Undo this fitting" onclick="event.stopPropagation();'+cutFn+'('+idx+','+level+')">✕</button>'
+                   : '<span class="thread-spacer"></span>')
+         + '</div>';
+  }
+  return html + '</div>';
+}
+
+function statusClass(s) {
+  return {'Fabric Ordered':'st-fabric','Bin':'st-bin','Batam':'st-batam','Delta':'st-delta','In-store':'st-store','Take Home':'st-home'}[s] || '';
+}
+function statusLabel(s) {
+  return {'Fabric Ordered':'Cloth ordered','Bin':'Bin','Batam':'Batam','Delta':'Delta','In-store':'In-store','Take Home':'Take home'}[s] || 'Not started';
+}
+function toggleItemStatus(oi, ii, field) {
+  var item = orders[oi].items[ii];
+  if (field === 'status') {
+    var states = getStatusStates(item.product), cur = states.indexOf(item.status);
+    item.status = states[cur === -1 ? 0 : (cur+1) % states.length];
+  } else { item[field] = !item[field]; }
+  renderOrders(); updateCounts(); syncToServer(orders[oi]);
+}
+function toggleArchiveItemPaid(ai, ii) {
+  archivedOrders[ai].items[ii].paid = !archivedOrders[ai].items[ii].paid;
+  renderArchive(); syncToServer(archivedOrders[ai]);
+}
+
+function toggleOrderFitted(oi) {
+  var current = orders[oi].fitted || 0, next = current + 1;
+  if (next > 3) return;
+  tlPendingOi = oi; tlPendingNext = next; tlEditingExisting = false; arcTlPendingIdx = -1;
+  $('tl-title').textContent = TL_LABELS[next];
+  $('tl-sub').textContent = 'Order ' + orders[oi].orderNum + (orders[oi].customerName ? ' · ' + orders[oi].customerName : '');
+  $('tl-date').value = todayYMD();
+  $('tl-modal').classList.add('open');
+}
+function editTlDate(oi, level) {
+  tlPendingOi = oi; tlPendingNext = level; tlEditingExisting = true; arcTlPendingIdx = -1;
+  $('tl-title').textContent = TL_LABELS[level];
+  $('tl-sub').textContent = 'Change the date recorded for this fitting.';
+  $('tl-date').value = (orders[oi].fittedDates || {})[level] || '';
+  $('tl-modal').classList.add('open');
+}
+function toggleArchiveFitted(ai) {
+  var o = archivedOrders[ai]; if (!o) return;
+  var next = (o.fitted || 0) + 1; if (next > 3) return;
+  arcTlPendingIdx = ai; arcTlPendingNext = next; arcTlEditingExisting = false; tlPendingOi = -1;
+  $('tl-title').textContent = TL_LABELS[next];
+  $('tl-sub').textContent = 'Order ' + o.orderNum;
+  $('tl-date').value = todayYMD();
+  $('tl-modal').classList.add('open');
+}
+function editArcTlDate(ai, level) {
+  arcTlPendingIdx = ai; arcTlPendingNext = level; arcTlEditingExisting = true; tlPendingOi = -1;
+  $('tl-title').textContent = TL_LABELS[level];
+  $('tl-sub').textContent = 'Change the date recorded for this fitting.';
+  $('tl-date').value = (archivedOrders[ai].fittedDates || {})[level] || '';
+  $('tl-modal').classList.add('open');
+}
+function closeTlModal() {
+  $('tl-modal').classList.remove('open');
+  tlPendingOi = -1; tlPendingNext = 0; tlEditingExisting = false;
+  arcTlPendingIdx = -1; arcTlPendingNext = 0; arcTlEditingExisting = false;
+}
+function saveTlModal() {
+  var dateVal = $('tl-date').value;
+  if (!dateVal) { showToast('Pick a date first.'); return; }
+  if (arcTlPendingIdx >= 0) {
+    var ao = archivedOrders[arcTlPendingIdx];
+    if (!ao.fittedDates) ao.fittedDates = {};
+    if (!arcTlEditingExisting) ao.fitted = arcTlPendingNext;
+    ao.fittedDates[arcTlPendingNext] = dateVal;
+    var _ai = arcTlPendingIdx; closeTlModal(); renderArchive(); syncToServer(archivedOrders[_ai]);
+    return;
+  }
+  if (tlPendingOi < 0) return;
+  if (!tlEditingExisting) orders[tlPendingOi].fitted = tlPendingNext;
+  if (!orders[tlPendingOi].fittedDates) orders[tlPendingOi].fittedDates = {};
+  orders[tlPendingOi].fittedDates[tlPendingNext] = dateVal;
+  var _oi = tlPendingOi; closeTlModal(); renderOrders(); syncToServer(orders[_oi]);
+}
+function deleteTlDot(oi, level) {
+  if (!orders[oi].fittedDates) orders[oi].fittedDates = {};
+  for (var l = level; l <= 3; l++) delete orders[oi].fittedDates[l];
+  orders[oi].fitted = level - 1; renderOrders(); syncToServer(orders[oi]);
+}
+function deleteArcTlDot(ai, level) {
+  var o = archivedOrders[ai]; if (!o) return;
+  if (!o.fittedDates) o.fittedDates = {};
+  for (var l = level; l <= 3; l++) delete o.fittedDates[l];
+  o.fitted = level - 1; renderArchive(); syncToServer(o);
+}
+
+/* ══ INLINE DATE EDIT ══════════════════════════════ */
+function openInlineDate(cell) {
+  cell.querySelector('.meta-val').style.display = 'none';
+  var p = cell.querySelector('input[type=date]');
+  p.style.display = 'inline-block'; p.focus();
+  try { p.showPicker(); } catch(e) {}
+}
+function saveInlineDate(idx, type, picker) {
+  if (type === 'due') orders[idx].dueDate = picker.value; else orders[idx].fittingDate = picker.value;
+  renderOrders(); syncToServer(orders[idx]);
+}
+function cancelInlineDate() { setTimeout(renderOrders, 150); }
+
+/* ══ DELETE / ARCHIVE ══════════════════════════════ */
+function deleteOrder(idx) {
+  delPendingType='order'; delPendingOi=idx;
+  $('del-msg').textContent = 'Order ' + orders[idx].orderNum + ' will be removed from the sheet. This cannot be undone — archive it instead if you might need it later.';
+  $('del-modal').classList.add('open');
+}
+function deleteArchiveOrder(ai) {
+  delPendingType='archive'; delPendingOi=ai;
+  $('del-msg').textContent = 'Archived order ' + archivedOrders[ai].orderNum + ' will be removed from the sheet for good.';
+  $('del-modal').classList.add('open');
+}
+function deleteItem(oi, ii) {
+  delPendingType='item'; delPendingOi=oi; delPendingIi=ii;
+  var o = orders[oi];
+  $('del-msg').textContent = o.items.length === 1
+    ? 'That is the only garment on order ' + o.orderNum + ', so the whole order goes with it.'
+    : 'Remove the ' + o.items[ii].product.toLowerCase() + ' from order ' + o.orderNum + '?';
+  $('del-modal').classList.add('open');
+}
+function closeDelModal() { $('del-modal').classList.remove('open'); delPendingType=''; delPendingOi=-1; delPendingIi=-1; }
+function confirmDelete() {
+  if (delPendingType === 'order') {
+    var o = orders[delPendingOi]; orders.splice(delPendingOi,1); syncToServer(o,true); closeDelModal(); renderOrders(); updateCounts();
+  } else if (delPendingType === 'item') {
+    var o2 = orders[delPendingOi];
+    if (o2.items.length === 1) { orders.splice(delPendingOi,1); syncToServer(o2,true); }
+    else { o2.items.splice(delPendingIi,1); syncToServer(o2); }
+    closeDelModal(); renderOrders(); updateCounts();
+  } else if (delPendingType === 'archive') {
+    var o3 = archivedOrders[delPendingOi]; archivedOrders.splice(delPendingOi,1); syncToServer(o3,true); closeDelModal(); renderArchive(); updateCounts();
+  }
+}
+function archiveOrder(idx) {
+  archivePendingIdx = idx; restorePendingIdx = -1;
+  var o = orders[idx];
+  $('confirm-title').textContent = 'Archive this order?';
+  $('confirm-msg').innerHTML = 'Order <strong>'+esc(o.orderNum)+'</strong> moves to the archive. You can bring it back any time.';
+  var b = $('confirm-go'); b.textContent = 'Archive'; b.className = 'btn btn-ink'; b.onclick = doArchive;
+  $('confirm-modal').classList.add('open');
+}
+function doArchive() {
+  if (archivePendingIdx < 0) return;
+  var o = orders[archivePendingIdx]; o.archived = true;
+  archivedOrders.unshift(o); orders.splice(archivePendingIdx,1);
+  archivePendingIdx = -1; closeConfirmModal();
+  renderOrders(); renderArchive(); updateCounts(); syncToServer(o);
+  showToast('Order ' + o.orderNum + ' archived');
+}
+function confirmRestore(ai) {
+  restorePendingIdx = ai; archivePendingIdx = -1;
+  var o = archivedOrders[ai];
+  $('confirm-title').textContent = 'Bring this order back?';
+  $('confirm-msg').innerHTML = 'Order <strong>'+esc(o.orderNum)+'</strong> returns to the active list.';
+  var b = $('confirm-go'); b.textContent = 'Restore'; b.className = 'btn btn-ok'; b.onclick = doRestore;
+  $('confirm-modal').classList.add('open');
+}
+function doRestore() {
+  if (restorePendingIdx < 0) return;
+  var o = archivedOrders[restorePendingIdx]; o.archived = false;
+  orders.unshift(o); archivedOrders.splice(restorePendingIdx,1);
+  restorePendingIdx = -1; closeConfirmModal();
+  renderOrders(); renderArchive(); updateCounts(); syncToServer(o);
+  showToast('Order ' + o.orderNum + ' restored');
+}
+function closeConfirmModal() { $('confirm-modal').classList.remove('open'); archivePendingIdx=-1; restorePendingIdx=-1; }
+
+/* ══ EDIT MODAL ════════════════════════════════════ */
+function openEditModal(idx) {
+  editIdx = idx; var o = orders[idx];
+  $('modal-ordernum').value        = o.orderNum;
+  $('modal-customername').value    = o.customerName || '';
+  $('modal-customercontact').value = o.customerContact || '';
+  $('modal-duedate').value         = o.dueDate || '';
+  $('modal-fittingdate').value     = o.fittingDate || '';
+  $('modal-remarks').value         = o.remarks || '';
+  renderModalItems(o.items || []);
+  $('edit-modal').classList.add('open');
+}
+function closeEditModal() { $('edit-modal').classList.remove('open'); editIdx = -1; }
+function saveEditModal() {
+  if (editIdx < 0) return;
+  var newNum = $('modal-ordernum').value.trim();
+  if (!newNum) { showToast('The order needs a number.'); return; }
+  var o = orders[editIdx];
+  var oldNum = o.orderNum;
+  o.orderNum        = newNum;
+  o.customerName    = $('modal-customername').value.trim();
+  o.customerContact = $('modal-customercontact').value.trim();
+  o.dueDate         = $('modal-duedate').value;
+  o.fittingDate     = $('modal-fittingdate').value;
+  o.remarks         = $('modal-remarks').value.trim();
+  o.items           = getModalItems();
+  if (oldNum !== newNum && measurements[oldNum]) { measurements[newNum] = measurements[oldNum]; delete measurements[oldNum]; saveMeasurements(); }
+  var _ei = editIdx; closeEditModal(); renderOrders(); updateCounts(); syncToServer(orders[_ei]);
+}
+function renderModalItems(items) {
+  var html = '';
+  items.forEach(function(item,i) {
+    html += '<div class="cloth-card"><div class="cloth-head">'
+      + '<select class="field modal-item-product" data-idx="'+i+'" style="height:40px;flex:1">'
+      + PRODUCTS.map(function(p){ return '<option value="'+esc(p)+'"'+(p===item.product?' selected':'')+'>'+esc(p)+'</option>'; }).join('')
+      + '</select>'
+      + '<button class="icon-btn danger" style="margin-left:9px" onclick="removeModalItem('+i+')" aria-label="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'
+      + '<div class="cloth-row"><label>Cloth</label><input type="text" class="modal-item-fabric" value="'+esc(item.fabric||'')+'"></div>'
+      + '<div class="cloth-row"><label>Lining</label><input type="text" class="modal-item-lining" placeholder="Lining no." value="'+esc(item.lining||'')+'"></div>'
+      + '</div>';
+  });
+  $('modal-items').innerHTML = html + '<button class="btn sm" style="width:100%;margin-top:4px" onclick="addModalItem()">+ Add garment</button>';
+}
+function addModalItem()   { var i = getModalItems(); i.push({product:'Jacket',fabric:'',lining:'',status:'',paid:false,invoice:false,stuck:false}); renderModalItems(i); }
+function removeModalItem(idx) { var i = getModalItems(); i.splice(idx,1); renderModalItems(i); }
+function getModalItems() {
+  var c = $('modal-items');
+  var p = c.querySelectorAll('.modal-item-product'), f = c.querySelectorAll('.modal-item-fabric'), l = c.querySelectorAll('.modal-item-lining');
+  var ex = editIdx >= 0 ? (orders[editIdx].items || []) : [], items = [];
+  for (var i = 0; i < p.length; i++) {
+    items.push({
+      product: p[i].value,
+      fabric: f[i] ? f[i].value.trim() : '',
+      lining: l[i] ? l[i].value.trim() : '',
+      status: (ex[i]||{}).status || '', paid: (ex[i]||{}).paid || false,
+      invoice: (ex[i]||{}).invoice || false, stuck: (ex[i]||{}).stuck || false
+    });
+  }
+  return items;
+}
+
+/* ══ ORDERS LIST ═══════════════════════════════════ */
+function clientLine(o) {
+  var name = o.customerName || '', contact = o.customerContact || '';
+  if (!name && !contact) return '';
+  return '<div class="meta-cell"><span class="meta-key">Client</span><span class="meta-val">'
+       + esc(name && contact ? name + ' · ' + contact : (name || contact)) + '</span></div>';
+}
+
+function renderOrders() {
+  var el = $('orders-content'); if (!el) return;
+  var term = ($('order-search') ? $('order-search').value : '').trim().toLowerCase();
+  var x = $('order-search-x'); if (x) x.classList.toggle('show', !!term);
+  var hasPF = Object.keys(activeProductFilters).some(function(k){ return activeProductFilters[k]; });
+
+  var rows = orders.map(function(o,i){ return {order:o, idx:i}; }).filter(function(e) {
+    var o = e.order, items = o.items || [];
+    if (hasPF && !items.some(function(it){ return activeProductFilters[it.product]; })) return false;
+    if (activeStatusFilter && !items.some(function(it){ return it.status === activeStatusFilter; })) return false;
+    if (activeStuckFilter  && !items.some(function(it){ return it.stuck; })) return false;
+    if (activeUnpaidFilter && !items.some(function(it){ return !it.paid; })) return false;
+    if (filterOrderedFrom && (o.date||'') < filterOrderedFrom) return false;
+    if (filterOrderedTo   && (o.date||'') > filterOrderedTo)   return false;
+    if (filterDueFrom && (o.dueDate||'') < filterDueFrom) return false;
+    if (filterDueTo   && (o.dueDate||'') > filterDueTo)   return false;
+    if (!term) return true;
+    if (String(o.orderNum||'').toLowerCase().indexOf(term) !== -1) return true;
+    if (String(o.customerName||'').toLowerCase().indexOf(term) !== -1) return true;
+    if (String(o.customerContact||'').toLowerCase().indexOf(term) !== -1) return true;
+    if (String(o.remarks||'').toLowerCase().indexOf(term) !== -1) return true;
+    return items.some(function(it){
+      return (it.fabric||'').toLowerCase().indexOf(term) !== -1 || (it.lining||'').toLowerCase().indexOf(term) !== -1;
+    });
+  });
+
+  sortRows(rows, currentSort);
+
+  if (rows.length === 0) {
+    el.innerHTML = term
+      ? emptyState('Nothing matches “'+esc(term)+'”', 'Try the order number, the client\'s name, or a cloth number.')
+      : emptyState('No orders on the floor', 'Every order that comes through the shop starts here.', '<button class="btn gold" onclick="openDrawer()">+ New order</button>');
+    updateCounts(); return;
+  }
+
+  var html = '';
+  rows.forEach(function(e) {
+    var o = e.order, oi = e.idx, items = o.items || [];
+    var dueSoon = isDueSoon(o.dueDate) && items.some(function(it){ return it.status !== 'Take Home'; });
+    var hasSheet = sheetHasData(measurements[o.orderNum]);
+    html += '<article class="order-card'+(dueSoon?' flag-due':'')+'">'
+      + '<div class="oc-head">'
+      +   '<div class="oc-ref"><span class="oc-ref-label">Order</span><span class="oc-num">'+esc(o.orderNum)+'</span></div>'
+      +   '<div class="oc-meta">'
+      +     clientLine(o)
+      +     '<div class="meta-cell"><span class="meta-key">Ordered</span><span class="meta-val soft">'+esc(formatDisplayDate(o.date))+'</span></div>'
+      +     '<div class="meta-cell tap" onclick="openInlineDate(this)"><span class="meta-key">Fitting</span><span class="meta-val">'+esc(formatDisplayDate(o.fittingDate))+'</span>'
+      +       '<input type="date" value="'+esc(o.fittingDate||'')+'" onchange="saveInlineDate('+oi+',\'fitting\',this)" onblur="cancelInlineDate()" onclick="event.stopPropagation()"></div>'
+      +     '<div class="meta-cell tap" onclick="openInlineDate(this)"><span class="meta-key">Due</span><span class="meta-val'+(dueSoon?' alarm':'')+'">'+esc(formatDisplayDate(o.dueDate))+'</span>'
+      +       '<input type="date" value="'+esc(o.dueDate||'')+'" onchange="saveInlineDate('+oi+',\'due\',this)" onblur="cancelInlineDate()" onclick="event.stopPropagation()"></div>'
+      +   '</div>'
+      +   '<div class="oc-tools" onclick="event.stopPropagation()">'
+      +     threadHtml(o, oi, false)
+      +     '<button class="btn sm" onclick="openSheetFor(\''+esc(o.orderNum)+'\')" title="Measurements">Measurements'+(hasSheet?'<span class="gtab-mark"></span>':'')+'</button>'
+      +     '<button class="btn sm" onclick="newInvoiceFor(\''+esc(o.orderNum)+'\')">Invoice</button>'
+      +     '<button class="btn sm" onclick="archiveOrder('+oi+')">Archive</button>'
+      +     '<button class="icon-btn" onclick="openEditModal('+oi+')" aria-label="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'
+      +     '<button class="icon-btn danger" onclick="deleteOrder('+oi+')" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'
+      +   '</div>'
+      + '</div>';
+    items.forEach(function(it,ii) {
+      html += '<div class="g-row"><div class="g-name">'+esc(it.product)+'</div>'
+        + '<div class="g-cloth">Cloth <b>'+esc(it.fabric||'—')+'</b>'+(it.lining?' &nbsp;·&nbsp; Lining <b>'+esc(it.lining)+'</b>':'')+'</div>'
+        + '<div class="g-tools">'
+        +   '<span class="pill '+statusClass(it.status)+'" onclick="toggleItemStatus('+oi+','+ii+',\'status\')">'+esc(statusLabel(it.status))+'</span>'
+        +   '<span class="pill'+(it.stuck?' st-stuck':'')+'" onclick="toggleItemStatus('+oi+','+ii+',\'stuck\')">'+(it.stuck?'Stuck':'On track')+'</span>'
+        +   '<span class="pill'+(it.paid?' st-paid':' st-unpaid')+'" onclick="toggleItemStatus('+oi+','+ii+',\'paid\')">'+(it.paid?'Paid':'Unpaid')+'</span>'
+        +   '<button class="icon-btn danger" onclick="deleteItem('+oi+','+ii+')" aria-label="Remove garment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>'
+        + '</div></div>';
+    });
+    if (o.remarks) html += '<div class="oc-note">'+esc(o.remarks)+'</div>';
+    html += '</article>';
+  });
+  el.innerHTML = html;
+  updateCounts();
+}
+
+function sortRows(rows, mode) {
+  if (mode === 'newest')       rows.sort(function(a,b){ return (b.order.orderNum||'').localeCompare(a.order.orderNum||'', undefined, {numeric:true}); });
+  else if (mode === 'oldest')  rows.sort(function(a,b){ return (a.order.orderNum||'').localeCompare(b.order.orderNum||'', undefined, {numeric:true}); });
+  else if (mode === 'due-asc') rows.sort(function(a,b){ return (a.order.dueDate||'9999').localeCompare(b.order.dueDate||'9999'); });
+  else if (mode === 'due-desc')rows.sort(function(a,b){ return (b.order.dueDate||'9999').localeCompare(a.order.dueDate||'9999'); });
+  else if (mode === 'fit-asc') rows.sort(function(a,b){ return (a.order.fittingDate||'9999').localeCompare(b.order.fittingDate||'9999'); });
+  else if (mode === 'fit-desc')rows.sort(function(a,b){ return (b.order.fittingDate||'9999').localeCompare(a.order.fittingDate||'9999'); });
+}
+
+function emptyState(title, body, action) {
+  return '<div class="empty"><div class="empty-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div>'
+    + '<div class="empty-title">'+title+'</div><div class="empty-body">'+body+'</div>' + (action||'') + '</div>';
+}
+
+/* ══ ARCHIVE ═══════════════════════════════════════ */
+function renderArchive() {
+  var el = $('archive-content'); if (!el) return;
+  var term = ($('archive-search') ? $('archive-search').value : '').trim().toLowerCase();
+  var x = $('archive-search-x'); if (x) x.classList.toggle('show', !!term);
+
+  var rows = archivedOrders.map(function(o,i){ return {order:o, idx:i}; }).filter(function(e) {
+    var o = e.order;
+    if (!term) return true;
+    if (String(o.orderNum||'').toLowerCase().indexOf(term) !== -1) return true;
+    if (String(o.customerName||'').toLowerCase().indexOf(term) !== -1) return true;
+    if (String(o.customerContact||'').toLowerCase().indexOf(term) !== -1) return true;
+    if (String(o.remarks||'').toLowerCase().indexOf(term) !== -1) return true;
+    return (o.items||[]).some(function(it){
+      return (it.fabric||'').toLowerCase().indexOf(term) !== -1 || (it.lining||'').toLowerCase().indexOf(term) !== -1;
+    });
+  });
+  sortRows(rows, currentArchiveSort);
+
+  if (rows.length === 0) {
+    el.innerHTML = term
+      ? emptyState('Nothing matches “'+esc(term)+'”', 'The archive keeps everything you have closed off.')
+      : emptyState('The archive is empty', 'Finished orders you archive from the floor land here, and can be restored any time.');
+    return;
+  }
+
+  var html = '';
+  rows.forEach(function(e) {
+    var o = e.order, ai = e.idx, items = o.items || [];
+    html += '<article class="order-card"><div class="oc-head">'
+      + '<div class="oc-ref"><span class="oc-ref-label">Order</span><span class="oc-num">'+esc(o.orderNum)+'</span></div>'
+      + '<div class="oc-meta">'
+      +   clientLine(o)
+      +   '<div class="meta-cell"><span class="meta-key">Ordered</span><span class="meta-val soft">'+esc(formatDisplayDate(o.date))+'</span></div>'
+      +   '<div class="meta-cell"><span class="meta-key">Fitting</span><span class="meta-val soft">'+esc(formatDisplayDate(o.fittingDate))+'</span></div>'
+      +   '<div class="meta-cell"><span class="meta-key">Due</span><span class="meta-val soft">'+esc(formatDisplayDate(o.dueDate))+'</span></div>'
+      + '</div>'
+      + '<div class="oc-tools" onclick="event.stopPropagation()">'
+      +   threadHtml(o, ai, true)
+      +   '<button class="btn sm" onclick="openSheetFor(\''+esc(o.orderNum)+'\')">Measurements</button>'
+      +   '<button class="btn sm" onclick="confirmRestore('+ai+')">Restore</button>'
+      +   '<button class="icon-btn danger" onclick="deleteArchiveOrder('+ai+')" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'
+      + '</div></div>';
+    items.forEach(function(it,ii) {
+      html += '<div class="g-row"><div class="g-name">'+esc(it.product)+'</div>'
+        + '<div class="g-cloth">Cloth <b>'+esc(it.fabric||'—')+'</b>'+(it.lining?' &nbsp;·&nbsp; Lining <b>'+esc(it.lining)+'</b>':'')+'</div>'
+        + '<div class="g-tools">'
+        +   '<span class="tag">'+esc(statusLabel(it.status))+'</span>'
+        +   '<span class="pill'+(it.paid?' st-paid':' st-unpaid')+'" onclick="toggleArchiveItemPaid('+ai+','+ii+')">'+(it.paid?'Paid':'Unpaid')+'</span>'
+        + '</div></div>';
+    });
+    if (o.remarks) html += '<div class="oc-note">'+esc(o.remarks)+'</div>';
+    html += '</article>';
+  });
+  el.innerHTML = html;
+}
+
+/* ══ FILTERS ═══════════════════════════════════════ */
+function toggleFilters() {
+  filtersOpen = !filtersOpen;
+  $('filter-panel').style.display = filtersOpen ? '' : 'none';
+  $('btn-filters').classList.toggle('on', filtersOpen);
+}
+function setSort(mode)        { currentSort = mode; updateSortButtons(); renderOrders(); }
+function toggleDueSort()      { setSort(currentSort === 'due-asc' ? 'due-desc' : 'due-asc'); }
+function toggleFitSort()      { setSort(currentSort === 'fit-asc' ? 'fit-desc' : 'fit-asc'); }
+function setArchiveSort(mode) { currentArchiveSort = mode; updateArchiveSortButtons(); renderArchive(); }
+function toggleArchiveDueSort(){ setArchiveSort(currentArchiveSort === 'due-asc' ? 'due-desc' : 'due-asc'); }
+function updateSortButtons() {
+  document.querySelectorAll('[data-sort]').forEach(function(b){ b.classList.remove('on'); });
+  var a = document.querySelector('[data-sort="'+currentSort+'"]'); if (a) a.classList.add('on');
+}
+function updateArchiveSortButtons() {
+  document.querySelectorAll('[data-archive-sort]').forEach(function(b){ b.classList.remove('on'); });
+  var a = document.querySelector('[data-archive-sort="'+currentArchiveSort+'"]'); if (a) a.classList.add('on');
+}
+function toggleProductFilter(p) { activeProductFilters[p] = !activeProductFilters[p]; updateProductFilterButtons(); renderOrders(); }
+function updateProductFilterButtons() {
+  document.querySelectorAll('.gfilter').forEach(function(b){ b.classList.toggle('on', !!activeProductFilters[b.getAttribute('data-product')]); });
+}
+function toggleStatusFilter(s) {
+  activeStatusFilter = (activeStatusFilter === s) ? null : s;
+  activeStuckFilter = false; activeUnpaidFilter = false;
+  updateFilterButtons(); renderOrders();
+}
+function toggleStuckFilter()  { activeStuckFilter = !activeStuckFilter; activeStatusFilter = null; activeUnpaidFilter = false; updateFilterButtons(); renderOrders(); }
+function toggleUnpaidFilter() { activeUnpaidFilter = !activeUnpaidFilter; activeStatusFilter = null; activeStuckFilter = false; updateFilterButtons(); renderOrders(); }
+function updateFilterButtons() {
+  document.querySelectorAll('.sfilter').forEach(function(b){ b.classList.toggle('on', activeStatusFilter === b.getAttribute('data-status')); });
+  $('filter-stuck').classList.toggle('on', activeStuckFilter);
+  $('filter-unpaid').classList.toggle('on', activeUnpaidFilter);
+}
+function applyDateFilter() {
+  filterOrderedFrom = ($('filter-ordered-from')||{}).value || '';
+  filterOrderedTo   = ($('filter-ordered-to')||{}).value || '';
+  filterDueFrom     = ($('filter-due-from')||{}).value || '';
+  filterDueTo       = ($('filter-due-to')||{}).value || '';
+  renderOrders();
+}
+function clearAllFilters() {
+  activeStatusFilter = null; activeStuckFilter = false; activeUnpaidFilter = false; activeProductFilters = {};
+  filterOrderedFrom = filterOrderedTo = filterDueFrom = filterDueTo = '';
+  ['filter-ordered-from','filter-ordered-to','filter-due-from','filter-due-to'].forEach(function(id){ var e = $(id); if (e) e.value = ''; });
+  updateFilterButtons(); updateProductFilterButtons(); renderOrders();
+  showToast('Filters cleared');
+}
+function clearSearch()        { $('order-search').value = ''; renderOrders(); }
+function clearArchiveSearch() { $('archive-search').value = ''; renderArchive(); }
+</script>
+<script>
+/* ══════════════════════════════════════════════════
+   MEASUREMENTS
+   Field set lifted straight off the ŠAKAL paper forms
+   (suit / vest / pants / shirt) so a sheet on screen and
+   a sheet on the bench say the same thing.
+   ══════════════════════════════════════════════════ */
+
+var SHEETS = {
+  jacket: {
+    label: 'Jacket',
+    measures: [
+      {k:'collar',l:'Collar'}, {k:'shoulder',l:'Shoulder'}, {k:'armhole',l:'Armhole'},
+      {k:'bicep',l:'Bicep'}, {k:'forearm',l:'Forearm'}, {k:'cuff',l:'Cuff'},
+      {k:'chest',l:'Chest'}, {k:'waist',l:'Waist'}, {k:'hips',l:'Hips'},
+      {k:'sleeve',l:'Sleeve length'}, {k:'front',l:'Front (F)'}, {k:'back',l:'Back (B)'}, {k:'length',l:'Length'}
+    ],
+    options: [
+      {k:'lapel',      l:'Lapel',             v:['Peak 3.5"','Notch 3.5"','Shawl 3"']},
+      {k:'buttons',    l:'Front buttons',     v:['1 button','2 button','3 button','Double breasted 6×2']},
+      {k:'cuffbtn',    l:'Cuff buttons',      v:['2 button','3 button','4 button']},
+      {k:'placement',  l:'Button placement',  v:['Regular','Close']},
+      {k:'buttonhole', l:'Lapel buttonhole',  v:['Yes','No']},
+      {k:'vent',       l:'Vents',             v:['Centre','Side','None']},
+      {k:'stitchline', l:'Construction line', v:['Full line','Half line','No line']},
+      {k:'canvas',     l:'Canvas',            v:['Half canvas','Full canvas']},
+      {k:'pocket',     l:'Pocket',            v:['Welted','Slant','Patch']},
+      {k:'ticket',     l:'Ticket pocket',     v:['Yes','No']},
+      {k:'padding',    l:'Shoulder padding',  v:['2 layer','1 layer','None']}
+    ]
+  },
+  vest: {
+    label: 'Vest',
+    measures: [
+      {k:'collar',l:'Collar'}, {k:'shoulder',l:'Shoulder'}, {k:'armhole',l:'Armhole'},
+      {k:'chest',l:'Chest'}, {k:'waist',l:'Waist'}, {k:'hips',l:'Hips'}, {k:'length',l:'Length'}
+    ],
+    options: [
+      {k:'style',  l:'Style', v:['Standard 5–6 button','Double breasted 4 button','Single breasted notch lapel','Double breasted peak lapel 6 button']},
+      {k:'pocket', l:'Pocket', v:['Welted','Slant','None']},
+      {k:'back',   l:'Back', v:['Lining','Self cloth']}
+    ]
+  },
+  trousers: {
+    label: 'Trousers',
+    measures: [
+      {k:'waist',l:'Waist'}, {k:'hip',l:'Hip'}, {k:'thigh',l:'Thigh'}, {k:'crotch',l:'Crotch'},
+      {k:'knee',l:'Knee'}, {k:'cuff',l:'Cuff'}, {k:'lengthL',l:'Length L'}, {k:'lengthR',l:'Length R'}
+    ],
+    options: [
+      {k:'front',    l:'Front',            v:['Standard','Single pleat','Double pleat','Gurkha single','Gurkha double']},
+      {k:'adjuster', l:'Side adjuster',    v:['Standard','Šakal round','Elastic button','None']},
+      {k:'metal',    l:'Adjuster finish',  v:['Gold','Silver','Gunmetal','Matt']},
+      {k:'pocket',   l:'Side pocket',      v:['Welt','Slant']},
+      {k:'backpkt',  l:'Back pocket',      v:['Button','None']},
+      {k:'cuffs',    l:'Hem',              v:['Regular','Cuffed']},
+      {k:'fly',      l:'Fly front',        v:['Zip','Button']},
+      {k:'beltloop', l:'Belt loop',        v:['With','Without']}
+    ]
+  },
+  shirt: {
+    label: 'Shirt',
+    measures: [
+      {k:'collar',l:'Collar'}, {k:'shoulder',l:'Shoulder'}, {k:'armhole',l:'Armhole'},
+      {k:'bicep',l:'Bicep'}, {k:'forearm',l:'Forearm'}, {k:'cuff',l:'Cuff'},
+      {k:'chest',l:'Chest'}, {k:'waist',l:'Waist'}, {k:'hips',l:'Hips'},
+      {k:'sleeve',l:'Sleeve length'}, {k:'length',l:'Length'}
+    ],
+    options: [
+      {k:'collarStyle', l:'Collar',            v:['Šakal (1)','Šakal (3)','Polo button down','Forward point','English spread','Chinese','Club','Cutaway','Camp']},
+      {k:'cuffStyle',   l:'Cuff',              v:['Rounded barrel','Rounded barrel C\\C','Angular barrel','Angular barrel C\\C','Luxury barrel','Single french','Double french']},
+      {k:'placket',     l:'Placket',           v:['Parallel','Standard','Double']},
+      {k:'back',        l:'Back',              v:['Plain','Darts','Curved yoke','Wing pleats']},
+      {k:'sleeves',     l:'Sleeves',           v:['Long','Short']},
+      {k:'pocket',      l:'Pocket',            v:['None','Single left','Single right','Double']},
+      {k:'tuck',        l:'Worn',              v:['Tucked in','Untucked']},
+      {k:'interfacing', l:'Collar interfacing',v:['Soft','Regular hard','Super hard']}
+    ]
+  }
+};
+
+var GARMENT_ORDER = ['jacket','vest','trousers','shirt'];
+var measureSel = '', measureTab = 'jacket';
+
+function sheetHasData(s) {
+  if (!s) return false;
+  return GARMENT_ORDER.some(function(g) {
+    var b = s[g]; if (!b) return false;
+    return Object.keys(b.m||{}).some(function(k){ return String(b.m[k]||'').trim(); })
+        || Object.keys(b.o||{}).some(function(k){ return String(b.o[k]||'').trim(); });
+  });
+}
+function ensureSheet(num) {
+  if (!measurements[num]) measurements[num] = {hand:'R', notes:'', updated:''};
+  GARMENT_ORDER.forEach(function(g) {
+    if (!measurements[num][g]) measurements[num][g] = {m:{}, o:{}};
+    if (!measurements[num][g].m) measurements[num][g].m = {};
+    if (!measurements[num][g].o) measurements[num][g].o = {};
+  });
+  return measurements[num];
+}
+function findOrder(num) {
+  return orders.find(function(o){ return o.orderNum === num; })
+      || archivedOrders.find(function(o){ return o.orderNum === num; }) || null;
+}
+function garmentFilled(num, g) {
+  var s = measurements[num]; if (!s || !s[g]) return false;
+  return Object.keys(s[g].m||{}).some(function(k){ return String(s[g].m[k]||'').trim(); })
+      || Object.keys(s[g].o||{}).some(function(k){ return String(s[g].o[k]||'').trim(); });
+}
+
+/* ── Client list ── */
+function renderMeasureList() {
+  var el = $('measure-list'); if (!el) return;
+  var term = ($('measure-search') ? $('measure-search').value : '').trim().toLowerCase();
+  var all = orders.concat(archivedOrders);
+  var rows = all.filter(function(o) {
+    if (!term) return true;
+    return String(o.orderNum||'').toLowerCase().indexOf(term) !== -1
+        || String(o.customerName||'').toLowerCase().indexOf(term) !== -1
+        || String(o.customerContact||'').toLowerCase().indexOf(term) !== -1;
+  }).sort(function(a,b){ return (b.orderNum||'').localeCompare(a.orderNum||'', undefined, {numeric:true}); });
+
+  if (rows.length === 0) {
+    el.innerHTML = '<div style="padding:26px 16px;text-align:center;color:var(--faint);font-size:12.5px">'
+      + (term ? 'No client matches that.' : 'Orders will show up here once you add them.') + '</div>';
+    return;
+  }
+  if (!measureSel || !all.some(function(o){ return o.orderNum === measureSel; })) measureSel = rows[0].orderNum;
+
+  el.innerHTML = rows.map(function(o) {
+    var done = sheetHasData(measurements[o.orderNum]);
+    var kinds = Array.from(new Set((o.items||[]).map(function(i){ return i.product; }))).join(' · ');
+    return '<button class="list-row'+(o.orderNum===measureSel?' on':'')+'" onclick="selectMeasure(\''+esc(o.orderNum)+'\')">'
+      + '<div class="list-row-top"><span class="list-row-name">'+esc(o.customerName || 'No name yet')+'</span>'
+      + '<span class="list-row-num">'+esc(o.orderNum)+'</span></div>'
+      + '<div class="list-row-sub"><span>'+esc(kinds || 'No garments')+'</span>'
+      + (done ? '<span class="tag gold">Sheet on file</span>' : '') + '</div></button>';
+  }).join('');
+}
+function selectMeasure(num) { measureSel = num; renderMeasureList(); renderMeasureDetail(); }
+function openSheetFor(num) { measureSel = num; go('measure'); }
+function setGarmentTab(g) { measureTab = g; renderMeasureDetail(); }
+
+/* ── Sheet ── */
+function renderMeasureDetail() {
+  var el = $('measure-detail'); if (!el) return;
+  var o = findOrder(measureSel);
+  if (!o) {
+    el.innerHTML = emptyState('Pick a client', 'Choose someone from the list to open their measurement sheet. Every order gets its own — bodies change, and so do preferences.');
+    return;
+  }
+  var s = ensureSheet(o.orderNum);
+  var def = SHEETS[measureTab];
+  var cloth = (o.items||[]).map(function(i){ return i.product + ' — ' + (i.fabric || 'no cloth no.'); }).join(' · ');
+  var prev  = previousSheetFor(o);
+
+  var html = '<div class="sheet">'
+    + '<div class="sheet-head"><div>'
+    +   '<div class="sheet-title">'+esc(o.customerName || 'Order ' + o.orderNum)+'</div>'
+    +   '<div class="sheet-sub">Order '+esc(o.orderNum)+' &nbsp;·&nbsp; Due '+esc(formatDisplayDate(o.dueDate))
+    +     (s.updated ? ' &nbsp;·&nbsp; Sheet updated '+esc(formatDisplayDate(s.updated)) : '') + '</div>'
+    +   (cloth ? '<div class="sheet-sub">'+esc(cloth)+'</div>' : '')
+    + '</div><div style="display:flex;gap:8px;flex-wrap:wrap" class="no-print">'
+    +   '<div style="display:flex;gap:4px;align-items:center">'
+    +     '<span class="toolbar-label" style="margin-right:4px">Hand</span>'
+    +     '<button class="chip'+(s.hand==='L'?' on':'')+'" onclick="setHand(\'L\')">Left</button>'
+    +     '<button class="chip'+(s.hand==='R'?' on':'')+'" onclick="setHand(\'R\')">Right</button>'
+    +   '</div>'
+    +   (prev ? '<button class="btn sm" onclick="copyPrevSheet(\''+esc(prev)+'\')">Copy from '+esc(prev)+'</button>' : '')
+    + '</div></div>';
+
+  html += '<div class="garment-tabs">' + GARMENT_ORDER.map(function(g) {
+    return '<button class="gtab'+(g===measureTab?' on':'')+'" onclick="setGarmentTab(\''+g+'\')">'
+      + SHEETS[g].label + (garmentFilled(o.orderNum, g) ? '<span class="gtab-mark"></span>' : '') + '</button>';
+  }).join('') + '</div>';
+
+  html += '<div class="sheet-body">';
+  html += '<div class="block"><div class="block-title">'+def.label+' measurements &nbsp;— inches</div><div class="mgrid">'
+    + def.measures.map(function(f) {
+        return '<div class="mfield"><label for="m-'+f.k+'">'+esc(f.l)+'</label>'
+          + '<input id="m-'+f.k+'" type="text" inputmode="decimal" placeholder="—" value="'+esc((s[measureTab].m||{})[f.k]||'')+'" '
+          + 'oninput="setMeasure(\''+measureTab+'\',\''+f.k+'\',this.value)"></div>';
+      }).join('') + '</div></div>';
+
+  html += '<div class="block"><div class="block-title">'+def.label+' details</div><div class="opt-grid">'
+    + def.options.map(function(op) {
+        return '<div class="opt-set"><div class="opt-set-label">'+esc(op.l)+'</div><div class="chips">'
+          + op.v.map(function(v) {
+              var on = (s[measureTab].o||{})[op.k] === v;
+              return '<button class="chip'+(on?' on':'')+'" onclick="setOption(\''+measureTab+'\',\''+op.k+'\',this.dataset.v)" data-v="'+esc(v)+'">'+esc(v)+'</button>';
+            }).join('')
+          + '</div></div>';
+      }).join('') + '</div></div>';
+
+  html += '<div class="block"><div class="block-title">Notes for the cutter</div>'
+    + '<textarea class="field" rows="3" placeholder="Right shoulder slightly lower · prefers a little room through the seat" '
+    + 'oninput="setSheetNotes(this.value)">'+esc(s.notes||'')+'</textarea></div>';
+
+  html += '</div></div>';
+  el.innerHTML = html;
+}
+
+function setMeasure(g, k, v) {
+  var s = ensureSheet(measureSel);
+  s[g].m[k] = v; s.updated = todayYMD();
+  persistMeasurements(); updateCounts();
+  setSync('', 'Sheet saved on this device');
+}
+function setOption(g, k, v) {
+  var s = ensureSheet(measureSel);
+  s[g].o[k] = (s[g].o[k] === v) ? '' : v;
+  s.updated = todayYMD();
+  persistMeasurements(); renderMeasureDetail(); updateCounts();
+}
+function setHand(h)          { var s = ensureSheet(measureSel); s.hand = h; s.updated = todayYMD(); persistMeasurements(); renderMeasureDetail(); }
+function setSheetNotes(v)    { var s = ensureSheet(measureSel); s.notes = v; s.updated = todayYMD(); persistMeasurements(); }
+
+/* Same client, earlier order — the tailor's real shortcut. */
+function previousSheetFor(o) {
+  if (!o.customerName) return '';
+  var mine = orders.concat(archivedOrders).filter(function(x) {
+    return x.customerName && x.customerName.toLowerCase() === o.customerName.toLowerCase()
+        && x.orderNum !== o.orderNum && sheetHasData(measurements[x.orderNum]);
+  }).sort(function(a,b){ return (b.orderNum||'').localeCompare(a.orderNum||'', undefined, {numeric:true}); });
+  return mine.length ? mine[0].orderNum : '';
+}
+function copyPrevSheet(fromNum) {
+  var src = measurements[fromNum]; if (!src) return;
+  var dst = ensureSheet(measureSel);
+  dst.hand = src.hand || 'R';
+  GARMENT_ORDER.forEach(function(g) {
+    dst[g] = { m: Object.assign({}, (src[g]||{}).m || {}), o: Object.assign({}, (src[g]||{}).o || {}) };
+  });
+  dst.updated = todayYMD();
+  persistMeasurements(); renderMeasureDetail(); renderMeasureList(); updateCounts();
+  showToast('Copied from order ' + fromNum);
+}
+</script>
+<script>
+/* ══════════════════════════════════════════════════
+   STOCK
+   Cloth on the shelf, matched against the cloth numbers
+   already sitting on live orders.
+   ══════════════════════════════════════════════════ */
+
+var stockFilter = 'all', stockEditId = '';
+
+/* How many live orders are already spoken for by this cloth number. */
+function committedTo(code) {
+  if (!code) return 0;
+  var c = String(code).trim().toLowerCase();
+  var n = 0;
+  orders.forEach(function(o) {
+    (o.items||[]).forEach(function(it) {
+      if (it.status === 'Take Home') return;
+      if (String(it.fabric||'').trim().toLowerCase() === c) n++;
+      if (String(it.lining||'').trim().toLowerCase() === c) n++;
+    });
+  });
+  return n;
+}
+function isLow(s) {
+  var r = Number(s.reorder) || 0;
+  return r > 0 && (Number(s.qty) || 0) <= r;
+}
+function setStockFilter(f) {
+  stockFilter = f;
+  document.querySelectorAll('[data-stockfilter]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-stockfilter') === f); });
+  renderStock();
+}
+
+function renderStock() {
+  var el = $('stock-content'); if (!el) return;
+  var term = ($('stock-search') ? $('stock-search').value : '').trim().toLowerCase();
+
+  var metres = stock.reduce(function(a,s){ return a + (Number(s.qty)||0); }, 0);
+  var value  = stock.reduce(function(a,s){ return a + (Number(s.qty)||0) * (Number(s.cost)||0); }, 0);
+  var lowN   = stock.filter(isLow).length;
+  $('stock-stats').innerHTML =
+      stat('Cloths on file', stock.length, stock.length ? 'Across every shelf' : 'Nothing logged yet')
+    + stat('Metres on hand', metres.toFixed(1), 'Total across all cloths')
+    + stat('Stock value', 'S$ ' + money(value), 'At the cost you entered')
+    + stat('Running low', lowN, lowN ? 'At or under the reorder mark' : 'Nothing needs reordering', lowN ? 'alarm' : 'ok');
+
+  var rows = stock.filter(function(s) {
+    if (stockFilter === 'low') { if (!isLow(s)) return false; }
+    else if (stockFilter !== 'all' && s.type !== stockFilter) return false;
+    if (!term) return true;
+    return [s.code, s.mill, s.desc, s.shelf, s.note].some(function(v){ return String(v||'').toLowerCase().indexOf(term) !== -1; });
+  }).sort(function(a,b){ return String(a.code||'').localeCompare(String(b.code||''), undefined, {numeric:true}); });
+
+  if (rows.length === 0) {
+    el.innerHTML = stock.length === 0
+      ? emptyState('No cloth logged yet', 'Add the bolts on your shelves and the app will tell you when a cloth is running low, and which live orders are already counting on it.', '<button class="btn gold" onclick="openStockModal()">+ Add cloth</button>')
+      : emptyState('Nothing matches', 'Try a cloth number, a mill, or a shelf.');
+    updateCounts(); return;
+  }
+
+  var body = rows.map(function(s) {
+    var used = committedTo(s.code);
+    var low  = isLow(s);
+    return '<tr class="'+(low?'row-low':'')+'">'
+      + '<td><div class="cell-strong num">'+esc(s.code)+'</div>'+(s.mill?'<div class="cell-sub">'+esc(s.mill)+'</div>':'')+'</td>'
+      + '<td><span class="tag">'+esc(s.type||'—')+'</span></td>'
+      + '<td>'+esc(s.desc||'—')+(s.note?'<div class="cell-sub">'+esc(s.note)+'</div>':'')+'</td>'
+      + '<td class="num"><span class="cell-strong">'+(Number(s.qty)||0).toFixed(1)+'</span> m'
+      +   (low?'<div class="cell-sub" style="color:var(--st-bin)">reorder at '+(Number(s.reorder)||0).toFixed(1)+'</div>':'')+'</td>'
+      + '<td class="num">'+(used ? '<span class="tag blue">'+used+' on order</span>' : '<span style="color:var(--faint)">—</span>')+'</td>'
+      + '<td>'+esc(s.shelf||'—')+'</td>'
+      + '<td class="num">'+(Number(s.cost) ? 'S$ '+money(s.cost) : '—')+'</td>'
+      + '<td class="acts"><button class="btn sm" onclick="openStockModal(\''+esc(s.id)+'\')">Edit</button></td>'
+      + '</tr>';
+  }).join('');
+
+  el.innerHTML = '<div class="table-wrap"><div class="tscroll"><table class="grid">'
+    + '<thead><tr><th>Cloth no.</th><th>Type</th><th>Colour / weave</th><th class="num">On hand</th>'
+    + '<th class="num">Committed</th><th>Shelf</th><th class="num">Cost / m</th><th></th></tr></thead>'
+    + '<tbody>' + body + '</tbody></table></div></div>';
+  updateCounts();
+}
+
+function stat(key, val, sub, tone) {
+  return '<div class="stat"><div class="stat-key">'+esc(key)+'</div>'
+    + '<div class="stat-val'+(tone?' '+tone:'')+'">'+esc(String(val))+'</div>'
+    + '<div class="stat-sub">'+esc(sub||'')+'</div></div>';
+}
+
+function openStockModal(id) {
+  stockEditId = id || '';
+  var s = id ? stock.find(function(x){ return x.id === id; }) : null;
+  $('stock-modal-title').textContent = s ? 'Edit cloth' : 'Add cloth';
+  $('sk-code').value    = s ? (s.code||'')    : '';
+  $('sk-type').value    = s ? (s.type||'Suiting') : 'Suiting';
+  $('sk-mill').value    = s ? (s.mill||'')    : '';
+  $('sk-desc').value    = s ? (s.desc||'')    : '';
+  $('sk-qty').value     = s ? (s.qty ?? '')   : '';
+  $('sk-reorder').value = s ? (s.reorder ?? ''): '';
+  $('sk-shelf').value   = s ? (s.shelf||'')   : '';
+  $('sk-cost').value    = s ? (s.cost ?? '')  : '';
+  $('sk-note').value    = s ? (s.note||'')    : '';
+  $('sk-delete').style.display = s ? '' : 'none';
+  $('sk-code-err').classList.remove('show');
+  $('sk-code').classList.remove('err');
+  $('stock-modal').classList.add('open');
+  setTimeout(function(){ $('sk-code').focus(); }, 60);
+}
+function closeStockModal() { $('stock-modal').classList.remove('open'); stockEditId = ''; }
+function saveStockForm() {
+  var code = $('sk-code').value.trim();
+  if (!code) { $('sk-code-err').classList.add('show'); $('sk-code').classList.add('err'); $('sk-code').focus(); return; }
+  var payload = {
+    code: code, type: $('sk-type').value, mill: $('sk-mill').value.trim(), desc: $('sk-desc').value.trim(),
+    qty: Number($('sk-qty').value) || 0, reorder: Number($('sk-reorder').value) || 0,
+    shelf: $('sk-shelf').value.trim(), cost: Number($('sk-cost').value) || 0,
+    note: $('sk-note').value.trim(), updated: todayYMD()
+  };
+  if (stockEditId) {
+    var i = stock.findIndex(function(x){ return x.id === stockEditId; });
+    if (i > -1) stock[i] = Object.assign(stock[i], payload);
+  } else {
+    payload.id = uid(); stock.unshift(payload);
+  }
+  persistStock(); closeStockModal(); renderStock();
+  showToast(stockEditId ? 'Cloth updated' : 'Cloth added');
+}
+function deleteStockRow() {
+  if (!stockEditId) return;
+  stock = stock.filter(function(x){ return x.id !== stockEditId; });
+  persistStock(); closeStockModal(); renderStock(); showToast('Cloth removed');
+}
+</script>
+<script>
+/* ══════════════════════════════════════════════════
+   INVOICING
+   An invoice is built from an order but kept separate,
+   so editing a garment never quietly rewrites a bill.
+   ══════════════════════════════════════════════════ */
+
+var invFilter = 'all', invEditId = '', invLines = [];
+
+function invoiceSubtotal(v) { return (v.lines||[]).reduce(function(a,l){ return a + (Number(l.qty)||0) * (Number(l.unit)||0); }, 0); }
+function invoiceTotal(v)    { return Math.max(0, invoiceSubtotal(v) - (Number(v.discount)||0)); }
+function invoiceBalance(v)  { return invoiceTotal(v) - (Number(v.paid)||0); }
+function invoiceStatus(v) {
+  var t = invoiceTotal(v), p = Number(v.paid) || 0;
+  if (t > 0 && p >= t - 0.005) return 'Paid';
+  if (!v.sent) return 'Draft';
+  if (isOverdue(v.due)) return 'Overdue';
+  if (p > 0) return 'Part paid';
+  return 'Sent';
+}
+function statusTag(s) {
+  var tone = {Paid:'green', Overdue:'red', 'Part paid':'gold', Sent:'blue', Draft:''}[s] || '';
+  return '<span class="tag '+tone+'">'+esc(s)+'</span>';
+}
+function nextInvoiceNo() {
+  var y = new Date().getFullYear();
+  var n = invoices.filter(function(v){ return String(v.no||'').indexOf('SK-'+y) === 0; }).length + 1;
+  return 'SK-' + y + '-' + String(n).padStart(3,'0');
+}
+function setInvoiceFilter(f) {
+  invFilter = f;
+  document.querySelectorAll('[data-invfilter]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-invfilter') === f); });
+  renderInvoices();
+}
+
+function renderInvoices() {
+  var el = $('invoice-content'); if (!el) return;
+  var term = ($('invoice-search') ? $('invoice-search').value : '').trim().toLowerCase();
+
+  var outstanding = invoices.reduce(function(a,v){ return a + (invoiceStatus(v)==='Paid' ? 0 : invoiceBalance(v)); }, 0);
+  var overdueList = invoices.filter(function(v){ return invoiceStatus(v) === 'Overdue'; });
+  var overdue     = overdueList.reduce(function(a,v){ return a + invoiceBalance(v); }, 0);
+  var thisMonth   = todayYMD().substring(0,7);
+  var collected   = invoices.filter(function(v){ return String(v.issued||'').substring(0,7) === thisMonth; })
+                            .reduce(function(a,v){ return a + (Number(v.paid)||0); }, 0);
+  $('invoice-stats').innerHTML =
+      stat('Outstanding', 'S$ ' + money(outstanding), invoices.length + ' invoice' + (invoices.length===1?'':'s') + ' on file')
+    + stat('Overdue', 'S$ ' + money(overdue), overdueList.length ? overdueList.length + ' past the payment date' : 'Nothing past due', overdueList.length ? 'alarm' : 'ok')
+    + stat('Received this month', 'S$ ' + money(collected), 'Against invoices issued this month')
+    + stat('Drafts', invoices.filter(function(v){ return invoiceStatus(v)==='Draft'; }).length, 'Not sent to the client yet');
+
+  var rows = invoices.filter(function(v) {
+    var st = invoiceStatus(v);
+    if (invFilter !== 'all' && st !== invFilter) return false;
+    if (!term) return true;
+    return [v.no, v.orderNum, v.client].some(function(x){ return String(x||'').toLowerCase().indexOf(term) !== -1; });
+  }).sort(function(a,b){ return String(b.issued||'').localeCompare(String(a.issued||'')) || String(b.no||'').localeCompare(String(a.no||'')); });
+
+  if (rows.length === 0) {
+    el.innerHTML = invoices.length === 0
+      ? emptyState('No invoices yet', 'Raise one from scratch, or use the Invoice button on any order to pull its garments in as line items.', '<button class="btn gold" onclick="openInvoiceModal()">+ New invoice</button>')
+      : emptyState('Nothing matches', 'Try an invoice number, an order number, or the client\'s name.');
+    updateCounts(); return;
+  }
+
+  var body = rows.map(function(v) {
+    var st = invoiceStatus(v), bal = invoiceBalance(v);
+    return '<tr>'
+      + '<td><div class="cell-strong num">'+esc(v.no)+'</div><div class="cell-sub">Order '+esc(v.orderNum||'—')+'</div></td>'
+      + '<td>'+esc(v.client||'—')+'</td>'
+      + '<td>'+esc(formatDisplayDate(v.issued))+'</td>'
+      + '<td>'+esc(formatDisplayDate(v.due))+'</td>'
+      + '<td class="num">S$ '+money(invoiceTotal(v))+'</td>'
+      + '<td class="num">'+(bal > 0.005 ? '<span style="color:var(--danger);font-weight:600">S$ '+money(bal)+'</span>' : '<span style="color:var(--ok)">Settled</span>')+'</td>'
+      + '<td>'+statusTag(st)+'</td>'
+      + '<td class="acts">'
+      +   (v.sent ? '' : '<button class="btn sm" onclick="markSent(\''+esc(v.id)+'\')">Mark sent</button> ')
+      +   '<button class="btn sm" onclick="openInvoiceModal(\''+esc(v.id)+'\')">Open</button>'
+      + '</td></tr>';
+  }).join('');
+
+  el.innerHTML = '<div class="table-wrap"><div class="tscroll"><table class="grid">'
+    + '<thead><tr><th>Invoice</th><th>Client</th><th>Issued</th><th>Due</th>'
+    + '<th class="num">Total</th><th class="num">Balance</th><th>Status</th><th></th></tr></thead>'
+    + '<tbody>' + body + '</tbody></table></div></div>';
+  updateCounts();
+}
+
+function markSent(id) {
+  var v = invoices.find(function(x){ return x.id === id; }); if (!v) return;
+  v.sent = true; v.updated = todayYMD();
+  persistInvoices(); renderInvoices(); showToast('Invoice ' + v.no + ' marked as sent');
+}
+
+/* ── Editor ── */
+function openInvoiceModal(id) {
+  invEditId = id || '';
+  var v = id ? invoices.find(function(x){ return x.id === id; }) : null;
+  $('inv-modal-title').textContent = v ? 'Invoice ' + v.no : 'New invoice ' + nextInvoiceNo();
+  $('inv-modal-sub').textContent   = v ? statusPlain(v) : 'Line items, then the amount received. Nothing is sent from here.';
+  $('inv-client').value   = v ? (v.client||'')   : '';
+  $('inv-order').value    = v ? (v.orderNum||'') : '';
+  $('inv-issued').value   = v ? (v.issued||'')   : todayYMD();
+  $('inv-due').value      = v ? (v.due||'')      : '';
+  $('inv-discount').value = v ? (v.discount||0)  : 0;
+  $('inv-paid').value     = v ? (v.paid||0)      : 0;
+  $('inv-note').value     = v ? (v.note||'')     : '';
+  invLines = v ? JSON.parse(JSON.stringify(v.lines||[])) : [{desc:'',qty:1,unit:''}];
+  $('inv-delete').style.display = v ? '' : 'none';
+  renderInvLines(); recalcInvoice();
+  $('invoice-modal').classList.add('open');
+}
+function statusPlain(v) {
+  var st = invoiceStatus(v);
+  var bal = invoiceBalance(v);
+  return st + (bal > 0.005 ? ' · S$ ' + money(bal) + ' outstanding' : ' · settled in full');
+}
+function newInvoiceFor(orderNum) {
+  var o = findOrder(orderNum);
+  go('invoice');
+  openInvoiceModal();
+  if (!o) return;
+  $('inv-modal-title').textContent = 'New invoice ' + nextInvoiceNo();
+  $('inv-client').value = o.customerName || '';
+  $('inv-order').value  = o.orderNum;
+  $('inv-issued').value = todayYMD();
+  $('inv-due').value    = o.dueDate || '';
+  invLines = (o.items||[]).map(function(it) {
+    return { desc: it.product + (it.fabric ? ' — cloth ' + it.fabric : ''), qty: 1, unit: '' };
+  });
+  if (invLines.length === 0) invLines = [{desc:'',qty:1,unit:''}];
+  renderInvLines(); recalcInvoice();
+}
+function renderInvLines() {
+  $('inv-lines-body').innerHTML = invLines.map(function(l,i) {
+    var amt = (Number(l.qty)||0) * (Number(l.unit)||0);
+    return '<tr>'
+      + '<td><input type="text" value="'+esc(l.desc||'')+'" placeholder="Two-piece suit, half canvas" oninput="editInvLine('+i+',\'desc\',this.value)"></td>'
+      + '<td><input class="num" type="number" min="0" step="1" value="'+esc(l.qty)+'" oninput="editInvLine('+i+',\'qty\',this.value)"></td>'
+      + '<td><input class="num" type="number" min="0" step="0.01" value="'+esc(l.unit)+'" placeholder="0.00" oninput="editInvLine('+i+',\'unit\',this.value)"></td>'
+      + '<td class="num" style="white-space:nowrap">S$ '+money(amt)
+      +   ' <button class="icon-btn danger" style="width:26px;height:26px;margin-left:6px;vertical-align:middle" onclick="removeInvLine('+i+')" aria-label="Remove line">'
+      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></td>'
+      + '</tr>';
+  }).join('');
+}
+function editInvLine(i, k, v) { invLines[i][k] = v; recalcInvoice(); if (k !== 'desc') renderInvLinesAmountsOnly(); }
+function renderInvLinesAmountsOnly() {
+  var cells = $('inv-lines-body').querySelectorAll('td.num');
+  invLines.forEach(function(l,i) {
+    if (!cells[i]) return;
+    var amt = (Number(l.qty)||0) * (Number(l.unit)||0);
+    cells[i].childNodes[0].nodeValue = 'S$ ' + money(amt) + ' ';
+  });
+}
+function addInvLine()    { invLines.push({desc:'',qty:1,unit:''}); renderInvLines(); recalcInvoice(); }
+function removeInvLine(i){ invLines.splice(i,1); if (!invLines.length) invLines = [{desc:'',qty:1,unit:''}]; renderInvLines(); recalcInvoice(); }
+
+function recalcInvoice() {
+  var draft = { lines: invLines, discount: Number($('inv-discount').value)||0, paid: Number($('inv-paid').value)||0 };
+  var sub = invoiceSubtotal(draft), disc = draft.discount, tot = invoiceTotal(draft), bal = invoiceBalance(draft);
+  $('inv-totals').innerHTML =
+      '<div class="total-row"><span>Subtotal</span><span>S$ '+money(sub)+'</span></div>'
+    + (disc ? '<div class="total-row"><span>Discount</span><span>− S$ '+money(disc)+'</span></div>' : '')
+    + '<div class="total-row grand"><span>Total</span><span>S$ '+money(tot)+'</span></div>'
+    + '<div class="total-row rule"><span>Received</span><span>S$ '+money(draft.paid)+'</span></div>'
+    + '<div class="total-row '+(bal > 0.005 ? 'balance' : 'settled')+'"><span>'+(bal > 0.005 ? 'Balance due' : 'Settled')+'</span><span>S$ '+money(Math.max(0,bal))+'</span></div>';
+}
+
+function saveInvoice() {
+  var client = $('inv-client').value.trim();
+  var lines = invLines.filter(function(l){ return String(l.desc||'').trim() || Number(l.unit); });
+  if (!client && !lines.length) { showToast('Add a client or at least one line item.'); return; }
+  var payload = {
+    client: client, orderNum: $('inv-order').value.trim(),
+    issued: $('inv-issued').value, due: $('inv-due').value,
+    lines: lines.length ? lines : invLines,
+    discount: Number($('inv-discount').value)||0, paid: Number($('inv-paid').value)||0,
+    note: $('inv-note').value.trim(), updated: todayYMD()
+  };
+  if (invEditId) {
+    var i = invoices.findIndex(function(x){ return x.id === invEditId; });
+    if (i > -1) invoices[i] = Object.assign(invoices[i], payload);
+  } else {
+    payload.id = uid(); payload.no = nextInvoiceNo(); payload.sent = false;
+    invoices.unshift(payload);
+  }
+  persistInvoices(); closeInvoiceModal(); renderInvoices();
+  showToast(invEditId ? 'Invoice updated' : 'Invoice created');
+}
+function deleteInvoice() {
+  if (!invEditId) return;
+  invoices = invoices.filter(function(x){ return x.id !== invEditId; });
+  persistInvoices(); closeInvoiceModal(); renderInvoices(); showToast('Invoice deleted');
+}
+function closeInvoiceModal() { $('invoice-modal').classList.remove('open'); invEditId = ''; }
+
+/* ══════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', function() {
+  loadLocalModules();
+  loadFromLocalStorage();
+  fetchOrdersFromServer();
+
+  updateSortButtons(); updateArchiveSortButtons();
+  updateProductFilterButtons(); updateFilterButtons();
+  setStockFilter('all'); setInvoiceFilter('all');
+  renderPageActions('orders');
+  $('duedate-none-btn').classList.add('on');
+  $('fittingdate-none-btn').classList.add('on');
+
+  ['duedate-input','fittingdate-input'].forEach(function(id) {
+    $(id).addEventListener('change', function() {
+      if (this.value) $(id.replace('-input','') + '-none-btn').classList.remove('on');
+    });
+  });
+
+  // Close modals by clicking the backdrop
+  ['confirm-modal','del-modal','tl-modal','edit-modal','stock-modal','invoice-modal'].forEach(function(id) {
+    var m = $(id);
+    if (m) m.addEventListener('click', function(e){ if (e.target === this) this.classList.remove('open'); });
+  });
+
+  // Esc closes whatever is on top
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    var open = document.querySelector('.modal-wrap.open');
+    if (open) { open.classList.remove('open'); return; }
+    if ($('drawer').classList.contains('open')) closeDrawer();
+  });
+});
+
+/* Auto-refresh — but never over the top of unsent work. */
+function maybeRefresh() {
+  if (document.visibilityState !== 'visible') return;
+  if (hasPendingSync()) return;
+  if (Date.now() - lastSyncTime < 30000) return;
+  fetchOrdersFromServer();
+}
+window.addEventListener('focus', maybeRefresh);
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') flushPendingSyncs(); else maybeRefresh();
+});
+setInterval(maybeRefresh, 60000);
+</script>
+</body></html>
