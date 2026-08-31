@@ -900,6 +900,14 @@
     .bubble { max-width: 86%; }
     .chat-bar { padding-bottom: 12px; }
   }
+
+  /* ══ DELTA ═════════════════════════════════════════ */
+  .tap-date { cursor: pointer; }
+  .tap-date:hover .dd-disp { color: var(--gold); }
+  .tap-date .dd-pick {
+    height: 36px; padding: 0 9px; border: 1px solid var(--gold); border-radius: var(--r-sm);
+    font-size: 13px; background: var(--card); outline: none; -webkit-appearance: none;
+  }
 </style>
 </head>
 <body>
@@ -925,14 +933,20 @@
         <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18l2.5-1.6L9 21l2.5-1.6L14 21l2.5-1.6L19 21V3l-2.5 1.6L14 3l-2.5 1.6L9 3 6.5 4.6 4 3Z"/><path d="M8 8h8M8 12h8M8 16h4"/></svg></span>
         <span class="nav-label">Invoices</span><span class="nav-count" id="ct-invoice">0</span>
       </button>
-      <button class="nav-item" id="nav-chat" onclick="go('chat')">
-        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5a8.2 8.2 0 0 1-.8-3.5 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 8.4Z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/></svg></span>
-        <span class="nav-label">Assistant</span>
-      </button>
       <button class="nav-item" id="nav-orders" onclick="go('orders')">
         <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 12h8M8 16h5"/></svg></span>
         <span class="nav-label">Orders</span><span class="nav-count" id="ct-orders">0</span>
       </button>
+      <button class="nav-item" id="nav-delta" onclick="go('delta')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21 19H3l9-15.5Z"/></svg></span>
+        <span class="nav-label">Delta</span><span class="nav-count" id="ct-delta">0</span>
+      </button>
+
+      <button class="nav-item" id="nav-chat" onclick="go('chat')">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5a8.2 8.2 0 0 1-.8-3.5 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 8.4Z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/></svg></span>
+        <span class="nav-label">Assistant</span>
+      </button>
+
       <div class="rail-group">Records</div>
       <button class="nav-item" id="nav-customers" onclick="go('customers')">
         <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
@@ -1150,6 +1164,32 @@
       <div id="invoice-content"></div>
     </section>
 
+    <!-- ─── DELTA ─── -->
+    <section class="pane" id="pane-delta" style="display:none">
+      <div class="stats" id="delta-stats"></div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input class="field" type="text" id="delta-search" placeholder="Delta number, canvas, add-on…" oninput="renderDelta()" autocomplete="off">
+        </div>
+        <button class="btn sm on" data-deltaview="active" onclick="setDeltaView('active')">On the bench</button>
+        <button class="btn sm" data-deltaview="archive" onclick="setDeltaView('archive')">Archive</button>
+        <div class="toolbar-sep"></div>
+        <button class="btn sm" id="delta-sort" onclick="toggleDeltaSort()">Latest due first</button>
+        <button class="btn sm" id="delta-charge-btn" onclick="toggleDeltaCharge()">Show charges</button>
+      </div>
+      <div class="toolbar" id="delta-filters">
+        <span class="toolbar-label">Show only</span>
+        <button class="btn sm" data-deltaf="backend" onclick="toggleDeltaFilter('backend')">Back-End</button>
+        <button class="btn sm" data-deltaf="bin" onclick="toggleDeltaFilter('bin')">Bin</button>
+        <button class="btn sm" data-deltaf="delivered" onclick="toggleDeltaFilter('delivered')">Delivered</button>
+        <div class="toolbar-sep"></div>
+        <button class="btn sm" data-deltaf="paid" onclick="toggleDeltaFilter('paid')">Unpaid</button>
+        <button class="btn sm" data-deltaf="invoice" onclick="toggleDeltaFilter('invoice')">No invoice</button>
+      </div>
+      <div id="delta-content"></div>
+    </section>
+
     <!-- ─── CUSTOMERS ─── -->
     <section class="pane" id="pane-customers" style="display:none">
       <div class="stats" id="cust-stats"></div>
@@ -1197,6 +1237,90 @@
     </section>
 
   </main>
+</div>
+
+<!-- Delta order -->
+<div class="modal-wrap" id="delta-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="delta-modal-title">New Delta order</div>
+      <div class="modal-msg">The charge follows the canvas and the add-ons, so it works itself out.</div>
+    </div>
+    <div class="modal-body">
+      <div class="stack">
+        <div class="row2">
+          <div>
+            <label class="field-label" for="dm-num">Delta no.</label>
+            <input class="field" type="text" id="dm-num" placeholder="19271" autocomplete="off">
+            <div class="field-err" id="dm-num-err">Give the order its Delta number.</div>
+          </div>
+          <div>
+            <label class="field-label" for="dm-due">Due back</label>
+            <input class="field" type="date" id="dm-due">
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Canvas</label>
+          <div class="chips">
+            <button class="chip" data-canvas="Half Canvas" onclick="setDeltaCanvas('Half Canvas')">Half canvas <span style="opacity:.6">S$140</span></button>
+            <button class="chip" data-canvas="Full Canvas" onclick="setDeltaCanvas('Full Canvas')">Full canvas <span style="opacity:.6">S$180</span></button>
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Add-ons</label>
+          <div class="chips" id="dm-addons"></div>
+        </div>
+        <div class="totals">
+          <div class="total-row grand"><span>Charge</span><span id="dm-total">S$ 140</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost-danger" id="dm-delete" onclick="deleteDeltaFromModal()">Delete</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="closeDeltaModal()">Cancel</button>
+      <button class="btn btn-ink" onclick="saveDeltaOrder()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delta import -->
+<div class="modal-wrap" id="delta-import-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Bring Delta across</div>
+      <div class="modal-msg">The HQ dashboard keeps its orders in that page's own storage, which this app cannot reach. Export them from there and load the file here.</div>
+    </div>
+    <div class="modal-body">
+      <div class="stack">
+        <div>
+          <div class="step"><span class="step-n">1</span><span class="step-t">Open the HQ dashboard and press <b>⬇︎ Back up data</b> on the Home tab.</span></div>
+          <div class="step"><span class="step-n">2</span><span class="step-t">Load the file it saves here. On an iPad or iPhone it will be in <b>Files → Downloads</b>.</span></div>
+        </div>
+        <div>
+          <label class="field-label" for="di-file">Backup file</label>
+          <input class="field" type="file" id="di-file" accept="application/json,.json,.txt" onchange="deltaImportFile(this)" style="padding-top:10px;height:auto">
+        </div>
+        <div>
+          <label class="field-label" for="di-paste">Or paste the JSON</label>
+          <textarea class="field" id="di-paste" rows="3" placeholder='{"_app":"hq-dashboard", "data": { "cs-order-list-v1": "[…]" }}'></textarea>
+          <button class="btn sm" style="margin-top:8px" onclick="deltaImportPaste()">Read what I pasted</button>
+        </div>
+        <div class="oc-note" id="di-report" style="border:1px solid var(--line);border-radius:var(--r-md)"></div>
+        <div class="inline-note">
+          <b>Replace</b> makes this tab an exact copy of the dashboard. <b>Merge</b> keeps anything here that the
+          dashboard does not have, and updates the rest.
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" style="flex-wrap:wrap">
+      <button class="btn" onclick="resetDeltaToFile()">Use the app's own list</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="closeDeltaImport()">Cancel</button>
+      <button class="btn" id="di-merge" onclick="applyDeltaImport('merge')">Merge</button>
+      <button class="btn btn-ink" id="di-replace" onclick="applyDeltaImport('replace')">Replace</button>
+    </div>
+  </div>
 </div>
 
 <!-- Assistant settings -->
@@ -1831,6 +1955,15 @@ var SEED_CONSTRUCTION = [
   {"id":"con5","cat":"Construction","brand":"ŠAKAL","name":"Trousers satin tape","type":"","tier":"","tierName":"","pCon":50,"stocked":true}
 ];
 SEED_PRICELIST = SEED_PRICELIST.concat(SEED_CONSTRUCTION);
+var SEED_DELTA = [{"orderNum": "19793", "dueDate": "2026-09-07", "canvas": "Half Canvas", "addons": [], "total": 140, "date": "31 Aug 2026", "backend": false, "bin": false, "delivered": false, "paid": false, "invoice": false, "archived": false},
+  {"orderNum": "19709", "dueDate": "2026-09-03", "canvas": "Half Canvas", "addons": ["Milanese", "Surgeon"], "total": 160, "date": "25 Aug 2026", "backend": true, "bin": false, "delivered": false, "paid": false, "invoice": false, "archived": false},
+  {"orderNum": "19684", "dueDate": "2026-09-02", "canvas": "Half Canvas", "addons": ["Surgeon", "Tuxedo", "Embroidery"], "total": 190, "date": "28 Aug 2026", "backend": true, "bin": false, "delivered": false, "paid": false, "invoice": false, "archived": false},
+  {"orderNum": "19728", "dueDate": "2026-08-28", "canvas": "Half Canvas", "addons": ["Surgeon", "Embroidery"], "total": 160, "date": "25 Aug 2026", "backend": false, "bin": false, "delivered": true, "paid": false, "invoice": false, "archived": false},
+  {"orderNum": "19753", "dueDate": "2026-08-28", "canvas": "Half Canvas", "addons": ["Milanese", "Surgeon"], "total": 160, "date": "25 Aug 2026", "backend": false, "bin": false, "delivered": true, "paid": false, "invoice": false, "archived": false},
+  {"orderNum": "TGA 8530", "dueDate": "2026-08-13", "canvas": "Full Canvas", "addons": ["Surgeon"], "total": 190, "date": "08 Aug 2026", "backend": false, "bin": false, "delivered": true, "paid": false, "invoice": false, "archived": false},
+  {"orderNum": "19587", "dueDate": "2026-08-04", "canvas": "Full Canvas", "addons": ["Surgeon", "Half-Line", "Embroidery"], "total": 230, "date": "23 Jul 2026", "backend": false, "bin": true, "delivered": false, "paid": true, "invoice": false, "archived": false},
+  {"orderNum": "19649B", "dueDate": "2026-07-30", "canvas": "Full Canvas", "addons": ["Milanese", "Surgeon"], "total": 200, "date": "23 Jul 2026", "backend": false, "bin": false, "delivered": true, "paid": true, "invoice": false, "archived": false},
+  {"orderNum": "19649A", "dueDate": "2026-07-30", "canvas": "Half Canvas", "addons": ["Milanese", "Surgeon"], "total": 160, "date": "23 Jul 2026", "backend": false, "bin": false, "delivered": true, "paid": true, "invoice": false, "archived": false}];
 </script>
 
 <script>
@@ -1862,8 +1995,9 @@ var TL_SHORT  = ['','Baste','Fitting','Final'];
 
 var PAGES = {
   invoice:   { eyebrow:'Floor',    title:'Invoices' },
-  chat:      { eyebrow:'Floor',    title:'Assistant' },
   orders:    { eyebrow:'Floor',    title:'Orders' },
+  delta:     { eyebrow:'Floor',    title:'Delta' },
+  chat:      { eyebrow:'Floor',    title:'Assistant' },
   customers: { eyebrow:'Records',  title:'Customers' },
   price:     { eyebrow:'Records',  title:'Price list' },
   stock:     { eyebrow:'Records',  title:'Stock' },
@@ -1874,7 +2008,7 @@ var PAGES = {
 
 /* ── State ── */
 var orders = [], archivedOrders = [];
-var stock = [], invoices = [], pricelist = [], leads = [], customers = [], opitems = [];
+var stock = [], invoices = [], pricelist = [], leads = [], customers = [], opitems = [], deltaOrders = [];
 var currentSort = 'newest', currentArchiveSort = 'newest', currentPage = 'invoice';
 var activeStatusFilter = null, activeStuckFilter = false, activeUnpaidFilter = false, activeProductFilters = {};
 var filterOrderedFrom='', filterOrderedTo='', filterDueFrom='', filterDueTo='';
@@ -2110,7 +2244,8 @@ var MODULES = {
   stock:        ['sakal-stock3',       function(){ return stock;        }, function(v){ stock = v || []; }],
   leads:        ['sakal-leads',        function(){ return leads;        }, function(v){ leads = v || []; }],
   customers:    ['sakal-customers',    function(){ return customers;    }, function(v){ customers = v || []; }],
-  ops:          ['sakal-ops',          function(){ return opitems;      }, function(v){ opitems = v || []; }]
+  ops:          ['sakal-ops',          function(){ return opitems;      }, function(v){ opitems = v || []; }],
+  delta:        ['sakal-delta-v2',     function(){ return deltaOrders;  }, function(v){ deltaOrders = v || []; }]
 };
 
 function loadLocalModules() {
@@ -2124,6 +2259,7 @@ function loadLocalModules() {
   }
   customers    = readLocal('sakal-customers', []);
   opitems      = readLocal('sakal-ops',       SEED_OPS);
+  deltaOrders  = readLocal('sakal-delta-v2',  SEED_DELTA);
 }
 
 function persistModule(name) {
@@ -2137,6 +2273,7 @@ function persistPriceList()    { persistModule('pricelist'); }
 function persistLeads()        { persistModule('leads'); }
 function persistCustomers()    { persistModule('customers'); }
 function persistOps()          { persistModule('ops'); }
+function persistDelta()        { persistModule('delta'); }
 
 /* ── Pushing the lists to the sheet ──────────────────────────
    The Apps Script needs a SAVE_MODULE / GET_MODULES handler; the code
@@ -2296,6 +2433,7 @@ function go(page) {
   if (page === 'leads')     renderLeads();
   if (page === 'invoice')   renderInvoices();
   if (page === 'chat')      renderChat();
+  if (page === 'delta')     renderDelta();
   window.scrollTo(0, 0);
 }
 
@@ -2368,6 +2506,9 @@ function renderPageActions(page) {
   var el = $('page-actions'), h = '';
   if (page === 'orders')    h = '<button class="btn" onclick="fetchOrdersFromServer()">Refresh from sheet</button>';
   if (page === 'chat')      h = '<button class="btn" onclick="openAiSettings()">Settings</button>';
+  if (page === 'delta')     h = '<button class="btn" onclick="openDeltaImport()">Import</button>'
+                              + '<button class="btn" onclick="exportDelta()">Export CSV</button>'
+                              + '<button class="btn gold" onclick="openDeltaModal()">+ New Delta order</button>';
   if (page === 'price')     h = '<button class="btn" onclick="exportPriceList()">Export CSV</button>'
                               + '<button class="btn gold" onclick="openPriceModal()">+ Add fabric</button>';
   if (page === 'stock')     h = '<button class="btn gold" onclick="openStockModal()">+ Add stock item</button>';
@@ -2386,7 +2527,7 @@ function renderPageActions(page) {
 
 function renderAll() {
   renderOrders(); renderArchive();
-  renderPriceList(); renderStock(); renderOps(); renderCustomers();
+  renderPriceList(); renderStock(); renderOps(); renderCustomers(); renderDelta();
   renderLeads(); renderInvoices(); updateCounts();
 }
 
@@ -2402,6 +2543,7 @@ function updateCounts() {
   $('ct-archive').textContent = archivedOrders.length;
   $('ct-price').textContent   = pricelist.length;
   $('ct-stock').textContent     = stock.length;
+  $('ct-delta').textContent     = deltaOrders.filter(function(o){ return !o.archived; }).length;
   $('ct-ops').textContent       = opitems.length;
   $('ct-customers').textContent = customers.length;
   $('ct-leads').textContent   = leads.filter(function(l){ return l.purchased !== 'Yes'; }).length;
@@ -2903,6 +3045,399 @@ function clearAllFilters() {
 }
 function clearSearch()        { $('order-search').value = ''; renderOrders(); }
 function clearArchiveSearch() { $('archive-search').value = ''; renderArchive(); }
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════
+   DELTA
+   The making charges from Delta — their own order
+   numbers, the canvas and add-ons on each jacket, what
+   it costs, where it has got to, and whether it has
+   been paid and invoiced.
+   ══════════════════════════════════════════════════ */
+
+var DELTA_CANVAS = {'Half Canvas': 140, 'Full Canvas': 180};
+var DELTA_ADDONS = {
+  'Milanese': 10, 'Surgeon': 10, 'Half-Line': 30, 'No-Line': 30,
+  'Lining': 30, 'Tuxedo': 30, 'Vest': 55, 'Embroidery': 10
+};
+var DELTA_STAGES = [
+  {k:'backend',   l:'Back-End',  cls:'st-fabric'},
+  {k:'bin',       l:'Bin',       cls:'st-bin'},
+  {k:'delivered', l:'Delivered', cls:'st-store'}
+];
+
+var deltaView = 'active', deltaSortAsc = false, deltaFilters = {}, deltaEdit = -1, deltaCanvas = 'Half Canvas';
+
+/* What Delta charges is the shop's business, not the floor's, so the list
+   keeps it out of sight until somebody asks for it. */
+var deltaShowCharge = false;
+try { deltaShowCharge = localStorage.getItem('sakal-delta-charge') === '1'; } catch(e) {}
+function toggleDeltaCharge() {
+  deltaShowCharge = !deltaShowCharge;
+  try { localStorage.setItem('sakal-delta-charge', deltaShowCharge ? '1' : '0'); } catch(e) {}
+  var b = $('delta-charge-btn');
+  if (b) { b.classList.toggle('on', deltaShowCharge); b.textContent = deltaShowCharge ? 'Hide charges' : 'Show charges'; }
+  renderDelta();
+}
+
+function deltaTotal(o) {
+  return (DELTA_CANVAS[o.canvas] || 0)
+       + (o.addons || []).reduce(function(s,a){ return s + (DELTA_ADDONS[a] || 0); }, 0);
+}
+function deltaStage(o) {
+  var s = DELTA_STAGES.find(function(x){ return o[x.k]; });
+  return s ? s.l : 'Not started';
+}
+
+function setDeltaView(v) {
+  deltaView = v;
+  document.querySelectorAll('[data-deltaview]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-deltaview') === v); });
+  $('delta-filters').style.display = v === 'active' ? '' : 'none';
+  renderDelta();
+}
+function toggleDeltaSort() {
+  deltaSortAsc = !deltaSortAsc;
+  $('delta-sort').textContent = deltaSortAsc ? 'Earliest due first' : 'Latest due first';
+  renderDelta();
+}
+/* The chips read as questions: show me what is unpaid, what has no invoice. */
+function toggleDeltaFilter(k) {
+  if (deltaFilters[k]) delete deltaFilters[k]; else deltaFilters[k] = true;
+  document.querySelectorAll('[data-deltaf]').forEach(function(b) {
+    b.classList.toggle('on', !!deltaFilters[b.getAttribute('data-deltaf')]);
+  });
+  renderDelta();
+}
+function deltaMatches(o, k) {
+  if (k === 'paid')    return !o.paid;
+  if (k === 'invoice') return !o.invoice;
+  return !!o[k];
+}
+
+function renderDelta() {
+  var el = $('delta-content'); if (!el) return;
+  var term = ($('delta-search') ? $('delta-search').value : '').trim().toLowerCase();
+  var wantArch = deltaView === 'archive';
+
+  var list = deltaOrders.map(function(o,i){ return {o:o, i:i}; })
+                        .filter(function(x){ return !!x.o.archived === wantArch; });
+
+  var keys = Object.keys(deltaFilters);
+  var rows = list.filter(function(x) {
+    if (!wantArch && keys.length && !keys.some(function(k){ return deltaMatches(x.o, k); })) return false;
+    if (!term) return true;
+    return hit(x.o.orderNum, term) || hit(x.o.canvas, term)
+        || (x.o.addons || []).some(function(a){ return hit(a, term); });
+  }).sort(function(a,b) {
+    var da = a.o.dueDate || (deltaSortAsc ? '9999' : '0000');
+    var db = b.o.dueDate || (deltaSortAsc ? '9999' : '0000');
+    var c = da < db ? -1 : da > db ? 1 : 0;
+    return (deltaSortAsc ? c : -c) || (b.i - a.i);
+  });
+
+  var value  = list.reduce(function(s,x){ return s + (Number(x.o.total) || 0); }, 0);
+  var due    = list.filter(function(x){ return !x.o.delivered && isDueSoon(x.o.dueDate); }).length;
+  var unpaid = list.filter(function(x){ return !x.o.paid; });
+  var owed   = unpaid.reduce(function(s,x){ return s + (Number(x.o.total) || 0); }, 0);
+
+  var done = list.filter(function(x){ return x.o.delivered; }).length;
+  $('delta-stats').innerHTML = wantArch
+    ? stat('Archived', list.length, 'Closed off')
+      + (deltaShowCharge ? stat('Archived value', 'S$ ' + money0(value), 'What they came to') : '')
+    : stat('With Delta', list.length, 'Jackets on their bench')
+      + stat('Due soon', due, due ? 'Within three days' : 'Nothing pressing', due ? 'alarm' : 'ok')
+      + stat('Delivered', done, done + ' of ' + list.length + ' back from Delta')
+      + (deltaShowCharge
+          ? stat('Unpaid', 'S$ ' + money0(owed), unpaid.length + ' order' + (unpaid.length===1?'':'s') + ' not settled', unpaid.length ? 'alarm' : 'ok')
+          : stat('Unpaid', unpaid.length, unpaid.length ? 'Not settled with Delta' : 'All settled', unpaid.length ? 'alarm' : 'ok'));
+
+  if (rows.length === 0) {
+    el.innerHTML = list.length === 0
+      ? emptyState(wantArch ? 'Nothing archived' : 'Nothing with Delta',
+          wantArch ? 'Orders you close off from the list land here.'
+                   : 'Log what has gone out to Delta and what it costs to have it made.',
+          wantArch ? '' : '<button class="btn gold" onclick="openDeltaModal()">+ New Delta order</button>')
+      : emptyState('Nothing matches', 'Try another chip, or clear the search.');
+    updateCounts(); return;
+  }
+
+  var body = rows.map(function(x) {
+    var o = x.o, i = x.i;
+    var urgent = !o.delivered && isDueSoon(o.dueDate);
+    var addons = (o.addons || []).length
+      ? o.addons.map(function(a){ return '<span class="tag">'+esc(a)+'</span>'; }).join(' ')
+      : '<span style="color:var(--faint)">—</span>';
+    var stages = DELTA_STAGES.map(function(s) {
+      return '<span class="pill'+(o[s.k] ? ' ' + s.cls : '')+'" style="min-width:88px" '
+           + 'onclick="toggleDeltaStage('+i+',\'' + s.k + '\')">' + s.l + '</span>';
+    }).join(' ');
+    return '<tr class="'+(urgent ? 'row-flag' : '')+'">'
+      + '<td><div class="cell-strong num">'+esc(o.orderNum)+'</div>'
+      +   '<div class="cell-sub">placed '+esc(o.date || '—')+'</div></td>'
+      + '<td class="tap-date" onclick="openDeltaDate('+i+',this)">'
+      +   '<span class="dd-disp"'+(urgent ? ' style="color:var(--danger);font-weight:600"' : '')+'>'
+      +   esc(o.dueDate ? formatDisplayDate(o.dueDate) : '—')+'</span>'
+      +   '<input type="date" class="dd-pick" style="display:none" value="'+esc(o.dueDate||'')+'" '
+      +   'onchange="saveDeltaDate('+i+',this)" onblur="closeDeltaDate()" onclick="event.stopPropagation()"></td>'
+      + '<td>'+esc(o.canvas || '—')+'</td>'
+      + '<td>'+addons+'</td>'
+      + (deltaShowCharge ? '<td class="num">S$ '+money0(o.total)+'</td>' : '')
+      + '<td>'+stages+'</td>'
+      + '<td><span class="pill'+(o.paid ? ' st-paid' : ' st-unpaid')+'" onclick="toggleDeltaFlag('+i+',\'paid\')">'
+      +   (o.paid ? 'Paid' : 'Unpaid')+'</span></td>'
+      + '<td><span class="pill'+(o.invoice ? ' st-store' : '')+'" onclick="toggleDeltaFlag('+i+',\'invoice\')">'
+      +   (o.invoice ? 'Invoiced' : 'No invoice')+'</span></td>'
+      + '<td class="acts">'
+      +   '<button class="btn sm" onclick="openDeltaModal('+i+')">Edit</button> '
+      +   (wantArch
+            ? '<button class="btn sm" onclick="restoreDelta('+i+')">Restore</button> '
+            : '<button class="btn sm" onclick="archiveDelta('+i+')">Archive</button> ')
+      +   '<button class="icon-btn danger" onclick="deleteDelta('+i+')" aria-label="Delete">'
+      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'
+      + '</td></tr>';
+  }).join('');
+
+  var shown = rows.reduce(function(s,x){ return s + (Number(x.o.total)||0); }, 0);
+  el.innerHTML = '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:'+(deltaShowCharge?1040:950)+'px">'
+    + '<thead><tr><th>Delta no.</th><th>Due</th><th>Canvas</th><th>Add-ons</th>'
+    + (deltaShowCharge ? '<th class="num">Charge</th>' : '')
+    + '<th>Stage</th><th>Payment</th><th>Invoice</th><th></th></tr></thead>'
+    + '<tbody>' + body + '</tbody></table></div>'
+    + '<div class="oc-note" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+    +   '<span>' + rows.length + ' of ' + list.length + ' order' + (list.length===1?'':'s') + '</span>'
+    +   (deltaShowCharge ? '<span>Showing <b>S$ ' + money0(shown) + '</b> of S$ ' + money0(value) + '</span>' : '')
+    + '</div></div>';
+  updateCounts();
+}
+
+/* Back-End, Bin and Delivered are one after another, not all at once. */
+function toggleDeltaStage(i, k) {
+  var o = deltaOrders[i]; if (!o) return;
+  var was = o[k];
+  DELTA_STAGES.forEach(function(s){ o[s.k] = false; });
+  o[k] = !was;
+  persistDelta(); renderDelta();
+}
+function toggleDeltaFlag(i, k) {
+  var o = deltaOrders[i]; if (!o) return;
+  o[k] = !o[k];
+  persistDelta(); renderDelta();
+}
+function archiveDelta(i) { deltaOrders[i].archived = true;  persistDelta(); renderDelta(); showToast('Delta ' + deltaOrders[i].orderNum + ' archived'); }
+function restoreDelta(i) { deltaOrders[i].archived = false; persistDelta(); renderDelta(); showToast('Delta ' + deltaOrders[i].orderNum + ' restored'); }
+
+var deltaDelPending = -1;
+function deleteDelta(i) {
+  deltaDelPending = i;
+  $('confirm-title').textContent = 'Delete this Delta order?';
+  $('confirm-msg').innerHTML = 'Delta <strong>'+esc(deltaOrders[i].orderNum)+'</strong> and its charge come off the list for good.';
+  var b = $('confirm-go'); b.textContent = 'Delete'; b.className = 'btn btn-danger';
+  b.onclick = function() {
+    if (deltaDelPending < 0) return;
+    var n = deltaOrders[deltaDelPending].orderNum;
+    deltaOrders.splice(deltaDelPending, 1); deltaDelPending = -1;
+    closeConfirmModal(); persistDelta(); renderDelta(); showToast('Delta ' + n + ' deleted');
+  };
+  $('confirm-modal').classList.add('open');
+}
+
+function openDeltaDate(i, cell) {
+  cell.querySelector('.dd-disp').style.display = 'none';
+  var p = cell.querySelector('.dd-pick');
+  p.style.display = 'inline-block'; p.focus();
+  try { p.showPicker(); } catch(e) {}
+}
+function saveDeltaDate(i, pick) { deltaOrders[i].dueDate = pick.value; persistDelta(); renderDelta(); }
+function closeDeltaDate() { setTimeout(renderDelta, 150); }
+
+/* ── The form ── */
+function setDeltaCanvas(t) {
+  deltaCanvas = t;
+  document.querySelectorAll('[data-canvas]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-canvas') === t); });
+  updateDeltaTotal();
+}
+function toggleDeltaAddon(btn) { btn.classList.toggle('on'); updateDeltaTotal(); }
+function chosenAddons() {
+  return Array.prototype.map.call(document.querySelectorAll('#dm-addons .chip.on'),
+    function(b){ return b.getAttribute('data-addon'); });
+}
+function updateDeltaTotal() {
+  var t = deltaTotal({canvas: deltaCanvas, addons: chosenAddons()});
+  $('dm-total').textContent = 'S$ ' + money0(t);
+  return t;
+}
+
+function openDeltaModal(i) {
+  deltaEdit = (i === undefined || i === null) ? -1 : i;
+  var o = deltaEdit >= 0 ? deltaOrders[deltaEdit] : null;
+  $('delta-modal-title').textContent = o ? 'Delta ' + o.orderNum : 'New Delta order';
+  $('dm-num').value = o ? o.orderNum : '';
+  if (o) { $('dm-due').value = o.dueDate || ''; }
+  else {
+    var d = new Date(); d.setDate(d.getDate() + 7);
+    $('dm-due').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  $('dm-addons').innerHTML = Object.keys(DELTA_ADDONS).map(function(a) {
+    var on = o && (o.addons||[]).indexOf(a) !== -1;
+    return '<button class="chip'+(on?' on':'')+'" data-addon="'+esc(a)+'" onclick="toggleDeltaAddon(this)">'
+      + esc(a) + ' <span style="opacity:.6">+' + DELTA_ADDONS[a] + '</span></button>';
+  }).join('');
+  setDeltaCanvas(o ? o.canvas : 'Half Canvas');
+  $('dm-delete').style.display = o ? '' : 'none';
+  $('dm-num-err').classList.remove('show'); $('dm-num').classList.remove('err');
+  $('delta-modal').classList.add('open');
+  setTimeout(function(){ $('dm-num').focus(); }, 60);
+}
+function closeDeltaModal() { $('delta-modal').classList.remove('open'); deltaEdit = -1; }
+
+function saveDeltaOrder() {
+  var num = $('dm-num').value.trim();
+  var err = $('dm-num-err');
+  if (!num) { err.textContent = 'Give the order its Delta number.'; err.classList.add('show'); $('dm-num').classList.add('err'); $('dm-num').focus(); return; }
+  var clash = deltaOrders.some(function(o, i){ return o.orderNum === num && i !== deltaEdit; });
+  if (clash) { err.textContent = 'Delta ' + num + ' is already on the list.'; err.classList.add('show'); $('dm-num').classList.add('err'); return; }
+  var due = $('dm-due').value;
+  if (!due) { showToast('Pick a due date.'); $('dm-due').focus(); return; }
+
+  var payload = {orderNum: num, dueDate: due, canvas: deltaCanvas, addons: chosenAddons()};
+  payload.total = deltaTotal(payload);
+
+  if (deltaEdit >= 0) {
+    deltaOrders[deltaEdit] = Object.assign(deltaOrders[deltaEdit], payload);
+    showToast('Delta ' + num + ' updated and saved');
+  } else {
+    payload.date = formatDisplayDate(todayYMD());
+    payload.backend = payload.bin = payload.delivered = false;
+    payload.paid = payload.invoice = payload.archived = false;
+    deltaOrders.unshift(payload);
+    if (deltaView !== 'active') setDeltaView('active');
+    showToast('Delta ' + num + ' added and saved');
+  }
+  closeDeltaModal(); persistDelta(); renderDelta();
+}
+
+function deleteDeltaFromModal() {
+  if (deltaEdit < 0) return;
+  var i = deltaEdit; closeDeltaModal(); deleteDelta(i);
+}
+
+function exportDelta() {
+  var rows = [['Delta no.','Placed','Due','Canvas','Add-ons','Charge','Stage','Paid','Invoiced','Archived']];
+  deltaOrders.forEach(function(o) {
+    rows.push([o.orderNum, o.date, o.dueDate, o.canvas, (o.addons||[]).join(' · '),
+               o.total, deltaStage(o), o.paid ? 'Yes' : 'No', o.invoice ? 'Yes' : 'No', o.archived ? 'Yes' : 'No']);
+  });
+  downloadCsv('sakal-delta.csv', rows);
+}
+
+/* ══════════════════════════════════════════════════
+   BRINGING DELTA ACROSS FROM THE HQ DASHBOARD
+   The dashboard keeps its list in that page's own storage,
+   which no other page can read. Its "Back up data" button
+   writes the lot to a file — drop that file in here and the
+   two lists match again.
+   ══════════════════════════════════════════════════ */
+
+var DELTA_DASH_KEY = 'cs-order-list-v1';
+var deltaIncoming = null;
+
+function normaliseDelta(o) {
+  var d = {
+    orderNum: String(o.orderNum == null ? '' : o.orderNum).trim(),
+    dueDate:  parseToYMD(o.dueDate) || '',
+    canvas:   DELTA_CANVAS[o.canvas] ? o.canvas : 'Half Canvas',
+    addons:   Array.isArray(o.addons) ? o.addons.filter(function(a){ return DELTA_ADDONS[a] !== undefined; }) : [],
+    date:     o.date || formatDisplayDate(todayYMD()),
+    backend:  !!o.backend, bin: !!o.bin, delivered: !!o.delivered,
+    paid:     !!o.paid, invoice: !!o.invoice, archived: !!o.archived
+  };
+  d.total = (typeof o.total === 'number' && o.total > 0) ? o.total : deltaTotal(d);
+  return d;
+}
+
+/* Reads a dashboard backup, a bare export of that one key, or a plain array. */
+function extractDeltaList(obj) {
+  var d = (obj && obj.data) ? obj.data : obj;
+  var raw = d && d[DELTA_DASH_KEY];
+  if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { raw = null; } }
+  if (!Array.isArray(raw)) raw = Array.isArray(obj) ? obj : (Array.isArray(d) ? d : null);
+  if (!Array.isArray(raw)) return null;
+  var list = raw.filter(function(o){ return o && o.orderNum; }).map(normaliseDelta);
+  return list.length ? list : null;
+}
+
+function openDeltaImport() {
+  deltaIncoming = null;
+  $('di-paste').value = '';
+  $('di-file').value = '';
+  $('di-report').innerHTML = '<span class="inline-note">Nothing loaded yet.</span>';
+  $('di-replace').disabled = true; $('di-merge').disabled = true;
+  $('delta-import-modal').classList.add('open');
+}
+function closeDeltaImport() { $('delta-import-modal').classList.remove('open'); deltaIncoming = null; }
+
+function deltaImportFile(input) {
+  var f = input.files && input.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(){ takeDeltaText(r.result, f.name); };
+  r.readAsText(f);
+}
+function deltaImportPaste() { takeDeltaText($('di-paste').value, 'what you pasted'); }
+
+function takeDeltaText(text, where) {
+  var obj;
+  try { obj = JSON.parse(text); }
+  catch(e) {
+    $('di-report').innerHTML = '<span style="color:var(--danger)">That is not readable JSON.</span>';
+    $('di-replace').disabled = true; $('di-merge').disabled = true; return;
+  }
+  var list = extractDeltaList(obj);
+  if (!list) {
+    $('di-report').innerHTML = '<span style="color:var(--danger)">No order list found in ' + esc(where)
+      + '. A dashboard backup holds it under <b>' + DELTA_DASH_KEY + '</b>.</span>';
+    $('di-replace').disabled = true; $('di-merge').disabled = true; return;
+  }
+  deltaIncoming = list;
+
+  var have = {}; deltaOrders.forEach(function(o){ have[o.orderNum] = o; });
+  var fresh = list.filter(function(o){ return !have[o.orderNum]; }).length;
+  var same  = list.filter(function(o) {
+    var e = have[o.orderNum];
+    return e && JSON.stringify(normaliseDelta(e)) === JSON.stringify(o);
+  }).length;
+  var changed = list.length - fresh - same;
+  var value = list.reduce(function(s,o){ return s + o.total; }, 0);
+
+  $('di-report').innerHTML =
+      '<b>' + list.length + ' order' + (list.length===1?'':'s') + '</b> read from ' + esc(where)
+    + ', worth S$ ' + money0(value) + '.<br>'
+    + fresh + ' not on this list yet · ' + changed + ' different here · ' + same + ' already identical.';
+  $('di-replace').disabled = false; $('di-merge').disabled = false;
+}
+
+function applyDeltaImport(mode) {
+  if (!deltaIncoming) return;
+  if (mode === 'replace') {
+    deltaOrders = deltaIncoming.slice();
+  } else {
+    var have = {}; deltaOrders.forEach(function(o, i){ have[o.orderNum] = i; });
+    deltaIncoming.forEach(function(o) {
+      if (have[o.orderNum] === undefined) deltaOrders.push(o);
+      else deltaOrders[have[o.orderNum]] = o;
+    });
+  }
+  var n = deltaIncoming.length;
+  closeDeltaImport(); persistDelta(); renderDelta(); updateCounts();
+  showToast(mode === 'replace' ? 'Delta replaced with ' + n + ' orders' : n + ' orders merged in');
+}
+
+/* Puts back the eighteen that shipped with the app. */
+function resetDeltaToFile() {
+  deltaOrders = JSON.parse(JSON.stringify(SEED_DELTA)).map(normaliseDelta);
+  closeDeltaImport(); persistDelta(); renderDelta(); updateCounts();
+  showToast('Delta reset to the list from the dashboard file');
+}
 </script>
 
 <script>
@@ -4160,6 +4695,13 @@ function shopSnapshot() {
     .map(function(l){ return '- ' + l.name + ' · follow up ' + l.followUp + ' · ' + leadStage(l)
       + (l.phone ? ' · ' + l.phone : '') + (l.remarks ? ' · ' + l.remarks : ''); }).join('\n');
 
+  var delta = deltaOrders.filter(function(o){ return !o.archived; }).slice(0, 40).map(function(o) {
+    return '- ' + o.orderNum + ' · due ' + (o.dueDate || '—') + ' · ' + o.canvas
+      + ((o.addons||[]).length ? ' + ' + o.addons.join(', ') : '')
+      + ' · S$' + o.total + ' · ' + deltaStage(o)
+      + ' · ' + (o.paid ? 'paid' : 'unpaid') + ' · ' + (o.invoice ? 'invoiced' : 'no invoice');
+  }).join('\n');
+
   var brands = Array.from(new Set(pricelist.map(function(f){ return f.brand; }))).join(', ');
   var con = pricelist.filter(function(f){ return f.cat === 'Construction'; })
     .map(function(f){ return f.name + ' S$' + f.pCon; }).join(', ');
@@ -4178,6 +4720,9 @@ function shopSnapshot() {
     '',
     'INVOICES (' + invoices.length + '):',
     bills || '(none)',
+    '',
+    'WITH DELTA (the maker — their own numbers, their making charges):',
+    delta || '(none)',
     '',
     'CUSTOMERS: ' + customers.length + ' on file.',
     '',
@@ -5051,7 +5596,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   updateSortButtons(); updateArchiveSortButtons();
   updateProductFilterButtons(); updateFilterButtons();
-  setStockCat('all'); setStockLoc('all'); setInvoiceFilter('all');
+  setStockCat('all'); setStockLoc('all'); setInvoiceFilter('all'); setDeltaView('active');
   setLeadFilter('all'); setCustFilter('all'); setOpsFilter('all');
   renderPageActions('invoice');
 
