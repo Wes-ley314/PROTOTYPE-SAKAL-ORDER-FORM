@@ -57,7 +57,7 @@
 
     --r-lg: 14px; --r-md: 10px; --r-sm: 7px;
     --rail: 236px;
-    --tap: 44px;
+    --tap: 46px;
 
     --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
     --font-ui: 'Jost', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -908,6 +908,176 @@
     height: 36px; padding: 0 9px; border: 1px solid var(--gold); border-radius: var(--r-sm);
     font-size: 13px; background: var(--card); outline: none; -webkit-appearance: none;
   }
+
+  /* ══ ASSISTANT — reports and proposed changes ══════ */
+  .quick-reports {
+    display: flex; gap: 7px; flex-wrap: wrap; justify-content: center;
+    padding: 0 0 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line-soft);
+    position: sticky; top: 0; background: var(--card); z-index: 2;
+  }
+  .chat-empty .quick-reports { border-bottom: none; position: static; padding-top: 18px; }
+  .bubble b { font-weight: 600; }
+  .bubble ul { list-style: none; padding-left: 0; }
+  .bubble li { padding-left: 13px; position: relative; }
+  .bubble li::before { content: '·'; position: absolute; left: 2px; color: var(--faint); }
+  .msg.it .bubble { max-width: 92%; }
+  .action-card {
+    border: 1px solid var(--gold-line); background: var(--gold-soft);
+    border-radius: 14px; padding: 14px 16px; margin: 4px 0 14px;
+  }
+  .ac-head { font-size: 13px; font-weight: 600; margin-bottom: 9px; }
+  .action-card ul { margin: 0 0 12px; padding-left: 17px; font-size: 13.5px; line-height: 1.65; }
+  .ac-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* ══════════════════════════════════════════════════
+     TOUCH PASS — iPad with keyboard, iPhone, Mac Safari
+     Bigger targets, clearer focus, more breathing room
+     around anything a finger has to land on precisely.
+     ══════════════════════════════════════════════════ */
+
+  /* Every interactive control gets a comfortable minimum, on any pointer —
+     an iPad with a keyboard still gets tapped at as much as typed on. */
+  .btn, .icon-btn, .chip, .pill, .yn, .nav-item, .tab-btn,
+  select.field, input.field, .field, .gtab, .list-row {
+    min-height: 40px;
+  }
+  .btn { padding: 0 17px; }
+  .btn.sm { min-height: 36px; padding: 0 14px; }
+  .icon-btn { min-width: 40px; }
+  select.field, .field { min-height: var(--tap); }
+
+  /* Clickable table rows and cells get more vertical room, so adjacent
+     rows do not compete for the same tap. */
+  table.grid td { padding-top: 13px; padding-bottom: 13px; }
+  table.grid td.acts { padding-top: 10px; padding-bottom: 10px; }
+  .g-row { padding-top: 13px; padding-bottom: 13px; }
+  .list-row { padding: 14px 15px; }
+
+  /* Space between adjacent tap targets — the real cause of mis-taps is
+     two buttons touching, not either one being small. */
+  .g-tools, .oc-tools, .toolbar, .chips, .price-cells, .picker-top,
+  .more-actions, .ac-btns, .modal-foot { gap: 10px; }
+  .thread { gap: 4px; }
+
+  /* Pills, chips and status tags — the things tapped over and over while
+     walking an order through the shop — get bigger and a firmer press. */
+  .pill { min-width: 88px; padding: 0 14px; font-size: 11px; }
+  .chip { padding: 0 16px; font-size: 13px; }
+  .btn:active, .icon-btn:active, .chip:active, .pill:active,
+  .yn:active, .nav-item:active, .tab-btn:active { transform: scale(.96); }
+
+  /* Inputs: a full-height, generously padded field is far easier to land
+     a fingertip on than a slim one, and never triggers Safari's zoom. */
+  .field, input.field, select.field, .mfield input, .cloth-row input,
+  input[type=text], input[type=tel], input[type=email], input[type=date],
+  input[type=number], input[type=password], textarea, select {
+    font-size: 16px; padding-top: 0; padding-bottom: 0;
+  }
+  textarea.field { padding-top: 13px; padding-bottom: 13px; }
+  .mfield input, .cloth-row input { min-height: 44px; }
+
+  /* Checkable rows (leads Booked/Came/Bought, order status pills) need
+     clear pressed/hover states that read at arm's length on an iPad. */
+  .yn, .pill { transition: transform .1s, filter .12s; }
+  .yn:hover, .pill:hover { filter: brightness(0.97); }
+
+  /* A focus ring that shows on keyboard AND is visible enough for anyone
+     driving an iPad with a trackpad or a Smart Keyboard's arrow keys. */
+  :focus-visible { outline: 2.5px solid var(--gold); outline-offset: 2px; }
+  .btn:focus-visible, .icon-btn:focus-visible, .chip:focus-visible,
+  .pill:focus-visible, .nav-item:focus-visible { outline-offset: 3px; }
+
+  /* Search boxes, filter bars — the toolbar wraps generously instead of
+     compressing controls edge to edge on an iPad in portrait. */
+  .toolbar { row-gap: 10px; }
+  .search-wrap .field { min-height: 44px; }
+
+  /* Modal action buttons: full-width and stacked on anything narrower
+     than a small iPad, so a thumb never has to aim between two of them. */
+  @media (max-width: 620px) {
+    .modal-foot { flex-wrap: wrap; }
+    .modal-foot .btn:not(.ghost-danger) { flex: 1 1 auto; min-width: 120px; }
+  }
+
+  /* Sortable/toggle chip rows in filter panels — one continuous row of
+     equal, generously sized buttons rather than a cramped strip. */
+  #filter-panel .btn.sm, [data-stockcat], [data-stockloc], [data-invfilter],
+  [data-deltaf], [data-deltaview], [data-custfilter], [data-opsfilter],
+  [data-leadfilter], [data-pickcat], [data-archive-sort], [data-sort] {
+    min-height: 38px; padding: 0 15px;
+  }
+
+  /* Price-list and picker cells — tapped rapid-fire while building an
+     invoice, so they get more padding and a clearer pressed state. */
+  .pcell { padding: 9px 14px; min-height: 40px; display: inline-flex; align-items: center; }
+  .pcell:active { transform: scale(.97); }
+
+  /* Delta / order stage buttons — three sit side by side, so each needs
+     real width to hit reliably. */
+  @media (hover: none) {
+    #delta-content .pill { min-width: 84px; }
+  }
+
+  /* Buttons and nav should not throw up a text-selection callout on a
+     long press; ordinary text — phone numbers, order numbers, table
+     data — stays selectable so it can still be copied. */
+  .btn, .icon-btn, .chip, .pill, .yn, .nav-item, .tab-btn, .gtab, .tag,
+  .rail, .topbar, label, .field-label, .toolbar-label, .empty-title, .empty-body {
+    -webkit-user-select: none; user-select: none;
+  }
+
+  /* The chat composer and its send button, sized for a thumb resting on
+     an iPad's bottom edge. */
+  .chat-bar textarea { min-height: 46px; }
+  .chat-bar .btn { min-height: 46px; padding: 0 22px; }
+
+  /* Datepickers on iOS render inline text at a size that can look tiny
+     next to everything else — nudge it to match. */
+  input[type=date]::-webkit-date-and-time-value { text-align: left; }
+
+  /* A Mac with Safari still benefits from a slightly larger hit-area on
+     hover-capable pointers, just not as large as touch. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn, .icon-btn, .chip, .pill { min-height: 38px; }
+    .btn.sm { min-height: 34px; }
+  }
+
+  /* ══ Specific touch fixes — small controls that stayed small ══ */
+
+  /* The fitting-thread notches are a deliberate visual (baste→fitting→
+     final) but were too small to tap reliably; the tap target grows
+     without the dot itself looking oversized. */
+  .thread-stage { padding: 6px 4px; margin: -6px -4px; }
+  .notch { width: 17px; height: 17px; }
+  .thread-cut { width: 22px; height: 22px; font-size: 11px; }
+
+  /* Inline date edit (order due/fitting date) — the picker that appears
+     needs to be as tall as everything else once it is visible. */
+  .meta-cell input[type=date] { min-height: 40px; font-size: 14px; }
+  .dd-pick { min-height: 40px !important; font-size: 14px; }
+
+  /* Icon-only delete/edit buttons scattered through cards and rows. */
+  .g-tools .icon-btn, .oc-tools .icon-btn { width: 40px; height: 40px; }
+
+  /* The search field's clear (×) button. */
+  .search-x { padding: 9px 10px; font-size: 16px; }
+
+  /* Suit-order-form and setup buttons in dark bars keep their own
+     contrast but match the same minimum height. */
+  .sheet-over-bar .btn { min-height: 38px; }
+
+  /* Quiz-style Yes/No chips (leads Booked/Came/Bought) are tapped
+     rapidly in a row — widen the gap so consecutive taps do not clip
+     the neighbour. */
+  .yn { margin-right: 2px; }
+
+  /* Garment/product picker buttons in modals (order edit, price list
+     entry) — a 2-up grid on phones, comfortably large everywhere. */
+  .garment-btn { min-height: 52px; font-size: 14px; }
+
+  /* Stat cards are informational, not tappable, but their generous
+     padding is part of the same "big and legible" pass. */
+  .stat { padding: 17px 18px; }
 </style>
 </head>
 <body>
@@ -1183,9 +1353,6 @@
         <button class="btn sm" data-deltaf="backend" onclick="toggleDeltaFilter('backend')">Back-End</button>
         <button class="btn sm" data-deltaf="bin" onclick="toggleDeltaFilter('bin')">Bin</button>
         <button class="btn sm" data-deltaf="delivered" onclick="toggleDeltaFilter('delivered')">Delivered</button>
-        <div class="toolbar-sep"></div>
-        <button class="btn sm" data-deltaf="paid" onclick="toggleDeltaFilter('paid')">Unpaid</button>
-        <button class="btn sm" data-deltaf="invoice" onclick="toggleDeltaFilter('invoice')">No invoice</button>
       </div>
       <div id="delta-content"></div>
     </section>
@@ -1677,6 +1844,13 @@
         <div class="row2">
           <div><label class="field-label" for="inv-no">Invoice no.</label><input class="field" type="text" id="inv-no" placeholder="INV260257" oninput="onInvNoInput()"></div>
           <div><label class="field-label" for="inv-order">Order no.</label><input class="field" type="text" id="inv-order" placeholder="260257" oninput="updateInvOrderHint()"></div>
+        </div>
+        <div>
+          <label class="field-label">Handled by</label>
+          <div class="chips" id="inv-staff-chips">
+            <button type="button" class="chip" data-staff="Sarah" onclick="toggleInvStaff('Sarah')">Sarah</button>
+            <button type="button" class="chip" data-staff="Jacksen" onclick="toggleInvStaff('Jacksen')">Jacksen</button>
+          </div>
         </div>
         <div class="row2">
           <div><label class="field-label" for="inv-client">Client name</label><input class="field" type="text" id="inv-client" placeholder="Eugene Lee" list="client-options" oninput="onInvClientInput()"></div>
@@ -3109,11 +3283,7 @@ function toggleDeltaFilter(k) {
   });
   renderDelta();
 }
-function deltaMatches(o, k) {
-  if (k === 'paid')    return !o.paid;
-  if (k === 'invoice') return !o.invoice;
-  return !!o[k];
-}
+function deltaMatches(o, k) { return !!o[k]; }
 
 function renderDelta() {
   var el = $('delta-content'); if (!el) return;
@@ -3138,19 +3308,16 @@ function renderDelta() {
 
   var value  = list.reduce(function(s,x){ return s + (Number(x.o.total) || 0); }, 0);
   var due    = list.filter(function(x){ return !x.o.delivered && isDueSoon(x.o.dueDate); }).length;
-  var unpaid = list.filter(function(x){ return !x.o.paid; });
-  var owed   = unpaid.reduce(function(s,x){ return s + (Number(x.o.total) || 0); }, 0);
+  var done   = list.filter(function(x){ return x.o.delivered; }).length;
+  var open   = list.length - done;
 
-  var done = list.filter(function(x){ return x.o.delivered; }).length;
   $('delta-stats').innerHTML = wantArch
     ? stat('Archived', list.length, 'Closed off')
       + (deltaShowCharge ? stat('Archived value', 'S$ ' + money0(value), 'What they came to') : '')
     : stat('With Delta', list.length, 'Jackets on their bench')
       + stat('Due soon', due, due ? 'Within three days' : 'Nothing pressing', due ? 'alarm' : 'ok')
       + stat('Delivered', done, done + ' of ' + list.length + ' back from Delta')
-      + (deltaShowCharge
-          ? stat('Unpaid', 'S$ ' + money0(owed), unpaid.length + ' order' + (unpaid.length===1?'':'s') + ' not settled', unpaid.length ? 'alarm' : 'ok')
-          : stat('Unpaid', unpaid.length, unpaid.length ? 'Not settled with Delta' : 'All settled', unpaid.length ? 'alarm' : 'ok'));
+      + stat('Still with them', open, open ? 'Not delivered yet' : 'All delivered', open ? '' : 'ok');
 
   if (rows.length === 0) {
     el.innerHTML = list.length === 0
@@ -3184,10 +3351,6 @@ function renderDelta() {
       + '<td>'+addons+'</td>'
       + (deltaShowCharge ? '<td class="num">S$ '+money0(o.total)+'</td>' : '')
       + '<td>'+stages+'</td>'
-      + '<td><span class="pill'+(o.paid ? ' st-paid' : ' st-unpaid')+'" onclick="toggleDeltaFlag('+i+',\'paid\')">'
-      +   (o.paid ? 'Paid' : 'Unpaid')+'</span></td>'
-      + '<td><span class="pill'+(o.invoice ? ' st-store' : '')+'" onclick="toggleDeltaFlag('+i+',\'invoice\')">'
-      +   (o.invoice ? 'Invoiced' : 'No invoice')+'</span></td>'
       + '<td class="acts">'
       +   '<button class="btn sm" onclick="openDeltaModal('+i+')">Edit</button> '
       +   (wantArch
@@ -3202,7 +3365,7 @@ function renderDelta() {
   el.innerHTML = '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:'+(deltaShowCharge?1040:950)+'px">'
     + '<thead><tr><th>Delta no.</th><th>Due</th><th>Canvas</th><th>Add-ons</th>'
     + (deltaShowCharge ? '<th class="num">Charge</th>' : '')
-    + '<th>Stage</th><th>Payment</th><th>Invoice</th><th></th></tr></thead>'
+    + '<th>Stage</th><th></th></tr></thead>'
     + '<tbody>' + body + '</tbody></table></div>'
     + '<div class="oc-note" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">'
     +   '<span>' + rows.length + ' of ' + list.length + ' order' + (list.length===1?'':'s') + '</span>'
@@ -3323,10 +3486,10 @@ function deleteDeltaFromModal() {
 }
 
 function exportDelta() {
-  var rows = [['Delta no.','Placed','Due','Canvas','Add-ons','Charge','Stage','Paid','Invoiced','Archived']];
+  var rows = [['Delta no.','Placed','Due','Canvas','Add-ons','Charge','Stage','Archived']];
   deltaOrders.forEach(function(o) {
     rows.push([o.orderNum, o.date, o.dueDate, o.canvas, (o.addons||[]).join(' · '),
-               o.total, deltaStage(o), o.paid ? 'Yes' : 'No', o.invoice ? 'Yes' : 'No', o.archived ? 'Yes' : 'No']);
+               o.total, deltaStage(o), o.archived ? 'Yes' : 'No']);
   });
   downloadCsv('sakal-delta.csv', rows);
 }
@@ -4541,7 +4704,7 @@ function designStrip(o) {
    no file to open on a phone.
    ══════════════════════════════════════════════════ */
 
-var APPS_SCRIPT_CODE = "/**\n * \u0160AKAL Workshop \u2014 storage for everything that is not an order.\n *\n * Orders already save to your sheet. This adds the same for invoices,\n * customers, the price list, stock, leads, operation cards and\n * measurements, so nothing lives on one phone only.\n *\n * HOW TO ADD IT\n *  1. Open the Apps Script project behind your \u0160AKAL sheet.\n *  2. Paste everything below at the bottom of the existing file.\n *  3. Find your existing doPost(e) and add the three marked lines at\n *     the very top of it (see HOOK 1).\n *  4. Find your existing doGet(e) and add the two marked lines at the\n *     very top of it (see HOOK 2).\n *  5. Deploy \u2192 Manage deployments \u2192 edit the live deployment \u2192\n *     Version: New version \u2192 Deploy. The URL stays the same.\n *  6. In the app, press \"Save all to sheet\" in the bottom left once.\n *\n * HOOK 1 \u2014 first lines inside your existing doPost(e):\n *\n *     var body = JSON.parse(e.postData.contents);\n *     if (body.action === 'SAVE_MODULE') return saveModule_(body);\n *     // ...your existing order handling carries on below, using body\n *\n * HOOK 2 \u2014 first lines inside your existing doGet(e):\n *\n *     if (e && e.parameter && e.parameter.modules) return getModules_();\n *     // ...your existing order handling carries on below\n */\n\nvar MODULE_SHEET = 'Modules';\nvar CHUNK = 40000;            // a cell holds 50,000 characters; leave room\nvar MODULE_NAMES = ['measurements','invoices','pricelist','stock','leads','customers','ops'];\n\nfunction moduleSheet_() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sh = ss.getSheetByName(MODULE_SHEET);\n  if (!sh) {\n    sh = ss.insertSheet(MODULE_SHEET);\n    sh.appendRow(['module', 'part', 'data', 'updated']);\n    sh.hideSheet();\n  }\n  return sh;\n}\n\nfunction jsonOut_(obj) {\n  return ContentService\n    .createTextOutput(JSON.stringify(obj))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\n/** Stores one list. Rewrites only that list's rows. */\nfunction saveModule_(body) {\n  var lock = LockService.getScriptLock();\n  try {\n    lock.waitLock(20000);\n\n    var name = String(body.module || '').trim();\n    if (MODULE_NAMES.indexOf(name) === -1) {\n      return jsonOut_({status: 'error', message: 'Unknown module: ' + name});\n    }\n\n    var sh = moduleSheet_();\n    var text = JSON.stringify(body.payload === undefined ? null : body.payload);\n    var stamp = new Date().toISOString();\n\n    // Drop this module's existing rows, bottom up so the indexes hold.\n    var last = sh.getLastRow();\n    if (last > 1) {\n      var col = sh.getRange(2, 1, last - 1, 1).getValues();\n      for (var r = col.length - 1; r >= 0; r--) {\n        if (String(col[r][0]) === name) sh.deleteRow(r + 2);\n      }\n    }\n\n    // Write it back in chunks a cell can hold.\n    var rows = [];\n    for (var i = 0, part = 0; i < text.length; i += CHUNK, part++) {\n      rows.push([name, part, text.substring(i, i + CHUNK), stamp]);\n    }\n    if (!rows.length) rows.push([name, 0, '', stamp]);\n    sh.getRange(sh.getLastRow() + 1, 1, rows.length, 4).setValues(rows);\n\n    return jsonOut_({status: 'success', module: name, parts: rows.length, updated: stamp});\n  } catch (err) {\n    return jsonOut_({status: 'error', message: String(err)});\n  } finally {\n    try { lock.releaseLock(); } catch (e) {}\n  }\n}\n\n/** Hands every stored list back in one response. */\nfunction getModules_() {\n  try {\n    var sh = moduleSheet_();\n    var out = {};\n    var last = sh.getLastRow();\n\n    if (last > 1) {\n      var vals = sh.getRange(2, 1, last - 1, 3).getValues();\n      var buckets = {};\n      vals.forEach(function (row) {\n        var name = String(row[0]);\n        if (!name) return;\n        if (!buckets[name]) buckets[name] = [];\n        buckets[name].push({part: Number(row[1]) || 0, data: String(row[2] == null ? '' : row[2])});\n      });\n      Object.keys(buckets).forEach(function (name) {\n        buckets[name].sort(function (a, b) { return a.part - b.part; });\n        var text = buckets[name].map(function (c) { return c.data; }).join('');\n        if (!text) return;\n        try { out[name] = JSON.parse(text); } catch (e) { /* leave it out rather than send rubbish */ }\n      });\n    }\n\n    return jsonOut_({status: 'success', modules: out});\n  } catch (err) {\n    return jsonOut_({status: 'error', message: String(err)});\n  }\n}\n\n/** Run once from the editor to check the sheet and permissions are fine. */\nfunction testModules_() {\n  saveModule_({module: 'leads', payload: [{id: 'test', name: 'Test lead'}]});\n  Logger.log(getModules_().getContent());\n}\n\n\n/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n   THE ASSISTANT\n   Lets the app ask Anthropic a question without the key ever\n   leaving Google. Add it the same way as above:\n\n   HOOK 3 \u2014 in your doPost(e), next to the SAVE_MODULE line:\n\n       if (body.action === 'ASK_AI') return askAi_(body);\n\n   Then put the key in: Project Settings \u2192 Script Properties \u2192\n   Add script property \u2192 name ANTHROPIC_KEY, value sk-ant-\u2026\n   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */\n\nfunction askAi_(body) {\n  try {\n    var key = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_KEY');\n    if (!key) {\n      return jsonOut_({status: 'error',\n        message: 'No ANTHROPIC_KEY in Script Properties yet.'});\n    }\n    var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {\n      method: 'post',\n      contentType: 'application/json',\n      muteHttpExceptions: true,\n      headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'},\n      payload: JSON.stringify(body.payload || {})\n    });\n    var data = JSON.parse(res.getContentText());\n    if (data.error) return jsonOut_({status: 'error', message: data.error.message});\n    var reply = (data.content || [])\n      .filter(function (b) { return b.type === 'text'; })\n      .map(function (b) { return b.text; })\n      .join('\\n');\n    return jsonOut_({status: 'success', reply: reply});\n  } catch (err) {\n    return jsonOut_({status: 'error', message: String(err)});\n  }\n}\n";
+var APPS_SCRIPT_CODE = "/**\n * \u0160AKAL Workshop \u2014 storage for everything that is not an order.\n *\n * Orders already save to your sheet. This adds the same for invoices,\n * customers, the price list, stock, leads, operation cards and\n * measurements, so nothing lives on one phone only.\n *\n * HOW TO ADD IT\n *  1. Open the Apps Script project behind your \u0160AKAL sheet.\n *  2. Paste everything below at the bottom of the existing file.\n *  3. Find your existing doPost(e) and add the three marked lines at\n *     the very top of it (see HOOK 1).\n *  4. Find your existing doGet(e) and add the two marked lines at the\n *     very top of it (see HOOK 2).\n *  5. Deploy \u2192 Manage deployments \u2192 edit the live deployment \u2192\n *     Version: New version \u2192 Deploy. The URL stays the same.\n *  6. In the app, press \"Save all to sheet\" in the bottom left once.\n *\n * HOOK 1 \u2014 first lines inside your existing doPost(e):\n *\n *     var body = JSON.parse(e.postData.contents);\n *     if (body.action === 'SAVE_MODULE') return saveModule_(body);\n *     // ...your existing order handling carries on below, using body\n *\n * HOOK 2 \u2014 first lines inside your existing doGet(e):\n *\n *     if (e && e.parameter && e.parameter.modules) return getModules_();\n *     // ...your existing order handling carries on below\n */\n\nvar MODULE_SHEET = 'Modules';\nvar CHUNK = 40000;            // a cell holds 50,000 characters; leave room\nvar MODULE_NAMES = ['measurements','invoices','pricelist','stock','leads','customers','ops'];\n\nfunction moduleSheet_() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sh = ss.getSheetByName(MODULE_SHEET);\n  if (!sh) {\n    sh = ss.insertSheet(MODULE_SHEET);\n    sh.appendRow(['module', 'part', 'data', 'updated']);\n    sh.hideSheet();\n  }\n  return sh;\n}\n\nfunction jsonOut_(obj) {\n  return ContentService\n    .createTextOutput(JSON.stringify(obj))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\n/** Stores one list. Rewrites only that list's rows. */\nfunction saveModule_(body) {\n  var lock = LockService.getScriptLock();\n  try {\n    lock.waitLock(20000);\n\n    var name = String(body.module || '').trim();\n    if (MODULE_NAMES.indexOf(name) === -1) {\n      return jsonOut_({status: 'error', message: 'Unknown module: ' + name});\n    }\n\n    var sh = moduleSheet_();\n    var text = JSON.stringify(body.payload === undefined ? null : body.payload);\n    var stamp = new Date().toISOString();\n\n    // Drop this module's existing rows, bottom up so the indexes hold.\n    var last = sh.getLastRow();\n    if (last > 1) {\n      var col = sh.getRange(2, 1, last - 1, 1).getValues();\n      for (var r = col.length - 1; r >= 0; r--) {\n        if (String(col[r][0]) === name) sh.deleteRow(r + 2);\n      }\n    }\n\n    // Write it back in chunks a cell can hold.\n    var rows = [];\n    for (var i = 0, part = 0; i < text.length; i += CHUNK, part++) {\n      rows.push([name, part, text.substring(i, i + CHUNK), stamp]);\n    }\n    if (!rows.length) rows.push([name, 0, '', stamp]);\n    sh.getRange(sh.getLastRow() + 1, 1, rows.length, 4).setValues(rows);\n\n    return jsonOut_({status: 'success', module: name, parts: rows.length, updated: stamp});\n  } catch (err) {\n    return jsonOut_({status: 'error', message: String(err)});\n  } finally {\n    try { lock.releaseLock(); } catch (e) {}\n  }\n}\n\n/** Hands every stored list back in one response. */\nfunction getModules_() {\n  try {\n    var sh = moduleSheet_();\n    var out = {};\n    var last = sh.getLastRow();\n\n    if (last > 1) {\n      var vals = sh.getRange(2, 1, last - 1, 3).getValues();\n      var buckets = {};\n      vals.forEach(function (row) {\n        var name = String(row[0]);\n        if (!name) return;\n        if (!buckets[name]) buckets[name] = [];\n        buckets[name].push({part: Number(row[1]) || 0, data: String(row[2] == null ? '' : row[2])});\n      });\n      Object.keys(buckets).forEach(function (name) {\n        buckets[name].sort(function (a, b) { return a.part - b.part; });\n        var text = buckets[name].map(function (c) { return c.data; }).join('');\n        if (!text) return;\n        try { out[name] = JSON.parse(text); } catch (e) { /* leave it out rather than send rubbish */ }\n      });\n    }\n\n    return jsonOut_({status: 'success', modules: out});\n  } catch (err) {\n    return jsonOut_({status: 'error', message: String(err)});\n  }\n}\n\n/** Run once from the editor to check the sheet and permissions are fine. */\nfunction testModules_() {\n  saveModule_({module: 'leads', payload: [{id: 'test', name: 'Test lead'}]});\n  Logger.log(getModules_().getContent());\n}\n\n\n/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n   THE ASSISTANT\n   Lets the app ask Anthropic a question without the key ever\n   leaving Google. Add it the same way as above:\n\n   HOOK 3 \u2014 in your doPost(e), next to the SAVE_MODULE line:\n\n       if (body.action === 'ASK_AI') return askAi_(body);\n\n   HOOK 4 \u2014 in your doGet(e), next to the modules line:\n\n       if (e && e.parameter && e.parameter.ai) return aiReady_();\n\n   Then put the key in: Project Settings \u2192 Script Properties \u2192\n   Add script property \u2192 name ANTHROPIC_KEY, value sk-ant-\u2026\n   \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */\n\nfunction askAi_(body) {\n  try {\n    var key = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_KEY');\n    if (!key) {\n      return jsonOut_({status: 'error',\n        message: 'No ANTHROPIC_KEY in Script Properties yet.'});\n    }\n    var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {\n      method: 'post',\n      contentType: 'application/json',\n      muteHttpExceptions: true,\n      headers: {'x-api-key': key, 'anthropic-version': '2023-06-01'},\n      payload: JSON.stringify(body.payload || {})\n    });\n    var data = JSON.parse(res.getContentText());\n    if (data.error) return jsonOut_({status: 'error', message: data.error.message});\n    var reply = (data.content || [])\n      .filter(function (b) { return b.type === 'text'; })\n      .map(function (b) { return b.text; })\n      .join('\\n');\n    return jsonOut_({status: 'success', reply: reply});\n  } catch (err) {\n    return jsonOut_({status: 'error', message: String(err)});\n  }\n}\n\n/** Lets the app check whether an assistant is set up before it asks anything.\n *  Without this the app would post a question into the orders handler and get\n *  a confusing answer back. */\nfunction aiReady_() {\n  var key = PropertiesService.getScriptProperties().getProperty('ANTHROPIC_KEY');\n  return jsonOut_({status: 'success', ai: !!key});\n}\n";
 
 function openSetup() {
   $('setup-code').textContent = APPS_SCRIPT_CODE;
@@ -4646,117 +4809,643 @@ function closeInstall() { $('install-modal').classList.remove('open'); }
 <script>
 /* ══════════════════════════════════════════════════
    ASSISTANT
-   A place to ask the workshop questions in plain words.
-   It is given a short account of what is on the floor,
-   plus any record the question names, and answers from
-   that — so it talks about your shop, not tailoring in
-   general.
+   Two things in one place. The reports are worked out
+   here, from the shop's own records, so the numbers are
+   exact and arrive with no key and no waiting. The
+   conversation on top of them is what needs a model —
+   it is handed the same reports, and can propose changes
+   for you to approve.
    ══════════════════════════════════════════════════ */
 
-var chatLog = [], chatBusy = false;
+var chatLog = [], chatBusy = false, pendingActions = null;
 
 function aiCfg() {
   var c = {};
   try { c = JSON.parse(localStorage.getItem('sakal-ai') || '{}'); } catch(e) {}
-  return {
-    mode:  c.mode  || 'sheet',
-    key:   c.key   || '',
-    model: c.model || 'claude-sonnet-4-6'
-  };
+  return {mode: c.mode || 'sheet', key: c.key || '', model: c.model || 'claude-sonnet-4-6'};
 }
 function saveAiCfg(c) { try { localStorage.setItem('sakal-ai', JSON.stringify(c)); } catch(e) {} }
 function aiReady() { var c = aiCfg(); return c.mode === 'sheet' || !!c.key; }
 
-/* ── What the assistant is told about the shop ── */
-function shopSnapshot() {
+/* ── Small helpers the reports lean on ── */
+function monthKey(d) { return String(d || '').substring(0, 7); }
+function monthName(k) {
+  if (!k || k.length < 7) return '—';
+  var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return M[parseInt(k.substring(5,7),10)-1] + ' ' + k.substring(0,4);
+}
+function daysBetween(a, b) {
+  var x = new Date(parseToYMD(a)), y = new Date(parseToYMD(b));
+  if (isNaN(x) || isNaN(y)) return null;
+  return Math.round((y - x) / 86400000);
+}
+function orderDone(o) {
+  var it = o.items || [];
+  return it.length > 0 && it.every(function(i){ return i.status === 'Take Home'; });
+}
+function orderStage(o) {
+  var it = (o.items || []).filter(function(i){ return i.status !== 'Take Home'; });
+  if (!it.length) return 'Take Home';
+  var seen = {};
+  it.forEach(function(i){ seen[i.status || 'Not started'] = true; });
+  return Object.keys(seen).join(' / ');
+}
+
+/* ══ THE REPORTS ══════════════════════════════════ */
+
+function reportRevenue() {
+  var by = {};
+  invoices.forEach(function(v) {
+    var k = monthKey(v.issued); if (!k) return;
+    if (!by[k]) by[k] = {n: 0, total: 0};
+    by[k].n++; by[k].total += invoiceTotal(v);
+  });
+  var keys = Object.keys(by).sort();
+  if (!keys.length) return 'No invoices on file yet, so there is nothing to add up.';
+  var recent = keys.slice(-12);
+  var grand = keys.reduce(function(s,k){ return s + by[k].total; }, 0);
+  var best = keys.reduce(function(a,k){ return by[k].total > by[a].total ? k : a; }, keys[0]);
+  var avg = grand / keys.length;
+
+  var lines = recent.map(function(k) {
+    var m = by[k];
+    var bar = '▍'.repeat(Math.max(1, Math.round(m.total / Math.max(1, by[best].total) * 18)));
+    return '- **' + monthName(k) + '** — S$ ' + money(m.total)
+      + ' from ' + m.n + ' invoice' + (m.n===1?'':'s') + '  \n  ' + bar;
+  });
+  var last = by[keys[keys.length-1]], prev = keys.length > 1 ? by[keys[keys.length-2]] : null;
+  var move = prev ? (last.total - prev.total) : 0;
+
+  return 'Revenue by month, from every invoice on file.\n\n' + lines.join('\n') + '\n\n'
+    + 'Best month was **' + monthName(best) + '** at S$ ' + money(by[best].total) + '. '
+    + 'The average is S$ ' + money(avg) + ' a month across ' + keys.length + ' month'
+    + (keys.length===1?'':'s') + ', S$ ' + money(grand) + ' in all.'
+    + (prev ? '\n\n' + monthName(keys[keys.length-1]) + ' is '
+        + (move >= 0 ? 'up S$ ' + money(move) : 'down S$ ' + money(-move))
+        + ' on ' + monthName(keys[keys.length-2]) + '.' : '');
+}
+
+function reportSpenders(n) {
+  n = n || 10;
+  var by = {};
+  invoices.forEach(function(v) {
+    var name = String(v.client || '').trim(); if (!name) return;
+    var k = name.toLowerCase();
+    if (!by[k]) by[k] = {name: name, total: 0, n: 0, last: ''};
+    by[k].total += invoiceTotal(v); by[k].n++;
+    if (String(v.issued||'') > by[k].last) by[k].last = v.issued || '';
+  });
+  var list = Object.keys(by).map(function(k){ return by[k]; })
+                   .sort(function(a,b){ return b.total - a.total; });
+  if (!list.length) return 'Nobody has been invoiced yet.';
+  var grand = list.reduce(function(s,c){ return s + c.total; }, 0);
+  var top = list.slice(0, n);
+  var topShare = top.reduce(function(s,c){ return s + c.total; }, 0);
+
+  return 'Your best customers by what they have been billed.\n\n'
+    + top.map(function(c, i) {
+        return '- **' + (i+1) + '. ' + c.name + '** — S$ ' + money(c.total)
+          + ' across ' + c.n + ' invoice' + (c.n===1?'':'s')
+          + (c.last ? ', last on ' + formatDisplayDate(c.last) : '');
+      }).join('\n')
+    + '\n\nThese ' + top.length + ' account for S$ ' + money(topShare) + ' of S$ ' + money(grand)
+    + ' — ' + Math.round(topShare / grand * 100) + '% of everything billed, from '
+    + list.length + ' customer' + (list.length===1?'':'s') + ' in all.';
+}
+
+function reportSlow() {
   var today = todayYMD();
-  var live = orders.slice(0, 60).map(function(o) {
+  var live = orders.filter(function(o){ return !orderDone(o); });
+  if (!live.length) return 'Nothing is outstanding — every order on the floor is finished.';
+
+  var rows = live.map(function(o) {
+    var age = daysBetween(o.date, today);
+    var late = o.dueDate ? daysBetween(o.dueDate, today) : null;
+    return {o: o, age: age === null ? 0 : age, late: late};
+  }).sort(function(a,b) {
+    if ((b.late || -9999) !== (a.late || -9999)) return (b.late || -9999) - (a.late || -9999);
+    return b.age - a.age;
+  });
+
+  var overdue = rows.filter(function(r){ return r.late !== null && r.late > 0; });
+  var stale = rows.filter(function(r){ return (r.late === null || r.late <= 0) && r.age > 30; });
+
+  var out = [];
+  if (overdue.length) {
+    out.push('**Past their due date**\n' + overdue.slice(0, 15).map(function(r) {
+      return '- ' + r.o.orderNum + ' · ' + (r.o.customerName || 'no name')
+        + ' — **' + r.late + ' day' + (r.late===1?'':'s') + ' over**, due '
+        + formatDisplayDate(r.o.dueDate) + ' · ' + orderStage(r.o);
+    }).join('\n'));
+  }
+  if (stale.length) {
+    out.push('**On the floor a long time**\n' + stale.slice(0, 15).map(function(r) {
+      return '- ' + r.o.orderNum + ' · ' + (r.o.customerName || 'no name')
+        + ' — ' + r.age + ' days since it was taken · ' + orderStage(r.o);
+    }).join('\n'));
+  }
+  if (!out.length) out.push('Nothing is late and nothing has been sitting more than a month.');
+
+  var stuck = live.filter(function(o){ return (o.items||[]).some(function(i){ return i.stuck; }); });
+  if (stuck.length) {
+    out.push('**Marked stuck**\n' + stuck.map(function(o) {
+      return '- ' + o.orderNum + ' · ' + (o.customerName || 'no name');
+    }).join('\n'));
+  }
+  out.push(live.length + ' order' + (live.length===1?'':'s') + ' still open, '
+    + overdue.length + ' past due.');
+  return out.join('\n\n');
+}
+
+function reportStock() {
+  var byCat = {}, byLoc = {Batam: 0, Singapore: 0};
+  stock.forEach(function(s) {
+    var c = catOf(s);
+    byCat[c] = (byCat[c] || 0) + 1;
+    if (byLoc[s.loc] !== undefined) byLoc[s.loc]++;
+  });
+  var flagged = stock.filter(function(s){ return s.reorder; });
+  var old = stock.filter(function(s) {
+    var d = s.purchased ? daysBetween(s.purchased, todayYMD()) : null;
+    return d !== null && d > 180 && !s.reorder;
+  });
+
+  var out = ['**What is held**\n' + Object.keys(byCat).map(function(c) {
+    return '- ' + c + ' — ' + byCat[c] + ' item' + (byCat[c]===1?'':'s');
+  }).join('\n') + '\n- Batam ' + byLoc.Batam + ' · Singapore ' + byLoc.Singapore
+    + ' · ' + stock.length + ' in all'];
+
+  out.push(flagged.length
+    ? '**Flagged to reorder**\n' + flagged.map(function(s) {
+        return '- ' + s.item + (s.color ? ' · ' + s.color : '') + ' — ' + catOf(s) + ', ' + s.loc
+          + (s.supplier ? ' · ' + s.supplier : '');
+      }).join('\n')
+    : '**Flagged to reorder**\nNothing is flagged.');
+
+  if (old.length) {
+    out.push('**Not bought in over six months**\n' + old.slice(0, 12).map(function(s) {
+      return '- ' + s.item + ' — last bought ' + formatDisplayDate(s.purchased);
+    }).join('\n'));
+  }
+  return out.join('\n\n');
+}
+
+function reportLeads() {
+  var total = leads.length;
+  if (!total) return 'No leads logged yet.';
+  var booked = leads.filter(function(l){ return isYes(l.booked); }).length;
+  var came   = leads.filter(function(l){ return isYes(l.attended); }).length;
+  var won    = leads.filter(function(l){ return isYes(l.purchased); }).length;
+
+  var bySrc = {};
+  leads.forEach(function(l) {
+    var s = l.source || 'Unknown';
+    if (!bySrc[s]) bySrc[s] = {n: 0, won: 0};
+    bySrc[s].n++; if (isYes(l.purchased)) bySrc[s].won++;
+  });
+  var src = Object.keys(bySrc).sort(function(a,b){ return bySrc[b].n - bySrc[a].n; });
+
+  var overdue = leads.filter(function(l) {
+    return l.followUp && !isYes(l.purchased) && isOverdue(l.followUp);
+  });
+
+  return 'Out of **' + total + ' leads**, ' + booked + ' booked a consultation, '
+    + came + ' turned up and ' + won + ' bought — a conversion of **'
+    + Math.round(won / total * 100) + '%**.\n\n'
+    + '**Where they come from**\n' + src.map(function(s) {
+        return '- ' + s + ' — ' + bySrc[s].n + ' lead' + (bySrc[s].n===1?'':'s')
+          + ', ' + bySrc[s].won + ' bought'
+          + (bySrc[s].n >= 3 ? ' (' + Math.round(bySrc[s].won/bySrc[s].n*100) + '%)' : '');
+      }).join('\n')
+    + (overdue.length
+        ? '\n\n**Follow-ups already past**\n' + overdue.slice(0, 12).map(function(l) {
+            return '- ' + l.name + ' — was due ' + formatDisplayDate(l.followUp)
+              + (l.phone ? ' · ' + l.phone : '');
+          }).join('\n')
+        : '\n\nNo follow-up dates have slipped.');
+}
+
+function reportDelta() {
+  var live = deltaOrders.filter(function(o){ return !o.archived; });
+  if (!live.length) return 'Nothing is with Delta.';
+  var unpaid = live.filter(function(o){ return !o.paid; });
+  var owed = unpaid.reduce(function(s,o){ return s + (o.total||0); }, 0);
+  var stages = {};
+  live.forEach(function(o){ var s = deltaStage(o); stages[s] = (stages[s]||0)+1; });
+  var late = live.filter(function(o){ return !o.delivered && o.dueDate && isOverdue(o.dueDate); });
+
+  return live.length + ' jacket' + (live.length===1?'':'s') + ' with Delta.\n\n'
+    + '**Where they are**\n' + Object.keys(stages).map(function(s) {
+        return '- ' + s + ' — ' + stages[s];
+      }).join('\n')
+    + '\n\n**Money**\n- Unpaid to Delta: S$ ' + money(owed) + ' across ' + unpaid.length + ' order'
+    + (unpaid.length===1?'':'s')
+    + '\n- Total making charges on the bench: S$ '
+    + money(live.reduce(function(s,o){ return s + (o.total||0); }, 0))
+    + (late.length
+        ? '\n\n**Overdue back from Delta**\n' + late.map(function(o) {
+            return '- ' + o.orderNum + ' — was due ' + formatDisplayDate(o.dueDate);
+          }).join('\n')
+        : '\n\nNothing is overdue back from Delta.');
+}
+
+function reportToday() {
+  var t = todayYMD();
+  var live = orders.filter(function(o){ return !orderDone(o); });
+  var soon = live.filter(function(o){ return o.dueDate && daysBetween(t, o.dueDate) !== null
+                                          && daysBetween(t, o.dueDate) >= 0 && daysBetween(t, o.dueDate) <= 7; });
+  var fittings = orders.filter(function(o){ return o.fittingDate && daysBetween(t, o.fittingDate) >= 0
+                                                 && daysBetween(t, o.fittingDate) <= 7; });
+  var late = live.filter(function(o){ return o.dueDate && isOverdue(o.dueDate); });
+  var thisMonth = invoices.filter(function(v){ return monthKey(v.issued) === monthKey(t); });
+  var billed = thisMonth.reduce(function(s,v){ return s + invoiceTotal(v); }, 0);
+
+  return '**' + formatDisplayDate(t) + '**\n\n'
+    + '- ' + live.length + ' order' + (live.length===1?'':'s') + ' on the floor, ' + late.length + ' past due\n'
+    + '- ' + soon.length + ' due in the next week\n'
+    + '- ' + fittings.length + ' fitting' + (fittings.length===1?'':'s') + ' in the next week\n'
+    + '- S$ ' + money(billed) + ' invoiced this month across ' + thisMonth.length + ' invoice'
+    + (thisMonth.length===1?'':'s') + '\n'
+    + '- ' + stock.filter(function(s){ return s.reorder; }).length + ' stock item(s) flagged to reorder\n'
+    + '- ' + deltaOrders.filter(function(o){ return !o.archived && !o.paid; }).length + ' Delta order(s) unpaid'
+    + (soon.length
+        ? '\n\n**Due this week**\n' + soon.sort(function(a,b){ return String(a.dueDate).localeCompare(String(b.dueDate)); })
+            .map(function(o) {
+              return '- ' + formatDisplayDate(o.dueDate) + ' — ' + o.orderNum + ' · '
+                + (o.customerName || 'no name') + ' · ' + orderStage(o);
+            }).join('\n')
+        : '');
+}
+
+/* ══════════════════════════════════════════════════
+   ANSWERING WITHOUT A MODEL
+   Most of what gets asked across a bench is a lookup:
+   what has this person spent, where is that order, what
+   is late. Those are worked out here, exactly, and need
+   nothing set up. Only the open-ended questions go out.
+   ══════════════════════════════════════════════════ */
+
+/* Every name the shop knows, from any of the lists. */
+function knownNames() {
+  var seen = {};
+  function add(n) {
+    n = String(n || '').trim();
+    if (n.length < 2) return;
+    var k = n.toLowerCase();
+    if (!seen[k]) seen[k] = n;
+  }
+  invoices.forEach(function(v){ add(v.client); });
+  orders.concat(archivedOrders).forEach(function(o){ add(o.customerName); });
+  customers.forEach(function(c){ add(c.name); });
+  leads.forEach(function(l){ add(l.name); });
+  return Object.keys(seen).map(function(k){ return {key: k, name: seen[k]}; });
+}
+
+/* Finds the person a question is about — the whole name if it is there,
+   otherwise a distinctive part of one. */
+function nameInQuestion(q) {
+  var s = ' ' + String(q||'').toLowerCase().replace(/[^\w\s'-]/g, ' ') + ' ';
+  var names = knownNames(), best = null;
+  names.forEach(function(n) {
+    if (s.indexOf(' ' + n.key + ' ') !== -1 || s.indexOf(n.key) !== -1) {
+      if (!best || n.key.length > best.key.length) best = n;
+    }
+  });
+  if (best) return best.name;
+  var words = s.split(/\s+/).filter(function(w){ return w.length >= 4; });
+  names.forEach(function(n) {
+    n.key.split(/\s+/).forEach(function(part) {
+      if (part.length >= 4 && words.indexOf(part) !== -1) {
+        if (!best || n.key.length > best.key.length) best = n;
+      }
+    });
+  });
+  return best ? best.name : null;
+}
+
+/* Everything the shop holds on one person. */
+function reportPerson(name) {
+  var k = String(name).toLowerCase();
+  var bills = invoices.filter(function(v){ return String(v.client||'').toLowerCase() === k; })
+                      .sort(function(a,b){ return String(b.issued).localeCompare(String(a.issued)); });
+  var theirOrders = orders.concat(archivedOrders)
+                          .filter(function(o){ return String(o.customerName||'').toLowerCase() === k; });
+  var c = customers.find(function(x){ return String(x.name||'').toLowerCase() === k; });
+  var l = leads.find(function(x){ return String(x.name||'').toLowerCase() === k; });
+
+  var spent = bills.reduce(function(s,v){ return s + invoiceTotal(v); }, 0);
+  var out = ['**' + name + '**'];
+
+  var contact = [];
+  if (c && c.phone) contact.push(c.phone);
+  if (c && c.email) contact.push(c.email);
+  if (!contact.length && l) { if (l.phone) contact.push(l.phone); if (l.email) contact.push(l.email); }
+  if (!contact.length) {
+    var o0 = theirOrders.find(function(o){ return o.customerContact || o.customerEmail; });
+    if (o0) { if (o0.customerContact) contact.push(o0.customerContact); if (o0.customerEmail) contact.push(o0.customerEmail); }
+  }
+  if (contact.length) out.push(contact.join(' · '));
+
+  if (bills.length) {
+    out.push('Spent **S$ ' + money(spent) + '** across ' + bills.length + ' invoice'
+      + (bills.length===1?'':'s') + '.');
+    out.push(bills.map(function(v) {
+      var what = (v.lines||[]).map(function(x){ return x.desc; }).filter(Boolean).join(', ');
+      return '- ' + (v.issued ? formatDisplayDate(v.issued) : 'no date') + ' · ' + v.no
+        + ' · S$ ' + money(invoiceTotal(v)) + (what ? ' · ' + what : '')
+        + ' · ' + invoiceStatus(v);
+    }).join('\n'));
+    var first = bills[bills.length-1].issued, last = bills[0].issued;
+    if (bills.length > 1 && first && last) {
+      out.push('First bought ' + formatDisplayDate(first) + ', last ' + formatDisplayDate(last)
+        + ' — an average of S$ ' + money(spent / bills.length) + ' an order.');
+    }
+  } else {
+    out.push('Nothing has been invoiced to this name.');
+  }
+
+  if (theirOrders.length) {
+    out.push('**On the floor**\n' + theirOrders.map(function(o) {
+      return '- ' + o.orderNum + (o.dueDate ? ' · due ' + formatDisplayDate(o.dueDate) : '')
+        + ' · ' + (o.items||[]).map(function(i){ return i.product; }).join(', ')
+        + ' · ' + (o.archived ? 'archived' : orderStage(o));
+    }).join('\n'));
+  }
+  if (l) {
+    out.push('Came in as a lead on ' + formatDisplayDate(l.date) + ' from ' + (l.source || 'an unknown source')
+      + ' — ' + leadStage(l) + (l.remarks ? '. ' + l.remarks : '.'));
+  }
+  return out.join('\n\n');
+}
+
+function reportRecord(num) {
+  var out = [];
+  var o = findOrder(num);
+  if (o) {
+    out.push('**Order ' + o.orderNum + '** · ' + (o.customerName || 'no name')
+      + (o.customerContact ? ' · ' + o.customerContact : ''));
+    out.push('Taken ' + formatDisplayDate(o.date)
+      + (o.fittingDate ? ', fitting ' + formatDisplayDate(o.fittingDate) : '')
+      + (o.dueDate ? ', due ' + formatDisplayDate(o.dueDate) : '')
+      + (o.dueDate && isOverdue(o.dueDate) && !orderDone(o)
+          ? ' — **' + daysBetween(o.dueDate, todayYMD()) + ' days over**' : ''));
+    out.push((o.items||[]).map(function(i) {
+      return '- ' + i.product + ' · cloth ' + (i.fabric || '—')
+        + (i.lining ? ' · lining ' + i.lining : '')
+        + ' · ' + (i.status || 'not started') + (i.stuck ? ' · STUCK' : '')
+        + (hasDesign(i.design) ? ' · form ' + i.design.code : '');
+    }).join('\n'));
+    if (o.remarks) out.push(o.remarks);
+  }
+  var v = invoices.find(function(x){ return String(x.no||'').replace(/\D/g,'') === String(num); });
+  if (v) {
+    out.push('**Invoice ' + v.no + '** · ' + (v.client || '—') + ' · '
+      + (v.issued ? formatDisplayDate(v.issued) : 'no date')
+      + ' · S$ ' + money(invoiceTotal(v)) + ' · ' + invoiceStatus(v));
+    out.push((v.lines||[]).map(function(l) {
+      return '- ' + (l.desc || '—') + ' · ' + (l.qty||1) + ' × S$ ' + money(l.unit||0);
+    }).join('\n'));
+  }
+  var dd = deltaOrders.find(function(x){ return String(x.orderNum) === String(num); });
+  if (dd) {
+    out.push('**With Delta as ' + dd.orderNum + '** · ' + dd.canvas
+      + ((dd.addons||[]).length ? ' + ' + dd.addons.join(', ') : '')
+      + ' · ' + deltaStage(dd) + ' · ' + (dd.paid ? 'paid' : 'unpaid'));
+  }
+  return out.length ? out.join('\n\n') : null;
+}
+
+function reportOwing() {
+  var open = invoices.filter(function(v){ return invoiceStatus(v) !== 'Paid'; })
+                     .sort(function(a,b){ return invoiceTotal(b) - invoiceTotal(a); });
+  if (!open.length) return 'Every invoice on file is settled.';
+  var total = open.reduce(function(s,v){ return s + invoiceTotal(v); }, 0);
+  return 'S$ **' + money(total) + '** is outstanding across ' + open.length + ' invoice'
+    + (open.length===1?'':'s') + '.\n\n'
+    + open.slice(0, 20).map(function(v) {
+        return '- ' + (v.client || '—') + ' · ' + v.no + ' · S$ ' + money(invoiceTotal(v))
+          + (v.issued ? ' · issued ' + formatDisplayDate(v.issued) : '') + ' · ' + invoiceStatus(v);
+      }).join('\n');
+}
+
+/* Reads the question and answers it from the records where it can. */
+function localAnswer(q) {
+  var s = String(q || '').toLowerCase();
+
+  var num = (s.match(/\b\d{4,7}\b/) || [])[0];
+  if (num) { var rec = reportRecord(num); if (rec) return rec; }
+
+  var name = nameInQuestion(q);
+  if (name && /spen|spend|spent|paid|bought|buy|order|invoice|owe|worth|history|much|total|customer|client|who is|about/.test(s)) {
+    return reportPerson(name);
+  }
+
+  if (/revenue|turnover|takings|sales|earn|income|month/.test(s) && !/delta/.test(s)) return reportRevenue();
+  if (/top |best |biggest |spender|highest/.test(s)) return reportSpenders(10);
+  if (/late|overdue|too long|slow|delay|behind|waiting/.test(s)) return reportSlow();
+  if (/stock|reorder|button|lining|packaging|supplies/.test(s)) return reportStock();
+  if (/lead|enquir|inquir|conversion|follow up|follow-up/.test(s)) return reportLeads();
+  if (/delta|maker|making charge/.test(s)) return reportDelta();
+  if (/owe|outstanding|unpaid|debt|collect/.test(s)) return reportOwing();
+  if (/today|this week|what.s on|due soon|schedule/.test(s)) return reportToday();
+
+  return null;
+}
+
+/* When the model is out of reach, a named person is still better than
+   an apology. */
+function localFallback(q) {
+  var name = nameInQuestion(q);
+  return name ? reportPerson(name) : null;
+}
+
+var REPORTS = {
+  today:    {label: 'Today',           run: reportToday},
+  revenue:  {label: 'Monthly revenue', run: reportRevenue},
+  spenders: {label: 'Top spenders',    run: function(){ return reportSpenders(10); }},
+  slow:     {label: 'Taking too long', run: reportSlow},
+  stock:    {label: 'Stock status',    run: reportStock},
+  owing:    {label: 'Who owes me',     run: reportOwing},
+  leads:    {label: 'Leads',           run: reportLeads},
+  delta:    {label: 'Delta',           run: reportDelta}
+};
+
+/* Everything the model is given, worked out rather than guessed at. */
+function reportPack() {
+  return Object.keys(REPORTS).map(function(k) {
+    return '### ' + REPORTS[k].label.toUpperCase() + '\n' + REPORTS[k].run();
+  }).join('\n\n');
+}
+
+/* ── The records themselves, compactly ── */
+function shopSnapshot() {
+  var live = orders.slice(0, 80).map(function(o) {
     var g = (o.items||[]).map(function(i) {
-      return i.product + (i.fabric ? ' [' + i.fabric + ']' : '') + (i.status ? ' — ' + i.status : ' — not started');
+      return i.product + (i.fabric ? ' [' + i.fabric + ']' : '')
+        + (i.lining ? ' lining ' + i.lining : '')
+        + ' — ' + (i.status || 'not started') + (i.stuck ? ' STUCK' : '');
     }).join('; ');
     return '- ' + o.orderNum + ' · ' + (o.customerName || 'no name')
-      + (o.dueDate ? ' · due ' + o.dueDate : '')
+      + (o.customerContact ? ' · ' + o.customerContact : '')
+      + ' · taken ' + (o.date || '?')
       + (o.fittingDate ? ' · fitting ' + o.fittingDate : '')
-      + ' · ' + (g || 'no garments')
-      + (o.remarks ? ' · note: ' + o.remarks : '');
+      + (o.dueDate ? ' · due ' + o.dueDate : '')
+      + ' · ' + (g || 'no garments') + (o.remarks ? ' · note: ' + o.remarks : '');
   }).join('\n');
 
-  var bills = invoices.slice(0, 40).map(function(v) {
+  var bills = invoices.slice(0, 120).map(function(v) {
     return '- ' + v.no + ' · ' + (v.client || '—') + ' · ' + (v.issued || '')
-      + ' · S$' + invoiceTotal(v).toFixed(2) + ' · ' + invoiceStatus(v);
+      + ' · S$' + invoiceTotal(v).toFixed(2) + ' · ' + invoiceStatus(v)
+      + ' · ' + ((v.lines||[]).map(function(l){ return l.desc; }).filter(Boolean).join(', ') || 'no lines');
   }).join('\n');
 
-  var reorder = stock.filter(function(s){ return s.reorder; })
-    .map(function(s){ return '- ' + s.item + ' (' + catOf(s) + ', ' + s.loc + ')'; }).join('\n');
+  var st = stock.map(function(s) {
+    return '- ' + s.item + ' · ' + catOf(s) + ' · ' + (s.color || '—') + ' · ' + s.loc
+      + (s.reorder ? ' · TO REORDER' : '') + (s.purchased ? ' · bought ' + s.purchased : '');
+  }).join('\n');
 
-  var followUps = leads.filter(function(l){ return l.followUp && !isYes(l.purchased); })
-    .sort(function(a,b){ return String(a.followUp).localeCompare(String(b.followUp)); })
-    .slice(0, 20)
-    .map(function(l){ return '- ' + l.name + ' · follow up ' + l.followUp + ' · ' + leadStage(l)
-      + (l.phone ? ' · ' + l.phone : '') + (l.remarks ? ' · ' + l.remarks : ''); }).join('\n');
-
-  var delta = deltaOrders.filter(function(o){ return !o.archived; }).slice(0, 40).map(function(o) {
+  var dl = deltaOrders.filter(function(o){ return !o.archived; }).map(function(o) {
     return '- ' + o.orderNum + ' · due ' + (o.dueDate || '—') + ' · ' + o.canvas
       + ((o.addons||[]).length ? ' + ' + o.addons.join(', ') : '')
       + ' · S$' + o.total + ' · ' + deltaStage(o)
       + ' · ' + (o.paid ? 'paid' : 'unpaid') + ' · ' + (o.invoice ? 'invoiced' : 'no invoice');
   }).join('\n');
 
-  var brands = Array.from(new Set(pricelist.map(function(f){ return f.brand; }))).join(', ');
-  var con = pricelist.filter(function(f){ return f.cat === 'Construction'; })
-    .map(function(f){ return f.name + ' S$' + f.pCon; }).join(', ');
+  var ld = leads.map(function(l) {
+    return '- ' + l.name + ' · ' + (l.date || '') + ' · ' + (l.source || '?')
+      + ' · ' + leadStage(l) + (l.followUp ? ' · follow up ' + l.followUp : '')
+      + (l.phone ? ' · ' + l.phone : '') + (l.remarks ? ' · ' + l.remarks : '');
+  }).join('\n');
 
-  var cards = opitems.map(function(o) {
+  var ops = opitems.map(function(o) {
     return '- ' + o.type + ' ' + (o.number || '—') + ' · ' + (o.holder || 'unassigned')
       + (o.expiry ? ' · expires ' + o.expiry : '')
-      + (o.topup ? ' · last top-up ' + o.topup + (o.amount !== '' ? ' at S$' + o.amount : '') : '');
+      + (o.topup ? ' · topped up ' + o.topup + (o.amount !== '' ? ' at S$' + o.amount : '') : '');
   }).join('\n');
 
   return [
-    'Today is ' + today + '. The next running number is ' + nextRunningNo() + '.',
-    '',
-    'ORDERS ON THE FLOOR (' + orders.length + ', archived ' + archivedOrders.length + '):',
-    live || '(none)',
-    '',
-    'INVOICES (' + invoices.length + '):',
-    bills || '(none)',
-    '',
-    'WITH DELTA (the maker — their own numbers, their making charges):',
-    delta || '(none)',
-    '',
-    'CUSTOMERS: ' + customers.length + ' on file.',
-    '',
-    'STOCK FLAGGED TO REORDER:',
-    reorder || '(nothing flagged)',
-    '',
-    'LEADS AWAITING FOLLOW-UP:',
-    followUps || '(none)',
-    '',
-    'PRICE LIST: ' + pricelist.length + ' entries. Brands: ' + brands,
-    'Construction charges: ' + con,
-    '',
-    'OPERATION CARDS:',
-    cards || '(none)'
+    'Today is ' + todayYMD() + '. Next running number: ' + nextRunningNo() + '.',
+    '', 'ORDERS ON THE FLOOR (' + orders.length + ' live, ' + archivedOrders.length + ' archived):', live || '(none)',
+    '', 'INVOICES (' + invoices.length + '):', bills || '(none)',
+    '', 'STOCK (' + stock.length + '):', st || '(none)',
+    '', 'WITH DELTA (an outside maker — these are costs to the shop, not sales):', dl || '(none)',
+    '', 'LEADS (' + leads.length + '):', ld || '(none)',
+    '', 'OPERATION CARDS:', ops || '(none)',
+    '', 'PRICE LIST: ' + pricelist.length + ' entries across '
+      + Array.from(new Set(pricelist.map(function(f){ return f.brand; }))).length + ' brands.',
+    'CUSTOMERS: ' + customers.length + ' on file.'
   ].join('\n');
 }
 
-var CHAT_SYSTEM =
-  'You are the assistant inside ŠAKAL Workshop, the order and invoicing app for ŠAKAL, ' +
-  'a bespoke tailoring atelier on Jalan Besar, Singapore. You are speaking to the people who run the shop.\n\n' +
-  'Answer only from the workshop data given below. If the answer is not in it, say so plainly ' +
-  'rather than guessing. Amounts are Singapore dollars. Dates are YYYY-MM-DD; write them back as ' +
-  '"14 Jun 2026". Order numbers look like 260255 and invoice numbers like INV260255 — they are the same job.\n\n' +
-  'A two piece suit is a jacket and trousers; a three piece adds the vest. Production runs ' +
-  'Fabric Ordered → Bin → Batam or Delta → In-store → Take Home. Fittings are baste, fitting, final.\n\n' +
-  'Keep answers short and practical, the way a colleague would answer across the bench. Use plain ' +
-  'sentences, and a short list only when the answer really is a list. Do not invent orders, clients, ' +
-  'prices or dates.';
+/* ══ ACTIONS ══════════════════════════════════════
+   The assistant may propose changes. It never makes them;
+   it hands you a card and you decide. */
+var ACTION_HELP =
+  'You may propose changes to the records. Never claim to have made one — you cannot. ' +
+  'To propose, end your reply with a fenced block marked `action` holding a JSON array. ' +
+  'Each item is one of:\n' +
+  '  {"do":"order_stage","order":"260255","product":"Jacket","to":"Batam"}   status: ' +
+  '"", "Fabric Ordered", "Bin", "Batam", "Delta", "In-store", "Take Home"\n' +
+  '  {"do":"order_date","order":"260255","field":"due","to":"2026-10-05"}    field: "due" or "fitting"\n' +
+  '  {"do":"order_stuck","order":"260255","product":"Jacket","to":true}\n' +
+  '  {"do":"delta","number":"19684","field":"paid","to":true}               field: paid, invoice, backend, bin, delivered\n' +
+  '  {"do":"stock_reorder","item":"Lining FB12","to":true}\n' +
+  '  {"do":"lead","name":"Eugene Lee","field":"followUp","to":"2026-09-20"} field: followUp, booked, attended, purchased\n' +
+  'Only propose what was clearly asked for. Say in words what you are proposing before the block.';
 
-/* Anything the question names by number or by name goes in whole. */
+function actionText(a) {
+  if (a.do === 'order_stage')   return 'Order ' + a.order + ' — move the ' + (a.product||'garment').toLowerCase() + ' to ' + (a.to || 'not started');
+  if (a.do === 'order_date')    return 'Order ' + a.order + ' — set the ' + a.field + ' date to ' + formatDisplayDate(a.to);
+  if (a.do === 'order_stuck')   return 'Order ' + a.order + ' — mark the ' + (a.product||'garment').toLowerCase() + (a.to ? ' stuck' : ' back on track');
+  if (a.do === 'delta')         return 'Delta ' + a.number + ' — ' + (a.to ? 'set' : 'clear') + ' ' + a.field;
+  if (a.do === 'stock_reorder') return a.item + ' — ' + (a.to ? 'flag to reorder' : 'clear the reorder flag');
+  if (a.do === 'lead')          return a.name + ' — set ' + a.field + ' to ' + a.to;
+  return JSON.stringify(a);
+}
+
+function applyAction(a) {
+  if (a.do === 'order_stage' || a.do === 'order_stuck') {
+    var o = findOrder(String(a.order)); if (!o) return 'no order ' + a.order;
+    var hit = (o.items||[]).filter(function(i) {
+      return !a.product || String(i.product).toLowerCase() === String(a.product).toLowerCase();
+    });
+    if (!hit.length) return 'no ' + a.product + ' on ' + a.order;
+    hit.forEach(function(i) {
+      if (a.do === 'order_stage') i.status = a.to || '';
+      else i.stuck = !!a.to;
+    });
+    syncToServer(o); return '';
+  }
+  if (a.do === 'order_date') {
+    var o2 = findOrder(String(a.order)); if (!o2) return 'no order ' + a.order;
+    if (a.field === 'fitting') o2.fittingDate = parseToYMD(a.to); else o2.dueDate = parseToYMD(a.to);
+    syncToServer(o2); return '';
+  }
+  if (a.do === 'delta') {
+    var d = deltaOrders.find(function(x){ return String(x.orderNum) === String(a.number); });
+    if (!d) return 'no Delta ' + a.number;
+    if (['backend','bin','delivered'].indexOf(a.field) !== -1) {
+      ['backend','bin','delivered'].forEach(function(k){ d[k] = false; });
+      d[a.field] = !!a.to;
+    } else d[a.field] = !!a.to;
+    persistDelta(); return '';
+  }
+  if (a.do === 'stock_reorder') {
+    var s = stock.find(function(x){ return String(x.item).toLowerCase() === String(a.item).toLowerCase(); });
+    if (!s) return 'no stock item "' + a.item + '"';
+    s.reorder = !!a.to; persistStock(); return '';
+  }
+  if (a.do === 'lead') {
+    var l = leads.find(function(x){ return String(x.name).toLowerCase() === String(a.name).toLowerCase(); });
+    if (!l) return 'no lead "' + a.name + '"';
+    if (a.field === 'followUp') l.followUp = parseToYMD(a.to);
+    else l[a.field] = a.to ? 'Yes' : 'No';
+    persistLeads(); return '';
+  }
+  return 'not something I can change';
+}
+
+function applyPendingActions() {
+  if (!pendingActions) return;
+  var done = 0, failed = [];
+  pendingActions.forEach(function(a) {
+    var err = applyAction(a);
+    if (err) failed.push(err); else done++;
+  });
+  pendingActions = null;
+  renderAll();
+  chatLog.push({role: 'assistant', content:
+    (done ? 'Done — ' + done + ' change' + (done===1?'':'s') + ' made and saved.' : 'Nothing was changed.')
+    + (failed.length ? '\n\nI could not do: ' + failed.join('; ') + '.' : '')});
+  renderChat();
+  showToast(done + ' change' + (done===1?'':'s') + ' saved');
+}
+function discardPendingActions() {
+  pendingActions = null;
+  chatLog.push({role: 'assistant', content: 'Left as it was.'});
+  renderChat();
+}
+
+/* ── Talking to the model ── */
+var CHAT_SYSTEM =
+  'You are the assistant inside ŠAKAL Workshop, the order and invoicing app for ŠAKAL, a bespoke ' +
+  'tailoring atelier on Jalan Besar, Singapore. You are speaking to the people who run the shop.\n\n' +
+  'You are their reporting tool as much as anything: revenue by month, best customers, orders taking ' +
+  'too long, stock to reorder, leads and conversion, what is with the maker. Worked-out reports are ' +
+  'given to you below — trust those figures over your own arithmetic, and quote them exactly.\n\n' +
+  'Answer only from the data given. If it is not there, say so plainly rather than guessing. Amounts ' +
+  'are Singapore dollars. Dates come as YYYY-MM-DD; write them back as "14 Jun 2026". Order numbers ' +
+  'look like 260255 and invoice numbers like INV260255 — the same job.\n\n' +
+  'A two piece suit is a jacket and trousers; a three piece adds the vest. Production runs Fabric ' +
+  'Ordered → Bin → Batam or Delta → In-store → Take Home. Fittings are baste, fitting, final. Delta ' +
+  'is an outside maker: what they charge is a cost to the shop, not a sale.\n\n' +
+  'Keep answers short and practical, the way a colleague would answer across the bench. Lead with the ' +
+  'number or the name that was asked for. Use a list only when the answer really is a list.\n\n' +
+  ACTION_HELP;
+
 function extraContext(q) {
   var s = String(q || '').toLowerCase(), bits = [];
-  var nums = s.match(/\b\d{4,7}\b/g) || [];
-  nums.forEach(function(n) {
+  (s.match(/\b\d{4,7}\b/g) || []).forEach(function(n) {
     var o = findOrder(n);
     if (o) bits.push('FULL ORDER ' + n + ':\n' + JSON.stringify(o, null, 1));
     var v = invoices.find(function(x){ return String(x.no||'').replace(/\D/g,'') === n; });
@@ -4764,27 +5453,41 @@ function extraContext(q) {
   });
   customers.forEach(function(c) {
     if (c.name && c.name.length > 2 && s.indexOf(c.name.toLowerCase()) !== -1) {
-      bits.push('CUSTOMER ' + c.name + ':\n' + JSON.stringify(c) +
-        '\nPurchases:\n' + JSON.stringify(purchaseHistory(c), null, 1));
+      bits.push('CUSTOMER ' + c.name + ':\n' + JSON.stringify(c)
+        + '\nPurchases:\n' + JSON.stringify(purchaseHistory(c), null, 1));
     }
   });
   return bits.join('\n\n');
 }
 
-/* ── Talking to the model ── */
+/* The old Apps Script has no assistant in it. Sending it a question
+   would land in the orders handler and come back as a conflict, so the
+   endpoint is asked once whether it can take one at all. */
+var aiSheetOk = null;
+async function sheetHasAi() {
+  if (aiSheetOk !== null) return aiSheetOk;
+  try {
+    var r = await fetch(API_URL + '?ai=1', {redirect: 'follow'});
+    var out = JSON.parse(await r.text());
+    aiSheetOk = out.status === 'success' && out.ai === true;
+  } catch (e) { aiSheetOk = false; }
+  return aiSheetOk;
+}
+
 async function askModel(messages) {
   var cfg = aiCfg();
-  var body = {
-    model: cfg.model,
-    max_tokens: 1200,
-    system: CHAT_SYSTEM + '\n\n=== WORKSHOP DATA ===\n' + shopSnapshot(),
-    messages: messages
-  };
+  var sys = CHAT_SYSTEM
+    + '\n\n=== REPORTS, ALREADY WORKED OUT ===\n' + reportPack()
+    + '\n\n=== THE RECORDS ===\n' + shopSnapshot();
   var last = messages[messages.length - 1];
   var extra = extraContext(last && last.content);
-  if (extra) body.system += '\n\n=== RECORDS THE QUESTION NAMES ===\n' + extra;
+  if (extra) sys += '\n\n=== RECORDS THE QUESTION NAMES ===\n' + extra;
+
+  var body = {model: cfg.model, max_tokens: 1500, system: sys, messages: messages};
 
   if (cfg.mode === 'sheet') {
+    var ok = await sheetHasAi();
+    if (!ok) throw new Error('SHEET_NO_AI');
     var r = await fetch(API_URL, {
       method: 'POST', redirect: 'follow',
       headers: {'Content-Type': 'text/plain;charset=utf-8'},
@@ -4792,17 +5495,18 @@ async function askModel(messages) {
     });
     var text = await r.text(), out = {};
     try { out = JSON.parse(text); } catch(e) { throw new Error('The sheet did not answer in a way I understand.'); }
-    if (out.status !== 'success') throw new Error(out.message || 'The sheet has no assistant set up yet.');
+    if (out.status !== 'success' || out.reply === undefined) {
+      aiSheetOk = false;
+      throw new Error('SHEET_NO_AI');
+    }
     return out.reply || '';
   }
 
   var res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': cfg.key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
+      'Content-Type': 'application/json', 'x-api-key': cfg.key,
+      'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify(body)
   });
@@ -4814,47 +5518,78 @@ async function askModel(messages) {
 
 /* ── The page ── */
 var CHAT_STARTERS = [
-  'What is due this week?',
-  'Which orders have not started?',
-  'Who still owes me an answer?',
-  'What do I need to reorder?',
-  'How much have I invoiced this month?'
+  'How much has Gerard spent?',
+  'Who owes me money?',
+  'What is running late?',
+  'What should I reorder?',
+  'What is Delta holding?'
 ];
 
 function renderChat() {
   var el = $('chat-log'); if (!el) return;
+
+  var quick = '<div class="quick-reports">'
+    + Object.keys(REPORTS).map(function(k) {
+        return '<button class="chip" onclick="runReport(\'' + k + '\')">' + esc(REPORTS[k].label) + '</button>';
+      }).join('')
+    + '</div>';
+
   if (!chatLog.length) {
     el.innerHTML = '<div class="chat-empty">'
       + '<div class="empty-title">Ask the workshop anything</div>'
-      + '<div class="empty-body">It can see your orders, invoices, customers, stock, leads and price list — '
-      + 'so ask the way you would ask a colleague.</div>'
-      + '<div class="chips" style="justify-content:center;margin-top:18px">'
+      + '<div class="empty-body">Ask about anyone by name, any order or invoice by number, or the money, '
+      + 'the stock, the leads and Delta. It reads your own records, so it answers at once and needs nothing set up.</div>'
+      + quick
+      + '<div class="chips" style="justify-content:center;margin-top:16px">'
       + CHAT_STARTERS.map(function(s){ return '<button class="chip" onclick="chatAsk(this.dataset.q)" data-q="'+esc(s)+'">'+esc(s)+'</button>'; }).join('')
       + '</div></div>';
   } else {
-    el.innerHTML = chatLog.map(function(m) {
+    el.innerHTML = quick + chatLog.map(function(m) {
       return '<div class="msg ' + (m.role === 'user' ? 'me' : 'it') + '">'
         + '<div class="bubble">' + chatFormat(m.content) + '</div></div>';
     }).join('')
+    + (pendingActions ? actionCard() : '')
     + (chatBusy ? '<div class="msg it"><div class="bubble thinking">Reading the floor…</div></div>' : '');
   }
   el.scrollTop = el.scrollHeight;
   $('chat-send').disabled = chatBusy;
-  $('chat-state').textContent = aiReady()
-    ? (aiCfg().mode === 'sheet' ? 'Answering through your Google Sheet' : 'Answering with your own key on this device')
-    : 'Not connected yet — open Settings to set it up';
+  $('chat-state').textContent =
+      aiSheetOk === false && aiCfg().mode === 'sheet'
+        ? 'Answers from your records · the sheet has no model yet, see Settings'
+    : aiCfg().mode === 'direct' && aiCfg().key
+        ? 'Answers from your records · open questions use your key on this device'
+    : 'Answers from your records · open questions go through your Google Sheet';
 }
 
-/* Light formatting: paragraphs, simple lists, bold. Nothing more. */
+function actionCard() {
+  return '<div class="action-card"><div class="ac-head">Shall I make these changes?</div><ul>'
+    + pendingActions.map(function(a){ return '<li>' + esc(actionText(a)) + '</li>'; }).join('')
+    + '</ul><div class="ac-btns">'
+    + '<button class="btn" onclick="discardPendingActions()">Leave it</button>'
+    + '<button class="btn gold" onclick="applyPendingActions()">Make the changes</button>'
+    + '</div></div>';
+}
+
 function chatFormat(t) {
-  var safe = esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  var safe = esc(t).replace(/```action[\s\S]*?```/g, '').trim();
+  safe = safe.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   return safe.split(/\n{2,}/).map(function(p) {
     if (/^\s*[-*•]\s+/m.test(p)) {
-      return '<ul>' + p.split('\n').filter(function(l){ return l.trim(); })
+      var head = '', lines = p.split('\n');
+      if (!/^\s*[-*•]/.test(lines[0])) { head = '<p>' + lines.shift() + '</p>'; }
+      return head + '<ul>' + lines.filter(function(l){ return l.trim(); })
         .map(function(l){ return '<li>' + l.replace(/^\s*[-*•]\s+/, '') + '</li>'; }).join('') + '</ul>';
     }
     return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
   }).join('');
+}
+
+/* A report needs no key and no connection — it is just arithmetic. */
+function runReport(k) {
+  var r = REPORTS[k]; if (!r) return;
+  chatLog.push({role: 'user', content: r.label});
+  chatLog.push({role: 'assistant', content: r.run()});
+  renderChat();
 }
 
 function chatAsk(q) { $('chat-input').value = q; sendChat(); }
@@ -4863,30 +5598,70 @@ async function sendChat() {
   var box = $('chat-input');
   var text = box.value.trim();
   if (!text || chatBusy) return;
-  if (!aiReady()) { openAiSettings(); return; }
 
   chatLog.push({role: 'user', content: text});
   box.value = ''; box.style.height = 'auto';
-  chatBusy = true; renderChat();
+  pendingActions = null;
 
+  // Anything that is a lookup is answered from the records, exactly and at once.
+  var local = localAnswer(text);
+  if (local) {
+    chatLog.push({role: 'assistant', content: local});
+    renderChat();
+    return;
+  }
+
+  chatBusy = true; renderChat();
   try {
-    var reply = await askModel(chatLog.slice(-12));
+    var reply = await askModel(chatLog.slice(-12).map(function(m) {
+      return {role: m.role, content: m.content};
+    }));
     chatLog.push({role: 'assistant', content: reply || '(no answer came back)'});
+    var m = reply.match(/```action\s*([\s\S]*?)```/);
+    if (m) {
+      try {
+        var list = JSON.parse(m[1].trim());
+        if (Array.isArray(list) && list.length) pendingActions = list;
+      } catch(e) {}
+    }
   } catch (err) {
-    chatLog.push({role: 'assistant', content: 'That did not go through. ' + (err.message || err)});
+    var near = localFallback(text);
+    chatLog.push({role: 'assistant', content:
+      near ? near + '\n\n---\n\n' + chatTrouble(err) : chatTrouble(err)});
   }
   chatBusy = false; renderChat();
 }
 
-function clearChat() { chatLog = []; renderChat(); }
+/* Says what actually went wrong, and what to do about it. */
+function chatTrouble(err) {
+  var msg = String((err && err.message) || err);
+  if (msg === 'SHEET_NO_AI') {
+    return 'I can answer anything about a person, an order, an invoice, money, stock, leads or Delta '
+      + 'straight from your records — try naming one, or use the buttons above.\n\n'
+      + 'For questions in your own words I need a model, and your Google Sheet has not been given one '
+      + 'yet. Open **Settings** on this page: either add the assistant section to your Apps Script, or '
+      + 'switch to keeping a key on this device.';
+  }
+  if (/api key|x-api-key|authentication|401/i.test(msg)) {
+    return 'That key was refused. Check it in **Settings** — it should begin sk-ant-.';
+  }
+  if (/model/i.test(msg) && /not.*found|invalid/i.test(msg)) {
+    return 'That model name was not recognised. Change it in **Settings**.';
+  }
+  if (/credit|quota|billing|rate/i.test(msg)) {
+    return 'The model would not answer: ' + msg + '. The reports above still work.';
+  }
+  return 'That did not go through — ' + msg + '. The reports above still work, and I can answer about '
+    + 'any person, order or invoice by name or number.';
+}
+
+function clearChat() { chatLog = []; pendingActions = null; renderChat(); }
 function growChatBox(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 140) + 'px'; }
 
 /* ── Settings ── */
 function openAiSettings() {
   var c = aiCfg();
-  $('ai-mode').value  = c.mode;
-  $('ai-key').value   = c.key;
-  $('ai-model').value = c.model;
+  $('ai-mode').value = c.mode; $('ai-key').value = c.key; $('ai-model').value = c.model;
   onAiModeChange();
   $('ai-modal').classList.add('open');
 }
@@ -4896,7 +5671,9 @@ function onAiModeChange() {
   $('ai-sheet-note').style.display = $('ai-mode').value === 'sheet' ? '' : 'none';
 }
 function saveAiSettings() {
-  saveAiCfg({mode: $('ai-mode').value, key: $('ai-key').value.trim(), model: $('ai-model').value.trim() || 'claude-sonnet-4-6'});
+  saveAiCfg({mode: $('ai-mode').value, key: $('ai-key').value.trim(),
+             model: $('ai-model').value.trim() || 'claude-sonnet-4-6'});
+  aiSheetOk = null;
   closeAiSettings(); renderChat();
   showToast('Assistant settings saved');
 }
@@ -4909,7 +5686,7 @@ function saveAiSettings() {
    garment never quietly rewrites a bill.
    ══════════════════════════════════════════════════ */
 
-var invFilter = 'all', invEditId = '', invLines = [], invMakeOrder = true;
+var invFilter = 'all', invEditId = '', invLines = [], invMakeOrder = true, invStaff = '';
 
 function invoiceSubtotal(v) { return (v.lines||[]).reduce(function(a,l){ return a + (Number(l.qty)||0) * (Number(l.unit)||0); }, 0); }
 function invoiceTotal(v)    { return Math.max(0, invoiceSubtotal(v) - (Number(v.discount)||0)); }
@@ -4952,7 +5729,7 @@ function renderInvoices() {
       if (v.orderNum && findOrder(v.orderNum)) return false;
     } else if (invFilter !== 'all' && st !== invFilter) return false;
     if (!term) return true;
-    return [v.no, v.orderNum, v.client, v.email, v.phone].some(function(x){ return hit(x, term); });
+    return [v.no, v.orderNum, v.client, v.email, v.phone, v.staff].some(function(x){ return hit(x, term); });
   }).sort(function(a,b){ return String(b.issued||'').localeCompare(String(a.issued||'')) || String(b.no||'').localeCompare(String(a.no||'')); });
 
   if (rows.length === 0) {
@@ -4970,7 +5747,8 @@ function renderInvoices() {
       + '<td><div class="cell-strong num">'+esc(v.no)+'</div><div class="cell-sub">'
       +   (onFloor ? 'Order ' + esc(v.orderNum) : 'Not on the floor')+'</div></td>'
       + '<td><div class="cell-strong">'+esc(v.client||'—')+'</div>'
-      +   (contact ? '<div class="cell-sub">'+esc(contact)+'</div>' : '')+'</td>'
+      +   (contact ? '<div class="cell-sub">'+esc(contact)+'</div>' : '')
+      +   (v.staff ? '<div class="cell-sub">Handled by '+esc(v.staff)+'</div>' : '')+'</td>'
       + '<td>'+esc(formatDisplayDate(v.issued))+'</td>'
       + '<td>'+esc(formatDisplayDate(v.due))+'</td>'
       + '<td class="num">S$ '+money(invoiceTotal(v))+'</td>'
@@ -5048,6 +5826,8 @@ function openInvoiceModal(id) {
   invLines = v ? JSON.parse(JSON.stringify(v.lines||[])) : [{desc:'',qty:1,unit:''}];
   invMakeOrder = v ? (v.makeOrder !== false) : true;
   $('inv-makeorder').classList.toggle('on', invMakeOrder);
+  var lastStaff = ''; try { lastStaff = localStorage.getItem('sakal-last-staff') || ''; } catch(e) {}
+  setInvStaff(v ? (v.staff || '') : lastStaff);
   $('inv-delete').style.display = v ? '' : 'none';
   renderInvLines(); recalcInvoice(); updateInvOrderHint();
   $('invoice-modal').classList.add('open');
@@ -5225,6 +6005,17 @@ function renderInvSearch() {
   }).join('');
 }
 
+/* Tapping the chip that is already chosen clears it; opening the form
+   with a value (from a saved invoice, or the last person used) sets it
+   outright without that toggle. */
+function toggleInvStaff(name) { setInvStaff(invStaff === name ? '' : name); }
+function setInvStaff(name) {
+  invStaff = name || '';
+  document.querySelectorAll('#inv-staff-chips .chip').forEach(function(b) {
+    b.classList.toggle('on', b.getAttribute('data-staff') === invStaff);
+  });
+}
+
 /* One tap on a price adds a line — from the price list page or the picker. */
 function quoteFrom(fid, key) {
   var f = pricelist.find(function(x){ return x.id === fid; }); if (!f) return;
@@ -5363,13 +6154,14 @@ function saveInvoice() {
 
   var payload = {
     no: no, client: client, email: $('inv-email').value.trim(), phone: $('inv-phone').value.trim(),
-    orderNum: orderNum,
+    staff: invStaff, orderNum: orderNum,
     issued: $('inv-issued').value, due: $('inv-due').value, fitting: $('inv-fitting').value,
     lines: lines.length ? lines : invLines,
     discount: Number($('inv-discount').value)||0,
     note: $('inv-note').value.trim(), makeOrder: invMakeOrder, updated: todayYMD()
   };
 
+  try { localStorage.setItem('sakal-last-staff', invStaff); } catch(e) {}
   var saved;
   if (invEditId) {
     var i = invoices.findIndex(function(x){ return x.id === invEditId; });
@@ -5440,7 +6232,7 @@ function feedOrderFromInvoice(v) {
               status:'', paid:false, invoice:true, stuck:false};
     }),
     date: todayYMD(), fitted: 0,
-    remarks: v.note || ('Raised from invoice ' + v.no), archived: false
+    remarks: v.note || ('Raised from invoice ' + v.no), staff: v.staff || '', archived: false
   };
   orders.unshift(o);
   syncToServer(o);
@@ -5490,7 +6282,7 @@ function orderFromInvoiceRecord(v) {
       return {product:it.product, fabric:it.fabric, lining:it.lining, design:it.design||null,
               status:'', paid:false, invoice:true, stuck:false};
     }),
-    date: v.issued || todayYMD(), fitted: 0, remarks: note, archived: false
+    date: v.issued || todayYMD(), fitted: 0, remarks: note, staff: v.staff || '', archived: false
   };
 }
 
