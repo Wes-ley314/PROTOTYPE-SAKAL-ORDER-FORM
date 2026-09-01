@@ -1429,16 +1429,13 @@
         <div>
           <label class="field-label">Canvas</label>
           <div class="chips">
-            <button class="chip" data-canvas="Half Canvas" onclick="setDeltaCanvas('Half Canvas')">Half canvas <span style="opacity:.6">S$140</span></button>
-            <button class="chip" data-canvas="Full Canvas" onclick="setDeltaCanvas('Full Canvas')">Full canvas <span style="opacity:.6">S$180</span></button>
+            <button class="chip" data-canvas="Half Canvas" onclick="setDeltaCanvas('Half Canvas')">Half canvas</button>
+            <button class="chip" data-canvas="Full Canvas" onclick="setDeltaCanvas('Full Canvas')">Full canvas</button>
           </div>
         </div>
         <div>
           <label class="field-label">Add-ons</label>
           <div class="chips" id="dm-addons"></div>
-        </div>
-        <div class="totals">
-          <div class="total-row grand"><span>Charge</span><span id="dm-total">S$ 140</span></div>
         </div>
       </div>
     </div>
@@ -3425,10 +3422,11 @@ function chosenAddons() {
   return Array.prototype.map.call(document.querySelectorAll('#dm-addons .chip.on'),
     function(b){ return b.getAttribute('data-addon'); });
 }
+/* The charge is still worked out and saved with the order — it just is
+   not shown while the order is being put together, only later on the
+   list if "Show charges" is switched on. */
 function updateDeltaTotal() {
-  var t = deltaTotal({canvas: deltaCanvas, addons: chosenAddons()});
-  $('dm-total').textContent = 'S$ ' + money0(t);
-  return t;
+  return deltaTotal({canvas: deltaCanvas, addons: chosenAddons()});
 }
 
 function openDeltaModal(i) {
@@ -3444,7 +3442,7 @@ function openDeltaModal(i) {
   $('dm-addons').innerHTML = Object.keys(DELTA_ADDONS).map(function(a) {
     var on = o && (o.addons||[]).indexOf(a) !== -1;
     return '<button class="chip'+(on?' on':'')+'" data-addon="'+esc(a)+'" onclick="toggleDeltaAddon(this)">'
-      + esc(a) + ' <span style="opacity:.6">+' + DELTA_ADDONS[a] + '</span></button>';
+      + esc(a) + '</button>';
   }).join('');
   setDeltaCanvas(o ? o.canvas : 'Half Canvas');
   $('dm-delete').style.display = o ? '' : 'none';
