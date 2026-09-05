@@ -1,0 +1,168 @@
+/* ══════════════════════════════════════════════════
+   CUSTOMERS
+   The book: name, phone, email. Everything else about
+   them hangs off their orders and invoices.
+   ══════════════════════════════════════════════════ */
+
+var custFilter = 'all', custEditId = '';
+
+function normName(s) { return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); }
+function findCustomer(name) {
+  var k = normName(name);
+  return k ? customers.find(function(c){ return normName(c.name) === k; }) : null;
+}
+
+/* Every invoice quietly files the customer, so the book fills itself. */
+function rememberCustomer(v) {
+  if (!v || !String(v.client||'').trim()) return null;
+  var c = findCustomer(v.client);
+  if (c) {
+    if (v.phone) c.phone = v.phone;
+    if (v.email) c.email = v.email;
+    c.updated = todayYMD();
+  } else {
+    c = {id:uid(), name:v.client.trim(), phone:v.phone||'', email:v.email||'', note:'', updated:todayYMD()};
+    customers.unshift(c);
+  }
+  persistCustomers();
+  return c;
+}
+
+function setCustFilter(f) {
+  custFilter = f;
+  document.querySelectorAll('[data-custfilter]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-custfilter') === f); });
+  renderCustomers();
+}
+
+/* Their purchases, newest first — what they bought and what it came to. */
+function purchaseHistory(c) {
+  var k = normName(c.name);
+  return invoices.filter(function(v){ return normName(v.client) === k; })
+    .map(function(v) {
+      var what = (v.lines || []).map(function(l){ return String(l.desc||'').trim(); })
+                                .filter(Boolean).join(', ');
+      return {no: v.no, date: v.issued || '', total: invoiceTotal(v), what: what, orderNum: v.orderNum || ''};
+    })
+    .sort(function(a,b){ return String(b.date).localeCompare(String(a.date)); });
+}
+
+function historyCell(c) {
+  var h = purchaseHistory(c);
+  if (!h.length) return '<span style="color:var(--faint)">Nothing yet</span>';
+  var shown = h.slice(0, 4);
+  var spend = h.reduce(function(a,x){ return a + x.total; }, 0);
+  return shown.map(function(x) {
+      return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:baseline">'
+        + '<span class="num" style="color:var(--muted);min-width:82px">'+esc(x.date ? formatDisplayDate(x.date) : '—')+'</span>'
+        + '<span class="num" style="min-width:74px">S$ '+money(x.total)+'</span>'
+        + (x.what ? '<span class="cell-sub" style="margin:0;flex:1 1 140px">'+esc(x.what)+'</span>' : '')
+        + '</div>';
+    }).join('')
+    + (h.length > shown.length
+        ? '<div class="cell-sub">'+(h.length - shown.length)+' earlier · S$ '+money(spend)+' in all</div>'
+        : (h.length > 1 ? '<div class="cell-sub">S$ '+money(spend)+' in all</div>' : ''));
+}
+
+function renderCustomers() {
+  var el = $('cust-content'); if (!el) return;
+  var term = ($('cust-search') ? $('cust-search').value : '').trim().toLowerCase();
+
+  var hs = customers.map(purchaseHistory);
+  var repeat = hs.filter(function(h){ return h.length > 1; }).length;
+  var spend  = hs.reduce(function(a,h){ return a + h.reduce(function(x,y){ return x + y.total; }, 0); }, 0);
+  $('cust-stats').innerHTML =
+      stat('Customers', customers.length, 'Everyone you have billed')
+    + stat('Repeat', repeat, repeat ? 'Bought more than once' : 'No repeats yet')
+    + stat('Billed to date', 'S$ ' + money(spend), 'Across every invoice');
+
+  var rows = customers.filter(function(c) {
+    if (custFilter === 'repeat'    && purchaseHistory(c).length < 2) return false;
+    if (custFilter === 'nocontact' && c.phone && c.email) return false;
+    if (!term) return true;
+    return [c.name, c.phone, c.email, c.note].some(function(v){ return hit(v, term); });
+  }).sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+
+  if (rows.length === 0) {
+    el.innerHTML = customers.length === 0
+      ? emptyState('No customers yet', 'Every invoice you raise files its customer here automatically. You can also add one by hand.', '<button class="btn gold" onclick="openCustModal()">+ New customer</button>')
+      : emptyState('Nothing matches', 'Try a name, a phone number, or part of an email.');
+    updateCounts(); return;
+  }
+
+  var body = rows.map(function(c) {
+    return '<tr class="'+((!c.phone || !c.email) ? 'row-flag' : '')+'">'
+      + '<td style="vertical-align:top"><div class="cell-strong">'+esc(c.name)+'</div>'
+      +   (c.note ? '<div class="cell-sub">'+esc(c.note)+'</div>' : '')+'</td>'
+      + '<td style="vertical-align:top">'+(c.phone ? esc(c.phone) : '<span style="color:var(--faint)">—</span>')+'</td>'
+      + '<td style="vertical-align:top">'+(c.email ? esc(c.email) : '<span style="color:var(--faint)">—</span>')+'</td>'
+      + '<td style="vertical-align:top">'+historyCell(c)+'</td>'
+      + '<td class="acts" style="vertical-align:top">'
+      +   '<button class="btn sm" onclick="invoiceForCustomer(\''+esc(c.id)+'\')">New invoice</button> '
+      +   '<button class="btn sm" onclick="openCustModal(\''+esc(c.id)+'\')">Edit</button>'
+      + '</td></tr>';
+  }).join('');
+
+  el.innerHTML = '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:900px">'
+    + '<thead><tr><th>Name</th><th>Phone number</th><th>Email</th><th>Purchase history</th><th></th></tr></thead>'
+    + '<tbody>' + body + '</tbody></table></div></div>';
+  updateCounts();
+}
+
+function invoiceForCustomer(id) {
+  var c = customers.find(function(x){ return x.id === id; }); if (!c) return;
+  go('invoice'); openInvoiceModal();
+  $('inv-client').value = c.name;
+  $('inv-phone').value  = c.phone || '';
+  $('inv-email').value  = c.email || '';
+}
+
+function openCustModal(id) {
+  custEditId = id || '';
+  var c = id ? customers.find(function(x){ return x.id === id; }) : null;
+  $('cust-modal-title').textContent = c ? c.name : 'New customer';
+  $('cs-name').value  = c ? (c.name||'')  : '';
+  $('cs-phone').value = c ? (c.phone||'') : '';
+  $('cs-email').value = c ? (c.email||'') : '';
+  $('cs-note').value  = c ? (c.note||'')  : '';
+  $('cs-delete').style.display = c ? '' : 'none';
+  $('cs-name-err').classList.remove('show'); $('cs-name').classList.remove('err');
+  $('cust-modal').classList.add('open');
+  setTimeout(function(){ $('cs-name').focus(); }, 60);
+}
+function closeCustModal() { $('cust-modal').classList.remove('open'); custEditId = ''; }
+function saveCustomer() {
+  var name = $('cs-name').value.trim();
+  if (!name) { $('cs-name-err').classList.add('show'); $('cs-name').classList.add('err'); $('cs-name').focus(); return; }
+  var clash = customers.find(function(c){ return normName(c.name) === normName(name) && c.id !== custEditId; });
+  if (clash) { showToast(name + ' is already in the book.'); return; }
+  var payload = {
+    name: name, phone: $('cs-phone').value.trim(), email: $('cs-email').value.trim(),
+    note: $('cs-note').value.trim(), updated: todayYMD()
+  };
+  if (custEditId) {
+    var i = customers.findIndex(function(x){ return x.id === custEditId; });
+    if (i > -1) customers[i] = Object.assign(customers[i], payload);
+  } else {
+    payload.id = uid(); customers.unshift(payload);
+  }
+  persistCustomers(); closeCustModal(); renderCustomers(); updateCounts();
+  showToast(custEditId ? 'Customer updated' : 'Customer added');
+}
+function deleteCustomer() {
+  if (!custEditId) return;
+  customers = customers.filter(function(x){ return x.id !== custEditId; });
+  persistCustomers(); closeCustModal(); renderCustomers(); updateCounts();
+  showToast('Customer removed from the book');
+}
+function exportCustomers() {
+  var rows = [['Name','Phone number','Email','Invoice','Date','Amount','Bought','Note']];
+  customers.forEach(function(c) {
+    var h = purchaseHistory(c);
+    if (!h.length) { rows.push([c.name, c.phone, c.email, '', '', '', '', c.note]); return; }
+    h.forEach(function(x, i) {
+      rows.push([i === 0 ? c.name : '', i === 0 ? c.phone : '', i === 0 ? c.email : '',
+                 x.no, x.date, x.total.toFixed(2), x.what, i === 0 ? c.note : '']);
+    });
+  });
+  downloadCsv('sakal-customers.csv', rows);
+}

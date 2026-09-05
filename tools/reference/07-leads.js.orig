@@ -1,0 +1,161 @@
+/* ══════════════════════════════════════════════════
+   LEADS
+   Every enquiry, from first message to first order.
+   ══════════════════════════════════════════════════ */
+
+var leadFilter = 'all', leadEditId = '', ldFlags = {booked:false, attended:false, purchased:false};
+
+function setLeadFilter(f) {
+  leadFilter = f;
+  document.querySelectorAll('[data-leadfilter]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-leadfilter') === f); });
+  renderLeads();
+}
+function isYes(v) { return String(v||'').toLowerCase() === 'yes'; }
+function leadStage(l) {
+  if (isYes(l.purchased)) return 'Purchased';
+  if (isYes(l.attended))  return 'Attended';
+  if (isYes(l.booked))    return 'Booked';
+  return 'Enquiry';
+}
+function stageTag(s) {
+  var tone = {Purchased:'green', Attended:'gold', Booked:'blue', Enquiry:''}[s] || '';
+  return '<span class="tag '+tone+'">'+esc(s)+'</span>';
+}
+function cycleLead(id, field) {
+  var l = leads.find(function(x){ return x.id === id; }); if (!l) return;
+  l[field] = isYes(l[field]) ? 'No' : 'Yes';
+  if (field === 'purchased' && isYes(l.purchased)) {
+    if (!l.purchaseDate) l.purchaseDate = todayYMD();
+    l.booked = 'Yes'; l.attended = 'Yes';
+  }
+  if (field === 'attended' && isYes(l.attended)) l.booked = 'Yes';
+  persistLeads(); renderLeads(); updateCounts();
+}
+
+function renderLeads() {
+  var el = $('leads-content'); if (!el) return;
+  var term = ($('leads-search') ? $('leads-search').value : '').trim().toLowerCase();
+
+  var total = leads.length;
+  var booked = leads.filter(function(l){ return isYes(l.booked); }).length;
+  var attended = leads.filter(function(l){ return isYes(l.attended); }).length;
+  var won = leads.filter(function(l){ return isYes(l.purchased); }).length;
+  var conv = total ? Math.round(won / total * 1000) / 10 : 0;
+  $('leads-stats').innerHTML =
+      stat('Leads', total, 'Every enquiry logged')
+    + stat('Consultations booked', booked, total ? Math.round(booked/total*100) + '% of leads' : '—')
+    + stat('Attended', attended, booked ? Math.round(attended/booked*100) + '% of bookings kept' : 'No bookings yet')
+    + stat('Purchased', won, conv + '% of leads convert', won ? 'ok' : '');
+
+  var rows = leads.filter(function(l) {
+    if (leadFilter === 'new'      && (isYes(l.booked) || isYes(l.purchased))) return false;
+    if (leadFilter === 'booked'   && !isYes(l.booked)) return false;
+    if (leadFilter === 'attended' && !isYes(l.attended)) return false;
+    if (leadFilter === 'won'      && !isYes(l.purchased)) return false;
+    if (leadFilter === 'followup' && !l.followUp) return false;
+    if (!term) return true;
+    return [l.name, l.phone, l.email, l.source, l.remarks].some(function(v){ return hit(v, term); });
+  }).sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+
+  if (rows.length === 0) {
+    el.innerHTML = leads.length === 0
+      ? emptyState('No leads yet', 'Log every enquiry as it comes in — website, Google, Instagram, walk-in — and watch what converts.', '<button class="btn gold" onclick="openLeadModal()">+ New lead</button>')
+      : emptyState('Nothing matches', 'Try a name, a phone number, or where the lead came from.');
+    updateCounts(); return;
+  }
+
+  var body = rows.map(function(l) {
+    var due = l.followUp && !isYes(l.purchased) && isOverdue(l.followUp);
+    var contact = [l.phone, l.email].filter(Boolean);
+    return '<tr class="'+(due?'row-flag':'')+'">'
+      + '<td>'+esc(formatDisplayDate(l.date))+'</td>'
+      + '<td><div class="cell-strong">'+esc(l.name)+'</div>'
+      +   (l.remarks ? '<div class="cell-sub">'+esc(l.remarks)+'</div>' : '')+'</td>'
+      + '<td>'+(l.phone ? '<div>'+esc(l.phone)+'</div>' : '')
+      +   (l.email ? '<div class="cell-sub">'+esc(l.email)+'</div>' : '')
+      +   (contact.length ? '' : '<span style="color:var(--faint)">—</span>')+'</td>'
+      + '<td><span class="tag">'+esc(l.source||'—')+'</span></td>'
+      + '<td>'+stageTag(leadStage(l))+'</td>'
+      + '<td class="acts" style="white-space:nowrap">'
+      +   '<span class="yn'+(isYes(l.booked)?' y':' n')+'" onclick="cycleLead(\''+esc(l.id)+'\',\'booked\')">Booked</span> '
+      +   '<span class="yn'+(isYes(l.attended)?' y':' n')+'" onclick="cycleLead(\''+esc(l.id)+'\',\'attended\')">Came</span> '
+      +   '<span class="yn'+(isYes(l.purchased)?' y':' n')+'" onclick="cycleLead(\''+esc(l.id)+'\',\'purchased\')">Bought</span>'
+      + '</td>'
+      + '<td>'+(l.consultDate ? esc(formatDisplayDate(l.consultDate)) : '<span style="color:var(--faint)">—</span>')+'</td>'
+      + '<td>'+(l.followUp ? '<span style="'+(due?'color:var(--danger);font-weight:600':'')+'">'+esc(formatDisplayDate(l.followUp))+'</span>' : '<span style="color:var(--faint)">—</span>')+'</td>'
+      + '<td class="acts"><button class="btn sm" onclick="openLeadModal(\''+esc(l.id)+'\')">Open</button></td>'
+      + '</tr>';
+  }).join('');
+
+  el.innerHTML = '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:1040px">'
+    + '<thead><tr><th>Enquired</th><th>Name</th><th>Contact</th><th>Source</th><th>Stage</th>'
+    + '<th>Progress</th><th>Consultation</th><th>Follow up</th><th></th></tr></thead>'
+    + '<tbody>' + body + '</tbody></table></div></div>';
+  updateCounts();
+}
+
+function toggleLd(k) { ldFlags[k] = !ldFlags[k]; $('ld-'+k).classList.toggle('on', ldFlags[k]); }
+
+function openLeadModal(id) {
+  leadEditId = id || '';
+  var l = id ? leads.find(function(x){ return x.id === id; }) : null;
+  $('lead-modal-title').textContent = l ? 'Lead — ' + l.name : 'New lead';
+  $('ld-name').value      = l ? (l.name||'')   : '';
+  $('ld-date').value      = l ? parseToYMD(l.date) : todayYMD();
+  $('ld-phone').value     = l ? (l.phone||'')  : '';
+  $('ld-email').value     = l ? (l.email||'')  : '';
+  $('ld-source').value    = l && l.source ? l.source : 'Website';
+  if (l && l.source && !Array.from($('ld-source').options).some(function(o){ return o.value === l.source; })) {
+    var opt = document.createElement('option'); opt.textContent = l.source; $('ld-source').appendChild(opt); $('ld-source').value = l.source;
+  }
+  $('ld-consult').value   = l ? parseToYMD(l.consultDate) : '';
+  $('ld-purchdate').value = l ? parseToYMD(l.purchaseDate) : '';
+  $('ld-follow').value    = l ? parseToYMD(l.followUp) : '';
+  $('ld-remarks').value   = l ? (l.remarks||'') : '';
+  ['booked','attended','purchased'].forEach(function(k) {
+    ldFlags[k] = l ? isYes(l[k]) : false;
+    $('ld-'+k).classList.toggle('on', ldFlags[k]);
+  });
+  $('ld-delete').style.display = l ? '' : 'none';
+  $('ld-name-err').classList.remove('show'); $('ld-name').classList.remove('err');
+  $('lead-modal').classList.add('open');
+  setTimeout(function(){ $('ld-name').focus(); }, 60);
+}
+function closeLeadModal() { $('lead-modal').classList.remove('open'); leadEditId = ''; }
+function saveLeadForm() {
+  var name = $('ld-name').value.trim();
+  if (!name) { $('ld-name-err').classList.add('show'); $('ld-name').classList.add('err'); $('ld-name').focus(); return; }
+  var payload = {
+    name: name, date: $('ld-date').value || todayYMD(),
+    phone: $('ld-phone').value.trim(), email: $('ld-email').value.trim(),
+    source: $('ld-source').value,
+    booked:    ldFlags.booked    ? 'Yes' : 'No',
+    attended:  ldFlags.attended  ? 'Yes' : 'No',
+    purchased: ldFlags.purchased ? 'Yes' : 'No',
+    consultDate: $('ld-consult').value, purchaseDate: $('ld-purchdate').value,
+    followUp: $('ld-follow').value, remarks: $('ld-remarks').value.trim(),
+    updated: todayYMD()
+  };
+  if (leadEditId) {
+    var i = leads.findIndex(function(x){ return x.id === leadEditId; });
+    if (i > -1) leads[i] = Object.assign(leads[i], payload);
+  } else {
+    payload.id = uid(); leads.unshift(payload);
+  }
+  persistLeads(); closeLeadModal(); renderLeads(); updateCounts();
+  showToast(leadEditId ? 'Lead updated' : 'Lead added');
+}
+function deleteLead() {
+  if (!leadEditId) return;
+  leads = leads.filter(function(x){ return x.id !== leadEditId; });
+  persistLeads(); closeLeadModal(); renderLeads(); updateCounts();
+  showToast('Lead removed');
+}
+function exportLeads() {
+  var rows = [['Date','Name','Phone','Email','Source','Consultation booked','Consultation date','Attended','Purchased','Purchase date','Follow-up date','Remarks']];
+  leads.forEach(function(l) {
+    rows.push([l.date, l.name, l.phone, l.email, l.source, l.booked, l.consultDate,
+               l.attended, l.purchased, l.purchaseDate, l.followUp, l.remarks]);
+  });
+  downloadCsv('sakal-leads.csv', rows);
+}

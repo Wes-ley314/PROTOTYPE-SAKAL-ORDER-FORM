@@ -1,0 +1,172 @@
+/* ══════════════════════════════════════════════════
+   OPERATION
+   The SIM cards and the stored-value cards the shop
+   runs on — separately, because they are watched for
+   different things. A SIM has an expiry; a card has a
+   balance and a date it was last topped up.
+   ══════════════════════════════════════════════════ */
+
+var OPS_TYPES  = ['SIM Card','Ez-Link Card','NETS Card'];
+var OPS_HOLDERS = ['Lia','Lina','Benjamin','Wesley','Kharsima','Office'];
+var opsFilter = 'all', opsEditId = '';
+
+function isSim(o) { return o.type === 'SIM Card'; }
+function opExpiringSoon(o) {
+  if (!o.expiry) return false;
+  var d = new Date(parseToYMD(o.expiry)), n = new Date(todayYMD());
+  var days = (d - n) / 86400000;
+  return days >= 0 && days <= 45;
+}
+/* A card nobody has topped up in two months is worth a look. */
+function topupStale(o) {
+  if (isSim(o) || !o.topup) return false;
+  var d = new Date(parseToYMD(o.topup)), n = new Date(todayYMD());
+  return (n - d) / 86400000 > 60;
+}
+function opNeedsEye(o) {
+  return isSim(o) ? (isOverdue(o.expiry) || opExpiringSoon(o)) : topupStale(o);
+}
+function setOpsFilter(f) {
+  opsFilter = f;
+  document.querySelectorAll('[data-opsfilter]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-opsfilter') === f); });
+  renderOps();
+}
+function holderOptions(sel) {
+  var list = OPS_HOLDERS.slice();
+  if (sel && list.indexOf(sel) === -1) list.push(sel);
+  return list.map(function(h){ return '<option'+(h===sel?' selected':'')+'>'+esc(h)+'</option>'; }).join('');
+}
+
+function renderOps() {
+  var el = $('ops-content'); if (!el) return;
+  var term = ($('ops-search') ? $('ops-search').value : '').trim().toLowerCase();
+
+  var counts = {};
+  OPS_TYPES.forEach(function(t){ counts[t] = opitems.filter(function(o){ return o.type === t; }).length; });
+  var eye = opitems.filter(opNeedsEye).length;
+  $('ops-stats').innerHTML =
+      stat('SIM cards', counts['SIM Card'], 'Shop and workshop lines')
+    + stat('Ez-Link cards', counts['Ez-Link Card'], 'Transit and deliveries')
+    + stat('NETS cards', counts['NETS Card'], 'Counter payments')
+    + stat('Needs a look', eye, eye ? 'Expiring, expired or long unfilled' : 'Everything current', eye ? 'alarm' : 'ok');
+
+  var rows = opitems.filter(function(o) {
+    if (opsFilter !== 'all' && o.type !== opsFilter) return false;
+    if (!term) return true;
+    return [o.number, o.provider, o.holder, o.note].some(function(v){ return hit(v, term); });
+  });
+
+  if (rows.length === 0) {
+    el.innerHTML = opitems.length === 0
+      ? emptyState('Nothing logged yet', 'Keep the shop SIM, the Ez-Link cards for the Batam runs and the NETS cards here, so you know who has what.', '<button class="btn gold" onclick="openOpsModal()">+ Add card</button>')
+      : emptyState('Nothing matches', 'Try a number, a provider, or who holds it.');
+    updateCounts(); return;
+  }
+
+  var sims  = rows.filter(isSim).sort(function(a,b){ return String(a.holder||'').localeCompare(String(b.holder||'')); });
+  var cards = rows.filter(function(o){ return !isSim(o); })
+                  .sort(function(a,b){ return String(a.type).localeCompare(String(b.type))
+                                           || String(a.holder||'').localeCompare(String(b.holder||'')); });
+
+  var html = '';
+
+  if (sims.length) {
+    html += '<div class="section-head"><span class="section-title">SIM cards &nbsp;·&nbsp; ' + sims.length + '</span></div>'
+      + '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:640px">'
+      + '<thead><tr><th>Number</th><th>Provider</th><th>Expiry date</th><th>Held by</th><th></th></tr></thead><tbody>'
+      + sims.map(function(o) {
+          var flag = opNeedsEye(o);
+          return '<tr class="'+(flag?'row-flag':'')+'">'
+            + '<td><div class="cell-strong num">'+esc(o.number||'—')+'</div>'
+            +   (o.note ? '<div class="cell-sub">'+esc(o.note)+'</div>' : '')+'</td>'
+            + '<td>'+esc(o.provider||'—')+'</td>'
+            + '<td>'+(o.expiry
+                  ? '<span style="'+(flag ? 'color:var(--danger);font-weight:600' : '')+'">'+esc(formatDisplayDate(o.expiry))+'</span>'
+                  : '<span style="color:var(--faint)">—</span>')+'</td>'
+            + '<td>'+esc(o.holder||'—')+'</td>'
+            + '<td class="acts"><button class="btn sm" onclick="openOpsModal(\'' + esc(o.id) + '\')">Edit</button></td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table></div></div>';
+  }
+
+  if (cards.length) {
+    html += '<div class="section-head" style="margin-top:20px"><span class="section-title">Stored value cards &nbsp;·&nbsp; ' + cards.length + '</span></div>'
+      + '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:720px">'
+      + '<thead><tr><th>Type</th><th>Number</th><th class="num">Last amount</th><th>Last top-up</th><th>Held by</th><th></th></tr></thead><tbody>'
+      + cards.map(function(o) {
+          var flag = opNeedsEye(o);
+          return '<tr class="'+(flag?'row-flag':'')+'">'
+            + '<td><span class="tag">'+esc(o.type)+'</span></td>'
+            + '<td><div class="cell-strong num">'+esc(o.number||'—')+'</div>'
+            +   (o.note ? '<div class="cell-sub">'+esc(o.note)+'</div>' : '')+'</td>'
+            + '<td class="num">'+(o.amount === '' || o.amount == null ? '<span style="color:var(--faint)">—</span>' : 'S$ ' + money(o.amount))+'</td>'
+            + '<td>'+(o.topup
+                  ? '<span style="'+(flag ? 'color:var(--danger);font-weight:600' : '')+'">'+esc(formatDisplayDate(o.topup))+'</span>'
+                  : '<span style="color:var(--faint)">—</span>')+'</td>'
+            + '<td>'+esc(o.holder||'—')+'</td>'
+            + '<td class="acts"><button class="btn sm" onclick="openOpsModal(\'' + esc(o.id) + '\')">Edit</button></td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table></div></div>';
+  }
+
+  el.innerHTML = html;
+  updateCounts();
+}
+
+/* The form changes shape with the card: a SIM expires, a stored value
+   card carries a balance. */
+function onOpTypeChange() {
+  var sim = $('op-type').value === 'SIM Card';
+  $('op-sim-block').style.display  = sim ? '' : 'none';
+  $('op-card-block').style.display = sim ? 'none' : '';
+}
+
+function openOpsModal(id) {
+  opsEditId = id || '';
+  var o = id ? opitems.find(function(x){ return x.id === id; }) : null;
+  $('ops-modal-title').textContent = o ? 'Edit ' + (o.type || 'card') : 'Add a card';
+  $('op-type').value     = o ? (o.type||'SIM Card') : (opsFilter !== 'all' ? opsFilter : 'SIM Card');
+  $('op-number').value   = o ? (o.number||'')   : '';
+  $('op-provider').value = o ? (o.provider||'') : '';
+  $('op-holder').innerHTML = holderOptions(o ? o.holder : 'Office');
+  $('op-expiry').value   = o ? parseToYMD(o.expiry) : '';
+  $('op-amount').value   = o && o.amount !== '' && o.amount != null ? o.amount : '';
+  $('op-topup').value    = o ? parseToYMD(o.topup) : '';
+  $('op-note').value     = o ? (o.note||'')     : '';
+  $('op-delete').style.display = o ? '' : 'none';
+  $('op-number-err').classList.remove('show'); $('op-number').classList.remove('err');
+  onOpTypeChange();
+  $('ops-modal').classList.add('open');
+  setTimeout(function(){ $('op-number').focus(); }, 60);
+}
+function closeOpsModal() { $('ops-modal').classList.remove('open'); opsEditId = ''; }
+
+function saveOpItem() {
+  var number = $('op-number').value.trim();
+  if (!number) { $('op-number-err').classList.add('show'); $('op-number').classList.add('err'); $('op-number').focus(); return; }
+  var type = $('op-type').value, sim = type === 'SIM Card';
+  var payload = {
+    type: type, number: number, provider: $('op-provider').value.trim(),
+    holder: $('op-holder').value, note: $('op-note').value.trim(),
+    expiry: sim ? $('op-expiry').value : '',
+    amount: sim ? '' : ($('op-amount').value === '' ? '' : Number($('op-amount').value) || 0),
+    topup:  sim ? '' : $('op-topup').value,
+    updated: todayYMD()
+  };
+  if (opsEditId) {
+    var i = opitems.findIndex(function(x){ return x.id === opsEditId; });
+    if (i > -1) opitems[i] = Object.assign(opitems[i], payload);
+  } else {
+    payload.id = uid(); opitems.unshift(payload);
+  }
+  persistOps(); closeOpsModal(); renderOps(); updateCounts();
+  showToast(opsEditId ? 'Card updated' : 'Card added');
+}
+function deleteOpItem() {
+  if (!opsEditId) return;
+  opitems = opitems.filter(function(x){ return x.id !== opsEditId; });
+  persistOps(); closeOpsModal(); renderOps(); updateCounts();
+  showToast('Card removed');
+}

@@ -1,0 +1,468 @@
+  /* ══ ADDITIONS — price list, leads, pickers ═════════ */
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 620px) { .row3 { grid-template-columns: 1fr; } }
+
+  /* Tier swatch — the bunch's price band, read at a glance */
+  .tier { display: inline-flex; align-items: center; gap: 6px; font-size: 10px;
+          letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .tier i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; border: 1px solid rgba(0,0,0,.12); }
+  .t-YELLOW { background: #F0B429; } .t-PINK { background: #E48CB0; }
+  .t-ORANGE { background: #E0913A; } .t-GREEN { background: #2ECC71; }
+  .t-RED    { background: #E74C3C; } .t-      { background: var(--line); }
+
+  /* Price cells — tap one to drop it straight onto an invoice */
+  .price-cells { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pcell {
+    border: 1px solid var(--line); border-radius: var(--r-sm); padding: 4px 9px;
+    background: var(--card-2); font-size: 12.5px; cursor: pointer; white-space: nowrap;
+    text-align: right; transition: all .13s; font-variant-numeric: tabular-nums;
+  }
+  .pcell:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .pcell em { font-style: normal; color: var(--faint); font-size: 9px; letter-spacing: .12em;
+              text-transform: uppercase; display: block; text-align: left; }
+  .pcell.off { opacity: .35; cursor: default; }
+  .pcell.off:hover { border-color: var(--line); background: var(--card-2); }
+
+  .picker-list { max-height: 44vh; overflow-y: auto; border: 1px solid var(--line);
+                 border-radius: var(--r-md); background: var(--card); }
+  .picker-row { display: block; width: 100%; text-align: left; padding: 11px 13px; background: none;
+                border: none; border-bottom: 1px solid var(--line-soft); cursor: pointer; }
+  .picker-row:hover { background: var(--gold-soft); }
+  .picker-row:last-child { border-bottom: none; }
+  .picker-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .picker-name { font-size: 13.5px; font-weight: 500; }
+  .picker-brand { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+  .picker-price { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+  .stack-tight { display: flex; flex-direction: column; gap: 10px; }
+  .inline-note { font-size: 11.5px; color: var(--faint); line-height: 1.5; }
+  .link-out { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-line); }
+  .link-out:hover { border-bottom-color: var(--gold); }
+  .row-flag td { background: #FFFBF0; }
+  .row-flag:hover td { background: #FFF6E0; }
+  .yn { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 20px;
+        font-size: 10px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+        border: 1px solid var(--line); background: var(--card); color: var(--faint); user-select: none; }
+  .yn.y { background: var(--st-store-bg); border-color: var(--st-store-ln); color: var(--st-store); font-weight: 600; }
+  .yn.n { background: var(--card-2); color: var(--muted); }
+
+  /* ══ APP SHELL — installed on iPhone, iPad and the Mac dock ══ */
+  @supports (padding: max(0px)) {
+    .rail      { padding-top: env(safe-area-inset-top); }
+    .rail-foot { padding-bottom: max(16px, calc(16px + env(safe-area-inset-bottom))); }
+    .pane      { padding-bottom: max(60px, calc(60px + env(safe-area-inset-bottom))); }
+    .toast     { bottom: max(26px, calc(26px + env(safe-area-inset-bottom))); }
+  }
+  @media (display-mode: standalone) {
+    body { overscroll-behavior-y: none; }
+    .topbar { position: sticky; }
+  }
+  /* Any touch screen zooms the page when a small field takes focus. */
+  @media (hover: none) {
+    .field, .mfield input, .cloth-row input, .inv-lines input,
+    input[type=text], input[type=tel], input[type=email], input[type=date],
+    input[type=number], textarea, select { font-size: 16px !important; }
+  }
+
+  /* ══ SUIT ORDER FORM — its own full screen, not a dialog ══ */
+  .sheet-over {
+    position: fixed; inset: 0; z-index: 260; background: #faf9f7;
+    display: none; flex-direction: column;
+  }
+  .sheet-over.open { display: flex; }
+  .sheet-over-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: max(10px, env(safe-area-inset-top)) 14px 10px;
+    background: var(--ink-rail); color: #fff; flex-shrink: 0;
+  }
+  .sheet-over-title { font-family: var(--font-display); font-size: 18px; line-height: 1.2; }
+  .sheet-over-sub { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px;
+                    max-width: 62vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sheet-over-bar .btn { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.18); color: #fff; }
+  .sheet-over-bar .btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+  .sheet-over-body { flex: 1; min-height: 0; position: relative; -webkit-overflow-scrolling: touch; }
+  .sheet-over-body iframe {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    border: none; display: block; background: #faf9f7;
+  }
+  .sheet-fallback {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 30px;
+  }
+  .sheet-fallback.show { display: flex; }
+
+  /* ══ SETUP ══ */
+  .code-box {
+    background: var(--ink); color: #E8E5DC; border-radius: var(--r-md);
+    padding: 13px 14px; font-family: var(--font-data); font-size: 11.5px;
+    line-height: 1.55; white-space: pre; overflow: auto; max-height: 300px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .step { display: flex; gap: 11px; margin-bottom: 13px; }
+  .step-n {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #16150F;
+    font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-t { font-size: 13px; line-height: 1.55; color: var(--muted); }
+  .step-t b { color: var(--text); font-weight: 500; }
+
+  /* ══════════════════════════════════════════════════
+     SAFARI, IPAD, IPHONE
+     The shop reads this on a Mac at the bench, an iPad on
+     the floor and a phone in a pocket. Below, each of those
+     gets a shape that suits the hand holding it.
+     ══════════════════════════════════════════════════ */
+
+  /* iOS counts 100vh as the screen without the browser chrome,
+     so a full-height column is always a little too tall. */
+  @supports (height: 100dvh) {
+    .rail { height: 100dvh; }
+    .shell { min-height: 100dvh; }
+  }
+  * { -webkit-tap-highlight-color: rgba(168,132,47,.16); }
+  .tscroll, .drawer-body, .modal, .split-list-body, .picker-list, .code-box {
+    -webkit-overflow-scrolling: touch;
+  }
+  .scrim, .modal-wrap { -webkit-backdrop-filter: blur(3px); }
+  /* Safari collapses a date field styled like a text field. */
+  input[type=date] { min-height: var(--tap); line-height: normal; display: block; }
+  .field[type=date] { padding-top: 0; padding-bottom: 0; }
+  select.field {
+    -webkit-appearance: none; appearance: none; padding-right: 34px;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%236E6A61' stroke-width='1.6'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 13px center;
+  }
+
+  /* A finger is not a cursor: nothing tappable under 44 points. */
+  @media (hover: none) {
+    .btn.sm { height: 38px; padding: 0 14px; }
+    .pill { height: 38px; min-width: 84px; }
+    .chip { height: 40px; padding: 0 15px; }
+    .icon-btn { width: 40px; height: 40px; }
+    .yn { height: 34px; padding: 0 12px; }
+    .gtab { height: 50px; }
+    .nav-item { height: 46px; }
+    .pcell { padding: 8px 12px; }
+    table.grid td { padding-top: 14px; padding-bottom: 14px; }
+  }
+
+  /* ── Tables become cards on a phone ──
+     A row scrolled sideways is a row nobody reads. Each record
+     stacks into label-and-value lines instead. */
+  @media (max-width: 760px) {
+    .tscroll { overflow-x: visible; }
+    table.grid { display: block; min-width: 0 !important; }
+    table.grid thead { display: none; }
+    table.grid tbody, table.grid tr, table.grid td { display: block; width: 100%; }
+    table.grid tbody tr { padding: 13px 15px; border-bottom: 1px solid var(--line); }
+    table.grid tbody tr:last-child { border-bottom: none; }
+    table.grid tbody tr:hover { background: none; }
+    table.grid td {
+      border: none; padding: 5px 0; display: flex; gap: 14px;
+      align-items: baseline; justify-content: space-between; text-align: right;
+    }
+    table.grid td::before {
+      content: attr(data-label);
+      font-size: 9px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--faint); flex: 0 0 38%; text-align: left; white-space: nowrap;
+    }
+    table.grid td:first-child { padding-bottom: 9px; }
+    table.grid td:first-child::before { display: none; }
+    table.grid td:first-child { display: block; text-align: left; }
+    table.grid td.num { justify-content: space-between; }
+    table.grid td.acts { padding-top: 11px; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+    table.grid td.acts::before { display: none; }
+    .cell-sub { text-align: left; }
+    .stats { grid-template-columns: 1fr 1fr; gap: 9px; }
+    .stat { padding: 12px 13px; }
+    .stat-val { font-size: 23px; }
+  }
+
+  /* ── Modals become sheets that rise from the bottom ── */
+  @media (max-width: 700px) {
+    .modal-wrap { align-items: flex-end; padding: 0; }
+    .modal, .modal.narrow { width: 100% !important; max-width: 100%; border-radius: 18px 18px 0 0; max-height: 92vh; }
+    @supports (max-height: 92dvh) { .modal, .modal.narrow { max-height: 92dvh; } }
+    .modal-head { padding: 20px 18px 14px; }
+    .modal-body { padding: 16px 18px; }
+    .modal-foot { padding: 12px 18px max(16px, env(safe-area-inset-bottom)); }
+    .modal-foot .btn { flex: 1; }
+  }
+
+  /* ── A tab bar under the thumb, once the rail is too wide ── */
+  .tabbar { display: none; }
+  @media (max-width: 700px) {
+    .rail-nav { display: none; }
+    .rail-head { padding: 12px 16px calc(12px + env(safe-area-inset-top)); }
+    .rail { position: static; }
+    .tabbar {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+      background: var(--ink-rail); border-top: 1px solid var(--line-dark);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .tab-btn {
+      flex: 1; min-height: 54px; padding: 8px 2px 7px; background: none; border: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      color: rgba(255,255,255,.5); font-size: 9.5px; letter-spacing: .06em; cursor: pointer;
+      position: relative;
+    }
+    .tab-btn svg { width: 20px; height: 20px; }
+    .tab-btn.on { color: var(--gold); }
+    .tab-btn .tab-dot {
+      position: absolute; top: 6px; right: 50%; margin-right: -20px;
+      min-width: 15px; height: 15px; border-radius: 20px; background: var(--gold);
+      color: #16150F; font-size: 9px; font-weight: 600; line-height: 15px; padding: 0 4px;
+    }
+    .pane { padding: 14px 15px calc(78px + env(safe-area-inset-bottom)); }
+    .topbar { padding: 14px 15px 12px; }
+    .page-title { font-size: 22px; }
+    .toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
+    .sheet-over-bar { padding-top: max(10px, env(safe-area-inset-top)); }
+  }
+  @media (max-width: 400px) {
+    .tab-btn { font-size: 9px; }
+  }
+
+  /* Landscape on a phone puts the notch at the side. */
+  @supports (padding: max(0px)) {
+    .topbar, .pane { padding-left: max(15px, env(safe-area-inset-left)); padding-right: max(15px, env(safe-area-inset-right)); }
+  }
+  @media (min-width: 941px) {
+    .topbar { padding-left: 30px; padding-right: 30px; }
+    .pane   { padding-left: 30px; padding-right: 30px; }
+  }
+
+  /* ── The More sheet ── */
+  .more-row {
+    display: flex; align-items: center; gap: 13px; width: 100%;
+    padding: 15px 4px; background: none; border: none; border-bottom: 1px solid var(--line-soft);
+    font-size: 15px; color: var(--text); cursor: pointer; text-align: left;
+  }
+  .more-row:last-of-type { border-bottom: none; }
+  .more-row svg { width: 19px; height: 19px; color: var(--faint); flex-shrink: 0; }
+  .more-row .nav-count { background: var(--card-2); color: var(--muted); border: 1px solid var(--line); }
+  .more-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
+
+  /* ══ ASSISTANT ═════════════════════════════════════ */
+  .chat-pane { display: flex; flex-direction: column; padding-bottom: 0 !important; }
+  .chat-wrap {
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-card); overflow: hidden;
+    height: calc(100vh - 190px);
+  }
+  @supports (height: 100dvh) { .chat-wrap { height: calc(100dvh - 190px); } }
+  .chat-log { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 20px 6px; -webkit-overflow-scrolling: touch; }
+  .chat-empty { max-width: 460px; margin: 8vh auto 0; text-align: center; color: var(--muted); }
+  .msg { display: flex; margin-bottom: 12px; }
+  .msg.me { justify-content: flex-end; }
+  .bubble {
+    max-width: 78%; padding: 11px 15px; border-radius: 16px; font-size: 14px; line-height: 1.6;
+    background: var(--card-2); border: 1px solid var(--line-soft); color: var(--text);
+  }
+  .msg.me .bubble { background: var(--ink); border-color: var(--ink); color: #fff; border-bottom-right-radius: 5px; }
+  .msg.it .bubble { border-bottom-left-radius: 5px; }
+  .bubble p { margin: 0 0 9px; } .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul { margin: 0 0 9px; padding-left: 18px; } .bubble ul:last-child { margin-bottom: 0; }
+  .bubble li { margin-bottom: 3px; }
+  .bubble.thinking { color: var(--faint); font-style: italic; }
+  .chat-bar {
+    display: flex; gap: 9px; align-items: flex-end;
+    padding: 12px 14px; border-top: 1px solid var(--line); background: var(--card);
+  }
+  .chat-bar textarea {
+    flex: 1; resize: none; min-height: var(--tap); max-height: 140px; padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: 14px; background: var(--card-2);
+    font-size: 15px; line-height: 1.5; outline: none; font-family: inherit;
+  }
+  .chat-bar textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,132,47,.13); background: var(--card); }
+  .chat-bar .btn { flex-shrink: 0; }
+  .chat-foot {
+    display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+    border-top: 1px solid var(--line-soft); background: var(--card-2);
+  }
+  @media (max-width: 700px) {
+    .chat-wrap { border-radius: 0; border-left: none; border-right: none; height: auto; flex: 1; }
+    .chat-pane { padding-left: 0 !important; padding-right: 0 !important; height: calc(100dvh - 150px); }
+    .bubble { max-width: 86%; }
+    .chat-bar { padding-bottom: 12px; }
+  }
+
+  /* ══ DELTA ═════════════════════════════════════════ */
+  .tap-date { cursor: pointer; }
+  .tap-date:hover .dd-disp { color: var(--gold); }
+  .tap-date .dd-pick {
+    height: 36px; padding: 0 9px; border: 1px solid var(--gold); border-radius: var(--r-sm);
+    font-size: 13px; background: var(--card); outline: none; -webkit-appearance: none;
+  }
+
+  /* ══ ASSISTANT — reports and proposed changes ══════ */
+  .quick-reports {
+    display: flex; gap: 7px; flex-wrap: wrap; justify-content: center;
+    padding: 0 0 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line-soft);
+    position: sticky; top: 0; background: var(--card); z-index: 2;
+  }
+  .chat-empty .quick-reports { border-bottom: none; position: static; padding-top: 18px; }
+  .bubble b { font-weight: 600; }
+  .bubble ul { list-style: none; padding-left: 0; }
+  .bubble li { padding-left: 13px; position: relative; }
+  .bubble li::before { content: '·'; position: absolute; left: 2px; color: var(--faint); }
+  .msg.it .bubble { max-width: 92%; }
+  .action-card {
+    border: 1px solid var(--gold-line); background: var(--gold-soft);
+    border-radius: 14px; padding: 14px 16px; margin: 4px 0 14px;
+  }
+  .ac-head { font-size: 13px; font-weight: 600; margin-bottom: 9px; }
+  .action-card ul { margin: 0 0 12px; padding-left: 17px; font-size: 13.5px; line-height: 1.65; }
+  .ac-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* ══════════════════════════════════════════════════
+     TOUCH PASS — iPad with keyboard, iPhone, Mac Safari
+     Bigger targets, clearer focus, more breathing room
+     around anything a finger has to land on precisely.
+     ══════════════════════════════════════════════════ */
+
+  /* Every interactive control gets a comfortable minimum, on any pointer —
+     an iPad with a keyboard still gets tapped at as much as typed on. */
+  .btn, .icon-btn, .chip, .pill, .yn, .nav-item, .tab-btn,
+  select.field, input.field, .field, .gtab, .list-row {
+    min-height: 40px;
+  }
+  .btn { padding: 0 17px; }
+  .btn.sm { min-height: 36px; padding: 0 14px; }
+  .icon-btn { min-width: 40px; }
+  select.field, .field { min-height: var(--tap); }
+
+  /* Clickable table rows and cells get more vertical room, so adjacent
+     rows do not compete for the same tap. */
+  table.grid td { padding-top: 13px; padding-bottom: 13px; }
+  table.grid td.acts { padding-top: 10px; padding-bottom: 10px; }
+  .g-row { padding-top: 13px; padding-bottom: 13px; }
+  .list-row { padding: 14px 15px; }
+
+  /* Space between adjacent tap targets — the real cause of mis-taps is
+     two buttons touching, not either one being small. */
+  .g-tools, .oc-tools, .toolbar, .chips, .price-cells, .picker-top,
+  .more-actions, .ac-btns, .modal-foot { gap: 10px; }
+  .thread { gap: 4px; }
+
+  /* Pills, chips and status tags — the things tapped over and over while
+     walking an order through the shop — get bigger and a firmer press. */
+  .pill { min-width: 88px; padding: 0 14px; font-size: 11px; }
+  .chip { padding: 0 16px; font-size: 13px; }
+  .btn:active, .icon-btn:active, .chip:active, .pill:active,
+  .yn:active, .nav-item:active, .tab-btn:active { transform: scale(.96); }
+
+  /* Inputs: a full-height, generously padded field is far easier to land
+     a fingertip on than a slim one, and never triggers Safari's zoom. */
+  .field, input.field, select.field, .mfield input, .cloth-row input,
+  input[type=text], input[type=tel], input[type=email], input[type=date],
+  input[type=number], input[type=password], textarea, select {
+    font-size: 16px; padding-top: 0; padding-bottom: 0;
+  }
+  textarea.field { padding-top: 13px; padding-bottom: 13px; }
+  .mfield input, .cloth-row input { min-height: 44px; }
+
+  /* Checkable rows (leads Booked/Came/Bought, order status pills) need
+     clear pressed/hover states that read at arm's length on an iPad. */
+  .yn, .pill { transition: transform .1s, filter .12s; }
+  .yn:hover, .pill:hover { filter: brightness(0.97); }
+
+  /* A focus ring that shows on keyboard AND is visible enough for anyone
+     driving an iPad with a trackpad or a Smart Keyboard's arrow keys. */
+  :focus-visible { outline: 2.5px solid var(--gold); outline-offset: 2px; }
+  .btn:focus-visible, .icon-btn:focus-visible, .chip:focus-visible,
+  .pill:focus-visible, .nav-item:focus-visible { outline-offset: 3px; }
+
+  /* Search boxes, filter bars — the toolbar wraps generously instead of
+     compressing controls edge to edge on an iPad in portrait. */
+  .toolbar { row-gap: 10px; }
+  .search-wrap .field { min-height: 44px; }
+
+  /* Modal action buttons: full-width and stacked on anything narrower
+     than a small iPad, so a thumb never has to aim between two of them. */
+  @media (max-width: 620px) {
+    .modal-foot { flex-wrap: wrap; }
+    .modal-foot .btn:not(.ghost-danger) { flex: 1 1 auto; min-width: 120px; }
+  }
+
+  /* Sortable/toggle chip rows in filter panels — one continuous row of
+     equal, generously sized buttons rather than a cramped strip. */
+  #filter-panel .btn.sm, [data-stockcat], [data-stockloc], [data-invfilter],
+  [data-deltaf], [data-deltaview], [data-custfilter], [data-opsfilter],
+  [data-leadfilter], [data-pickcat], [data-archive-sort], [data-sort] {
+    min-height: 38px; padding: 0 15px;
+  }
+
+  /* Price-list and picker cells — tapped rapid-fire while building an
+     invoice, so they get more padding and a clearer pressed state. */
+  .pcell { padding: 9px 14px; min-height: 40px; display: inline-flex; align-items: center; }
+  .pcell:active { transform: scale(.97); }
+
+  /* Delta / order stage buttons — three sit side by side, so each needs
+     real width to hit reliably. */
+  @media (hover: none) {
+    #delta-content .pill { min-width: 84px; }
+  }
+
+  /* Buttons and nav should not throw up a text-selection callout on a
+     long press; ordinary text — phone numbers, order numbers, table
+     data — stays selectable so it can still be copied. */
+  .btn, .icon-btn, .chip, .pill, .yn, .nav-item, .tab-btn, .gtab, .tag,
+  .rail, .topbar, label, .field-label, .toolbar-label, .empty-title, .empty-body {
+    -webkit-user-select: none; user-select: none;
+  }
+
+  /* The chat composer and its send button, sized for a thumb resting on
+     an iPad's bottom edge. */
+  .chat-bar textarea { min-height: 46px; }
+  .chat-bar .btn { min-height: 46px; padding: 0 22px; }
+
+  /* Datepickers on iOS render inline text at a size that can look tiny
+     next to everything else — nudge it to match. */
+  input[type=date]::-webkit-date-and-time-value { text-align: left; }
+
+  /* A Mac with Safari still benefits from a slightly larger hit-area on
+     hover-capable pointers, just not as large as touch. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn, .icon-btn, .chip, .pill { min-height: 38px; }
+    .btn.sm { min-height: 34px; }
+  }
+
+  /* ══ Specific touch fixes — small controls that stayed small ══ */
+
+  /* The fitting-thread notches are a deliberate visual (baste→fitting→
+     final) but were too small to tap reliably; the tap target grows
+     without the dot itself looking oversized. */
+  .thread-stage { padding: 6px 4px; margin: -6px -4px; }
+  .notch { width: 17px; height: 17px; }
+  .thread-cut { width: 22px; height: 22px; font-size: 11px; }
+
+  /* Inline date edit (order due/fitting date) — the picker that appears
+     needs to be as tall as everything else once it is visible. */
+  .meta-cell input[type=date] { min-height: 40px; font-size: 14px; }
+  .dd-pick { min-height: 40px !important; font-size: 14px; }
+
+  /* Icon-only delete/edit buttons scattered through cards and rows. */
+  .g-tools .icon-btn, .oc-tools .icon-btn { width: 40px; height: 40px; }
+
+  /* The search field's clear (×) button. */
+  .search-x { padding: 9px 10px; font-size: 16px; }
+
+  /* Suit-order-form and setup buttons in dark bars keep their own
+     contrast but match the same minimum height. */
+  .sheet-over-bar .btn { min-height: 38px; }
+
+  /* Quiz-style Yes/No chips (leads Booked/Came/Bought) are tapped
+     rapidly in a row — widen the gap so consecutive taps do not clip
+     the neighbour. */
+  .yn { margin-right: 2px; }
+
+  /* Garment/product picker buttons in modals (order edit, price list
+     entry) — a 2-up grid on phones, comfortably large everywhere. */
+  .garment-btn { min-height: 52px; font-size: 14px; }
+
+  /* Stat cards are informational, not tappable, but their generous
+     padding is part of the same "big and legible" pass. */
+  .stat { padding: 17px 18px; }

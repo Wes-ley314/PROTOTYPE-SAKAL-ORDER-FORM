@@ -1,0 +1,161 @@
+/* ══════════════════════════════════════════════════
+   STOCK
+   Linings, trims, buttons, packaging — what's held in
+   Batam and what's held in Singapore, and what to reorder.
+   ══════════════════════════════════════════════════ */
+
+var STOCK_CATS = ['Buttons','Lining','Packaging','Others'];
+var stockCat = 'all', stockLoc = 'all', stockReorderOnly = false, stockEditId = '', skReorder = false;
+
+/* Anything logged before categories existed still lands somewhere sensible. */
+function catOf(s) {
+  if (s.cat && STOCK_CATS.indexOf(s.cat) !== -1) return s.cat;
+  var n = String(s.item||'').toLowerCase();
+  if (n.indexOf('button') !== -1) return 'Buttons';
+  if (/lining|puring|satin/.test(n)) return 'Lining';
+  if (/dust bag|name card|paper bag|sakal label|suit bag|suit hanger|hanger|label|box/.test(n)) return 'Packaging';
+  return 'Others';
+}
+function setStockCat(c) {
+  stockCat = c;
+  document.querySelectorAll('[data-stockcat]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-stockcat') === c); });
+  renderStock();
+}
+function setStockLoc(l) {
+  stockLoc = l;
+  document.querySelectorAll('[data-stockloc]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-stockloc') === l); });
+  renderStock();
+}
+function toggleStockReorderFilter() {
+  stockReorderOnly = !stockReorderOnly;
+  $('stock-reorder-filter').classList.toggle('on', stockReorderOnly);
+  renderStock();
+}
+function supplierCell(v) {
+  if (!v) return '<span style="color:var(--faint)">—</span>';
+  if (/^https?:\/\//i.test(v)) {
+    var host = v.replace(/^https?:\/\//i,'').split('/')[0];
+    return '<a class="link-out" href="'+esc(v)+'" target="_blank" rel="noopener">'+esc(host)+'</a>';
+  }
+  return esc(v);
+}
+function toggleStockReorder(id) {
+  var s = stock.find(function(x){ return x.id === id; }); if (!s) return;
+  s.reorder = !s.reorder;
+  persistStock(); renderStock();
+}
+
+function renderStock() {
+  var el = $('stock-content'); if (!el) return;
+  var term = ($('stock-search') ? $('stock-search').value : '').trim().toLowerCase();
+
+  var counts = {};
+  STOCK_CATS.forEach(function(c){ counts[c] = stock.filter(function(s){ return catOf(s) === c; }).length; });
+  var flag = stock.filter(function(s){ return s.reorder; }).length;
+  $('stock-stats').innerHTML =
+      stat('Buttons', counts.Buttons, 'Horn, MOP and tuxedo')
+    + stat('Lining', counts.Lining, 'Bemberg and satin lapel')
+    + stat('Packaging', counts.Packaging, 'Bags, hangers, labels, cards')
+    + stat('Others', counts.Others, 'Canvas, glue, pins, adjusters')
+    + stat('To reorder', flag, flag ? 'Flagged by you' : 'Nothing flagged', flag ? 'alarm' : 'ok');
+
+  document.querySelectorAll('[data-stockcat]').forEach(function(b) {
+    var c = b.getAttribute('data-stockcat');
+    if (c !== 'all') b.textContent = c + ' · ' + counts[c];
+  });
+
+  var rows = stock.filter(function(s) {
+    if (stockCat !== 'all' && catOf(s) !== stockCat) return false;
+    if (stockLoc !== 'all' && s.loc !== stockLoc) return false;
+    if (stockReorderOnly && !s.reorder) return false;
+    if (!term) return true;
+    return [s.item, s.brand, s.color, s.supplier, s.remark, s.price].some(function(v){ return hit(v, term); });
+  }).sort(function(a,b) {
+    return STOCK_CATS.indexOf(catOf(a)) - STOCK_CATS.indexOf(catOf(b))
+        || String(a.item||'').localeCompare(String(b.item||''));
+  });
+
+  if (rows.length === 0) {
+    el.innerHTML = stock.length === 0
+      ? emptyState('No stock logged yet', 'Log the buttons, linings and packaging you keep, and flag anything that needs reordering.', '<button class="btn gold" onclick="openStockModal()">+ Add stock item</button>')
+      : emptyState('Nothing in this group', 'Try another group, or clear the search.');
+    updateCounts(); return;
+  }
+
+  var order = STOCK_CATS.filter(function(c){ return stockCat === 'all' || c === stockCat; });
+  var html = order.map(function(cat) {
+    var set = rows.filter(function(s){ return catOf(s) === cat; });
+    if (!set.length) return '';
+    var body = set.map(function(s) {
+      return '<tr class="'+(s.reorder?'row-flag':'')+'">'
+        + '<td><div class="cell-strong">'+esc(s.item||'—')+'</div>'
+        +   (s.brand||s.remark ? '<div class="cell-sub">'+esc([s.brand, s.remark].filter(Boolean).join(' · '))+'</div>' : '')+'</td>'
+        + '<td>'+esc(s.color||'—')+'</td>'
+        + '<td>'+esc(s.price||'—')+'</td>'
+        + '<td>'+esc(s.purchased ? formatDisplayDate(s.purchased) : '—')+'</td>'
+        + '<td>'+supplierCell(s.supplier)+'</td>'
+        + '<td><span class="tag'+(s.loc==='Batam'?' blue':'')+'">'+esc(s.loc||'—')+'</span></td>'
+        + '<td class="acts">'
+        +   '<span class="pill'+(s.reorder?' st-bin':'')+'" style="min-width:74px" onclick="toggleStockReorder(\''+esc(s.id)+'\')">'+(s.reorder?'Reorder':'Stocked')+'</span> '
+        +   '<button class="btn sm" onclick="openStockModal(\''+esc(s.id)+'\')">Edit</button>'
+        + '</td></tr>';
+    }).join('');
+    return '<div class="section-head" style="margin-top:20px"><span class="section-title">'+esc(cat)
+      + ' &nbsp;·&nbsp; ' + set.length + ' item' + (set.length===1?'':'s') + '</span></div>'
+      + '<div class="table-wrap"><div class="tscroll"><table class="grid" style="min-width:820px">'
+      + '<thead><tr><th>Item</th><th>Item code / colour</th><th>Purchase price</th>'
+      + '<th>Last bought</th><th>Supplier</th><th>Held at</th><th></th></tr></thead>'
+      + '<tbody>' + body + '</tbody></table></div></div>';
+  }).join('');
+
+  el.innerHTML = html;
+  updateCounts();
+}
+
+function toggleSkReorder() { skReorder = !skReorder; $('sk-reorder').classList.toggle('on', skReorder); }
+
+function openStockModal(id) {
+  stockEditId = id || '';
+  var s = id ? stock.find(function(x){ return x.id === id; }) : null;
+  $('stock-modal-title').textContent = s ? 'Edit stock item' : 'Add stock item';
+  $('sk-item').value      = s ? (s.item||'')      : '';
+  $('sk-loc').value       = s ? (s.loc||'Batam')  : (stockLoc === 'Singapore' ? 'Singapore' : 'Batam');
+  $('sk-cat').value       = s ? catOf(s) : (stockCat === 'all' ? 'Others' : stockCat);
+  $('sk-brand').value     = s ? (s.brand||'')     : '';
+  $('sk-color').value     = s ? (s.color||'')     : '';
+  $('sk-price').value     = s ? (s.price||'')     : '';
+  $('sk-purchased').value = s ? parseToYMD(s.purchased) : '';
+  $('sk-supplier').value  = s ? (s.supplier||'')  : '';
+  $('sk-remark').value    = s ? (s.remark||'')    : '';
+  skReorder = s ? !!s.reorder : false;
+  $('sk-reorder').classList.toggle('on', skReorder);
+  $('sk-delete').style.display = s ? '' : 'none';
+  $('sk-item-err').classList.remove('show'); $('sk-item').classList.remove('err');
+  $('stock-modal').classList.add('open');
+  setTimeout(function(){ $('sk-item').focus(); }, 60);
+}
+function closeStockModal() { $('stock-modal').classList.remove('open'); stockEditId = ''; }
+function saveStockForm() {
+  var item = $('sk-item').value.trim();
+  if (!item) { $('sk-item-err').classList.add('show'); $('sk-item').classList.add('err'); $('sk-item').focus(); return; }
+  var payload = {
+    item: item, cat: $('sk-cat').value, loc: $('sk-loc').value, brand: $('sk-brand').value.trim(),
+    color: $('sk-color').value.trim(),
+    price: $('sk-price').value.trim(), purchased: $('sk-purchased').value,
+    supplier: $('sk-supplier').value.trim(), remark: $('sk-remark').value.trim(),
+    reorder: skReorder, updated: todayYMD()
+  };
+  if (stockEditId) {
+    var i = stock.findIndex(function(x){ return x.id === stockEditId; });
+    if (i > -1) stock[i] = Object.assign(stock[i], payload);
+  } else {
+    payload.id = uid(); stock.unshift(payload);
+  }
+  persistStock(); closeStockModal(); renderStock();
+  showToast(stockEditId ? 'Stock item updated' : 'Stock item added');
+}
+function deleteStockRow() {
+  if (!stockEditId) return;
+  stock = stock.filter(function(x){ return x.id !== stockEditId; });
+  persistStock(); closeStockModal(); renderStock(); showToast('Stock item removed');
+}

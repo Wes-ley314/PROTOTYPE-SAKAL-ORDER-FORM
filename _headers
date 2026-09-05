@@ -1,0 +1,16 @@
+# Netlify cache control.
+# The html must never be cached or the shop keeps running yesterday's app.
+# The css/js are safe to cache hard because index.html is what points at
+# them — change a file, redeploy, and the new html brings the new files.
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/
+  Cache-Control: no-cache, must-revalidate
+
+/css/*
+  Cache-Control: public, max-age=3600
+
+/js/*
+  Cache-Control: public, max-age=3600
