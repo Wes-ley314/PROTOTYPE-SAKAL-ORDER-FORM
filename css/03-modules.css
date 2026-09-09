@@ -1,4 +1,4 @@
-  /* ══ ADDITIONS — price list, leads, pickers ═════════ */
+/* ══ ADDITIONS — price list, leads, pickers ═════════ */
   .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   @media (max-width: 620px) { .row3 { grid-template-columns: 1fr; } }
 
@@ -466,3 +466,53 @@
   /* Stat cards are informational, not tappable, but their generous
      padding is part of the same "big and legible" pass. */
   .stat { padding: 17px 18px; }
+
+  /* ══ SIGN IN ═══════════════════════════════════════
+     Sits above everything, including the suit order form.
+     Open by default in the markup; 00-auth.js takes the
+     class off once it finds a valid sign-in.            */
+  .auth-over {
+    position: fixed; inset: 0; z-index: 9000;
+    background: var(--ink-rail);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-over.open { display: flex; }
+
+  .auth-card {
+    width: 100%; max-width: 360px;
+    background: var(--card);
+    border-radius: var(--r-lg);
+    padding: 34px 28px 28px;
+    box-shadow: var(--shadow-pop);
+  }
+  .auth-mark {
+    font-family: var(--font-display);
+    font-size: 30px; letter-spacing: 0.22em; line-height: 1;
+    text-align: center; color: var(--ink);
+  }
+  .auth-sub {
+    text-align: center; margin: 8px 0 26px;
+    font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500;
+  }
+  .auth-card .field { margin-bottom: 14px; }
+  .auth-card .btn { width: 100%; margin-top: 6px; }
+  .auth-msg {
+    color: var(--danger); font-size: 12px;
+    margin: -6px 0 12px; min-height: 16px;
+  }
+
+  /* who is signed in, bottom left of the rail */
+  .auth-chip { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .auth-who {
+    flex: 1; min-width: 0;
+    font-size: 11.5px; color: rgba(255,255,255,0.62);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .auth-link {
+    background: none; border: none; padding: 0;
+    font-size: 11px; cursor: pointer;
+    color: rgba(255,255,255,0.45); text-decoration: underline;
+  }
+  .auth-link:hover { color: #fff; }

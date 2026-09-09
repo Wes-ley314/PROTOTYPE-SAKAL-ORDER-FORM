@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sign in — ŠAKAL Workshop</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ŠAKAL">
+<meta name="theme-color" content="#1C1B14">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="noindex">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/01-base.css">
+<link rel="stylesheet" href="css/03-modules.css">
+
+<script>
+  /* Already signed in and the token has not run out? Go straight through.
+     Runs before anything paints, so there is no flicker of this page. */
+  (function () {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem('sakal-auth') || 'null'); } catch (e) {}
+    if (s && s.token && (!s.expires || Date.now() < s.expires)) location.replace('index.html');
+  })();
+</script>
+</head>
+<body>
+
+<div class="auth-over open">
+  <div class="auth-card">
+    <div class="auth-mark">ŠAKAL</div>
+    <div class="auth-sub">Workshop</div>
+
+    <label class="field-label" for="auth-user">Username</label>
+    <input class="field" id="auth-user" autocomplete="username"
+           autocapitalize="none" spellcheck="false" onkeydown="if(event.key==='Enter')doLogin()">
+
+    <label class="field-label" for="auth-pass">Password</label>
+    <input class="field" id="auth-pass" type="password" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')doLogin()">
+
+    <div class="auth-msg" id="auth-msg"></div>
+    <button class="btn gold tall" id="auth-go" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- the sheet address, shared with the app so the two can never drift apart -->
+<script src="js/00-config.js"></script>
+<script>
+async function doLogin() {
+  var btn  = document.getElementById('auth-go');
+  var msg  = document.getElementById('auth-msg');
+  var user = document.getElementById('auth-user').value.trim();
+  var pass = document.getElementById('auth-pass').value;
+
+  if (!user || !pass) { msg.textContent = 'Both, please.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in\u2026';
+  msg.textContent = '';
+
+  try {
+    var r = await fetch(API_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({action: 'LOGIN', username: user, password: pass})
+    });
+    var res = JSON.parse(await r.text());
+
+    if (res.status !== 'success') {
+      msg.textContent = res.message || 'Could not sign in.';
+      document.getElementById('auth-pass').value = '';
+      return;
+    }
+
+    localStorage.setItem('sakal-auth', JSON.stringify({
+      token: res.token, name: res.name, username: res.username,
+      role: res.role, expires: res.expires
+    }));
+
+    /* replace, not assign — Back must not come here again once through */
+    location.replace('index.html');
+
+  } catch (err) {
+    msg.textContent = 'Could not reach the sheet. Check the connection.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('auth-user').focus();
+  /* a message passed over from the app, e.g. after signing out */
+  var why = new URLSearchParams(location.search).get('why');
+  if (why === 'expired') document.getElementById('auth-msg').textContent = 'Your sign-in ran out. Please sign in again.';
+  if (why === 'out')     document.getElementById('auth-msg').textContent = 'Signed out.';
+});
+</script>
+
+</body></html>

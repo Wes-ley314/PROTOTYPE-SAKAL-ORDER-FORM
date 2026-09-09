@@ -19,6 +19,16 @@
 <link rel="stylesheet" href="css/01-base.css">
 <link rel="stylesheet" href="css/02-orders.css">
 <link rel="stylesheet" href="css/03-modules.css">
+<script>
+  /* No good sign-in? Straight back to the door, before anything paints.
+     This is for flow, not for safety — the Apps Script is what actually
+     refuses unauthenticated requests. */
+  (function () {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem('sakal-auth') || 'null'); } catch (e) {}
+    if (!s || !s.token || (s.expires && Date.now() > s.expires)) location.replace('login.html');
+  })();
+</script>
 </head>
 <body>
 
@@ -1049,6 +1059,10 @@
      ══════════════════════════════════════════════════ -->
 
 <!-- shared building blocks — must come before any screen that extends them -->
+<!-- the sheet address, and the token that goes on every request -->
+<script src="js/00-config.js"></script>
+<script src="js/00-auth.js"></script>
+
 <script src="js/lib/00-crud-screen.js"></script>
 
 <!-- data the app starts life with -->

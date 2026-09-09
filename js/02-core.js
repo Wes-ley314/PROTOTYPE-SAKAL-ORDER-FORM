@@ -5,7 +5,8 @@
    this device — see SYNC STUB below to push them to the same sheet.
    ══════════════════════════════════════════════════════════════ */
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwZWtY4PJPmF69WmEPkWYwQdHVISV41-8A0dP6U0a4IcOi-t6Ml2MLT2V10QKv1g-yi/exec';
+/* API_URL now lives in js/00-config.js, so login.html and the app
+   read the same address. It loads before this file. */
 
 /* ── Constants ── */
 var PRODUCTS     = ['Jacket','Trousers','Shirt','Vest','Safari Jacket','Overcoat'];
