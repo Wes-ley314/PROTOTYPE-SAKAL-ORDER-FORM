@@ -41,7 +41,7 @@ def bundle():
             elif path.endswith('99-boot.js'):
                 continue
             out.append('<script>')
-            out.append(body.rstrip('\n') if not path.endswith('01-jacket-form.js') else body)
+            out.append(body.rstrip('\n'))
             out.append('</script>')
         else:
             out.append(line)

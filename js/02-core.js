@@ -35,6 +35,8 @@ var PAGES = {
 /* ── State ── */
 var orders = [], archivedOrders = [];
 var stock = [], invoices = [], pricelist = [], leads = [], customers = [], opitems = [], deltaOrders = [];
+/* order number → the one order-form PDF filed against it, as a Drive link */
+var orderPdfs = {};
 var currentSort = 'newest', currentArchiveSort = 'newest', currentPage = 'invoice';
 var activeStatusFilter = null, activeStuckFilter = false, activeUnpaidFilter = false, activeProductFilters = {};
 var filterOrderedFrom='', filterOrderedTo='', filterDueFrom='', filterDueTo='';
@@ -51,7 +53,18 @@ function money(n) { n = Number(n) || 0; return n.toLocaleString('en-SG', {minimu
 function money0(n) { n = Number(n) || 0; return n.toLocaleString('en-SG', {maximumFractionDigits:0}); }
 function todayYMD() { var t = new Date(); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-function showToast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+/* Long messages — a refusal from the sheet, say — need longer on screen than
+   "Saved" does, and a tap to dismiss once they have been read. */
+function showToast(msg) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  var ms = String(msg).length > 60 ? 9000 : 2600;
+  t._h = setTimeout(function(){ t.classList.remove('show'); }, ms);
+  t.style.pointerEvents = 'auto';
+  t.onclick = function(){ clearTimeout(t._h); t.classList.remove('show'); };
+}
 function setSync(state, text) {
   ['sync-dot','sync-dot-2'].forEach(function(id){ var d = $(id); if (d) d.className = 'sync-dot' + (state ? ' ' + state : ''); });
   ['sync-text','sync-text-2'].forEach(function(id){ var s = $(id); if (s) s.textContent = text; });
@@ -271,7 +284,8 @@ var MODULES = {
   leads:        ['sakal-leads',        function(){ return leads;        }, function(v){ leads = v || []; }],
   customers:    ['sakal-customers',    function(){ return customers;    }, function(v){ customers = v || []; }],
   ops:          ['sakal-ops',          function(){ return opitems;      }, function(v){ opitems = v || []; }],
-  delta:        ['sakal-delta-v2',     function(){ return deltaOrders;  }, function(v){ deltaOrders = v || []; }]
+  delta:        ['sakal-delta-v2',     function(){ return deltaOrders;  }, function(v){ deltaOrders = v || []; }],
+  attachments:  ['sakal-attachments',  function(){ return orderPdfs;    }, function(v){ orderPdfs = v || {}; }]
 };
 
 function loadLocalModules() {
@@ -286,6 +300,7 @@ function loadLocalModules() {
   customers    = readLocal('sakal-customers', []);
   opitems      = readLocal('sakal-ops',       SEED_OPS);
   deltaOrders  = readLocal('sakal-delta-v2',  SEED_DELTA);
+  orderPdfs    = readLocal('sakal-attachments', {});
 }
 
 function persistModule(name) {
@@ -300,6 +315,7 @@ function persistLeads()        { persistModule('leads'); }
 function persistCustomers()    { persistModule('customers'); }
 function persistOps()          { persistModule('ops'); }
 function persistDelta()        { persistModule('delta'); }
+function persistAttachments()  { persistModule('attachments'); }
 
 /* ── Pushing the lists to the sheet ──────────────────────────
    The Apps Script needs a SAVE_MODULE / GET_MODULES handler; the code

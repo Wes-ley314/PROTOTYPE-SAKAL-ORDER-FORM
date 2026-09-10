@@ -290,8 +290,10 @@
   .toast {
     position: fixed; bottom: 26px; left: 50%; z-index: 300;
     transform: translateX(-50%) translateY(12px);
-    background: var(--ink); color: #fff; padding: 12px 22px; border-radius: 30px;
-    font-size: 13px; opacity: 0; pointer-events: none; white-space: nowrap;
+    background: var(--ink); color: #fff; padding: 12px 22px; border-radius: 20px;
+    font-size: 13px; opacity: 0; pointer-events: none;
+    max-width: min(620px, calc(100vw - 28px)); text-align: center;
+    line-height: 1.5; overflow-wrap: anywhere;
     transition: opacity .22s, transform .22s; box-shadow: 0 10px 34px rgba(22,21,15,.3);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

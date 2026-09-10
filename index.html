@@ -984,24 +984,26 @@
   </div>
 </div>
 
-<!-- Suit order form — full screen, so it behaves on a phone and an iPad -->
-<div class="sheet-over" id="design-over">
+<!-- The order form PDF — full screen, so it behaves on a phone and an iPad -->
+<div class="sheet-over" id="pdf-over">
   <div class="sheet-over-bar">
     <div style="min-width:0">
-      <div class="sheet-over-title">Suit order form</div>
-      <div class="sheet-over-sub" id="design-sub"></div>
+      <div class="sheet-over-title">Order form</div>
+      <div class="sheet-over-sub" id="pdf-sub"></div>
     </div>
     <div style="display:flex;gap:8px;flex-shrink:0">
-      <button class="btn sm" onclick="openDesignInTab()">Open in a tab</button>
-      <button class="btn sm" onclick="closeJacketForm()">Close</button>
+      <button class="btn sm" onclick="replaceViewedPdf()">Replace</button>
+      <button class="btn sm" onclick="removeViewedPdf()">Remove</button>
+      <button class="btn sm" onclick="openViewedPdfInDrive()">Open in Drive</button>
+      <button class="btn sm" onclick="closePdfViewer()">Close</button>
     </div>
   </div>
   <div class="sheet-over-body">
-    <iframe id="design-frame" title="Suit order form" scrolling="yes"></iframe>
-    <div class="sheet-fallback" id="design-fallback">
-      <div class="empty-title">The form could not open here</div>
-      <div class="empty-body">Some browsers block a page inside a page. Open it in its own tab, design the jacket, then press Attach to order.</div>
-      <button class="btn gold tall" onclick="openDesignInTab()">Open the form in a tab</button>
+    <iframe id="pdf-frame" title="Order form PDF"></iframe>
+    <div class="sheet-fallback" id="pdf-fallback">
+      <div class="empty-title">The PDF could not be shown here</div>
+      <div class="empty-body">Some browsers refuse to show a Drive file inside another page, and a file that is not link-shared will not show either. Open it in its own tab instead.</div>
+      <button class="btn gold tall" onclick="openViewedPdfInDrive()">Open in Drive</button>
     </div>
   </div>
 </div>
@@ -1017,10 +1019,11 @@
       <div class="stack">
         <div>
           <div class="step"><span class="step-n">1</span><span class="step-t">Open the <b>Apps Script</b> project behind your ŠAKAL sheet — in the sheet, Extensions → Apps Script.</span></div>
-          <div class="step"><span class="step-n">2</span><span class="step-t">Copy the code below and paste it at the <b>bottom</b> of the existing file.</span></div>
-          <div class="step"><span class="step-n">3</span><span class="step-t">At the very top of your existing <b>doPost(e)</b>, add the two hook lines shown in the code's comment. Do the same for <b>doGet(e)</b>.</span></div>
+          <div class="step"><span class="step-n">2</span><span class="step-t">Copy the code below and paste it at the <b>bottom</b> of the existing file. <b>Already on V8 or later?</b> Use <b>apps-script/SAKAL-BACKEND-V9.gs</b> from the repo instead — it is the whole backend, and it replaces the file rather than adding to it.</span></div>
+          <div class="step"><span class="step-n">3</span><span class="step-t">At the very top of your existing <b>doPost(e)</b>, add the hook lines shown in the code's comment. Do the same for <b>doGet(e)</b>.</span></div>
           <div class="step"><span class="step-n">4</span><span class="step-t">Deploy → Manage deployments → edit the live one → Version: <b>New version</b> → Deploy. The web app URL does not change.</span></div>
           <div class="step"><span class="step-n">5</span><span class="step-t">Come back here and press <b>Save all to sheet</b>.</span></div>
+          <div class="step-t" style="padding-left:33px">Order-form PDFs are filed in a Drive folder called <b>ŠAKAL order forms</b>, made the first time one is attached. Google asks for permission to use Drive the first time the script runs — say yes, or no PDF will go up.</div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px">
@@ -1067,7 +1070,6 @@
 
 <!-- data the app starts life with -->
 <script src="js/00-seed-data.js"></script>
-<script src="js/01-jacket-form.js"></script>
 
 <!-- helpers, storage, sync with the sheet, page routing -->
 <script src="js/02-core.js"></script>
@@ -1080,7 +1082,7 @@
 <script src="js/07-leads.js"></script>
 <script src="js/08-customers.js"></script>
 <script src="js/09-ops.js"></script>
-<script src="js/10-design.js"></script>
+<script src="js/10-attachments.js"></script>
 <script src="js/11-setup.js"></script>
 <script src="js/12-assistant.js"></script>
 <script src="js/13-invoicing.js"></script>

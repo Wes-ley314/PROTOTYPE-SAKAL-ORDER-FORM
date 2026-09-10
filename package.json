@@ -1,12 +1,16 @@
 {
   "name": "sakal-workshop",
   "private": true,
-  "description": "SAKAL Workshop — shop floor management. No build step: index.html loads css/ and js/ directly.",
+  "description": "SAKAL Workshop \u2014 shop floor management. No build step: index.html loads css/ and js/ directly.",
   "scripts": {
     "test": "node tools/smoke.js",
     "compare": "node tools/compare.js",
     "bundle": "python3 tools/bundle.py",
-    "serve": "python3 -m http.server 8080"
+    "serve": "python3 -m http.server 8080",
+    "check:pdf": "node tools/pdf-check.js",
+    "check:viewer": "node tools/viewer-check.js",
+    "check:backend": "node tools/backend-check.js",
+    "check:folder": "node tools/folderid-check.js"
   },
   "devDependencies": {
     "jsdom": "^30.0.0"

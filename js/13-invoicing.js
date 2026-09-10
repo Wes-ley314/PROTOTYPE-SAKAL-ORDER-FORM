@@ -200,7 +200,7 @@ function newInvoiceFor(orderNum) {
   $('inv-due').value    = o.dueDate || '';
   invLines = (o.items||[]).map(function(it) {
     return { desc: it.product, qty: 1, unit: suggestUnit(it), garments: [it.product],
-             parts: [{product: it.product, fabric: it.fabric || '', lining: it.lining || '', design: it.design || null}] };
+             parts: [{product: it.product, fabric: it.fabric || '', lining: it.lining || ''}] };
   });
   if (invLines.length === 0) invLines = [{desc:'',qty:1,unit:''}];
   renderInvLines(); recalcInvoice(); updateInvOrderHint();
@@ -263,8 +263,7 @@ function ensureParts(l) {
     return {
       product: g,
       fabric: carry ? (carry.fabric || '') : (l.fabric || ''),
-      lining: carry ? (carry.lining || '') : (l.lining || ''),
-      design: carry ? (carry.design || null) : null
+      lining: carry ? (carry.lining || '') : (l.lining || '')
     };
   });
   return l.parts;
@@ -279,8 +278,7 @@ function itemsFromLines(lines) {
         items.push({
           product: p.product,
           fabric: p.fabric || '',
-          lining: needsLining(p.product) ? (p.lining || '') : '',
-          design: p.design || null
+          lining: needsLining(p.product) ? (p.lining || '') : ''
         });
       });
     }
@@ -367,13 +365,6 @@ function partRows(i, l) {
           ? '<div class="cloth-row"><label>Lining</label>'
             + '<input type="text" placeholder="Lining no." class="'+(p.lining?'':'want')+'" '
             + 'value="'+esc(p.lining||'')+'" oninput="editPart('+i+','+j+',\'lining\',this.value)"></div>'
-          : '')
-      + (p.product === 'Jacket'
-          ? '<div class="cloth-row" style="margin-top:8px"><label>Design</label>'
-            + '<div style="flex:1;display:flex;align-items:center;gap:9px;flex-wrap:wrap">'
-            + designButton('invoice', i, j, p.design, 'Jacket')
-            + '<span class="inline-note">' + (hasDesign(p.design) ? esc(p.design.code) : 'The suit order form for this jacket') + '</span>'
-            + '</div></div>'
           : '')
       + '</div>';
   }).join('');
@@ -525,7 +516,6 @@ function feedOrderFromInvoice(v) {
         product: it.product,
         fabric:  it.fabric  || (carry ? carry.fabric  : ''),
         lining:  it.lining  || (carry ? carry.lining  : ''),
-        design:  it.design  || (carry ? carry.design  : null),
         status:  carry ? carry.status : '',
         paid:    carry ? carry.paid   : false,
         invoice: true,
@@ -546,7 +536,7 @@ function feedOrderFromInvoice(v) {
     customerName: v.client || '', customerContact: v.phone || '', customerEmail: v.email || '',
     dueDate: v.due || '', fittingDate: v.fitting || '',
     items: items.map(function(it) {
-      return {product:it.product, fabric:it.fabric, lining:it.lining, design:it.design||null,
+      return {product:it.product, fabric:it.fabric, lining:it.lining,
               status:'', paid:false, invoice:true, stuck:false};
     }),
     date: todayYMD(), fitted: 0,
@@ -597,7 +587,7 @@ function orderFromInvoiceRecord(v) {
     customerName: v.client || '', customerContact: v.phone || '', customerEmail: v.email || '',
     dueDate: v.due || '', fittingDate: v.fitting || '',
     items: items.map(function(it) {
-      return {product:it.product, fabric:it.fabric, lining:it.lining, design:it.design||null,
+      return {product:it.product, fabric:it.fabric, lining:it.lining,
               status:'', paid:false, invoice:true, stuck:false};
     }),
     date: v.issued || todayYMD(), fitted: 0, remarks: note, staff: v.staff || '', archived: false

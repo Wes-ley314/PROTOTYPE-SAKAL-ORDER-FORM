@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', function() {
   // Esc closes whatever is on top
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
-    if ($('design-over').classList.contains('open')) { closeJacketForm(); return; }
+    if ($('pdf-over').classList.contains('open')) { closePdfViewer(); return; }
     var open = document.querySelectorAll('.modal-wrap.open');
     if (open.length) open[open.length-1].classList.remove('open');
   });

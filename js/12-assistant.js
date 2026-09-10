@@ -383,9 +383,9 @@ function reportRecord(num) {
     out.push((o.items||[]).map(function(i) {
       return '- ' + i.product + ' · cloth ' + (i.fabric || '—')
         + (i.lining ? ' · lining ' + i.lining : '')
-        + ' · ' + (i.status || 'not started') + (i.stuck ? ' · STUCK' : '')
-        + (hasDesign(i.design) ? ' · form ' + i.design.code : '');
+        + ' · ' + (i.status || 'not started') + (i.stuck ? ' · STUCK' : '');
     }).join('\n'));
+    if (hasPdf(o.orderNum)) out.push('Order form PDF on file: ' + pdfFor(o.orderNum).name);
     if (o.remarks) out.push(o.remarks);
   }
   var v = invoices.find(function(x){ return String(x.no||'').replace(/\D/g,'') === String(num); });

@@ -223,6 +223,7 @@ function saveEditModal() {
   o.fittingDate     = $('modal-fittingdate').value;
   o.remarks         = $('modal-remarks').value.trim();
   o.items           = getModalItems();
+  if (newNum !== oldNum) renameOrderPdf(oldNum, newNum);
   var _ei = editIdx; closeEditModal(); renderOrders(); updateCounts(); syncToServer(orders[_ei]);
 }
 function renderModalItems(items) {
@@ -321,6 +322,7 @@ function renderOrders() {
       +   '</div>'
       +   '<div class="oc-tools" onclick="event.stopPropagation()">'
       +     threadHtml(o, oi, false)
+      +     pdfButton(o.orderNum)
       +     '<button class="btn sm" onclick="newInvoiceFor(\''+esc(o.orderNum)+'\')">Invoice</button>'
       +     '<button class="btn sm" onclick="archiveOrder('+oi+')">Archive</button>'
       +     '<button class="icon-btn" onclick="openEditModal('+oi+')" aria-label="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'
@@ -330,16 +332,15 @@ function renderOrders() {
     items.forEach(function(it,ii) {
       html += '<div class="g-row"><div class="g-name">'+esc(it.product)+'</div>'
         + '<div class="g-cloth">Cloth <b>'+esc(it.fabric||'—')+'</b>'+(it.lining?' &nbsp;·&nbsp; Lining <b>'+esc(it.lining)+'</b>':'')
-        + (hasDesign(it.design) ? '<div class="cell-sub">'+esc(it.design.code)+'</div>' : '')+'</div>'
+        + '</div>'
         + '<div class="g-tools">'
-        +   (it.product === 'Jacket' ? designButton('order', o.orderNum, ii, it.design, 'Jacket · order ' + o.orderNum) + ' ' : '')
         +   '<span class="pill '+statusClass(it.status)+'" onclick="toggleItemStatus('+oi+','+ii+',\'status\')">'+esc(statusLabel(it.status))+'</span>'
         +   '<span class="pill'+(it.stuck?' st-stuck':'')+'" onclick="toggleItemStatus('+oi+','+ii+',\'stuck\')">'+(it.stuck?'Stuck':'On track')+'</span>'
         +   '<span class="pill'+(it.paid?' st-paid':' st-unpaid')+'" onclick="toggleItemStatus('+oi+','+ii+',\'paid\')">'+(it.paid?'Paid':'Unpaid')+'</span>'
         +   '<button class="icon-btn danger" onclick="deleteItem('+oi+','+ii+')" aria-label="Remove garment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>'
         + '</div></div>';
     });
-    html += designStrip(o);
+    html += pdfStrip(o);
     if (o.remarks) html += '<div class="oc-note">'+esc(o.remarks)+'</div>';
     html += '</article>';
   });
@@ -401,20 +402,20 @@ function renderArchive() {
       + '</div>'
       + '<div class="oc-tools" onclick="event.stopPropagation()">'
       +   threadHtml(o, ai, true)
+      +   pdfButton(o.orderNum)
       +   '<button class="btn sm" onclick="confirmRestore('+ai+')">Restore</button>'
       +   '<button class="icon-btn danger" onclick="deleteArchiveOrder('+ai+')" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'
       + '</div></div>';
     items.forEach(function(it,ii) {
       html += '<div class="g-row"><div class="g-name">'+esc(it.product)+'</div>'
         + '<div class="g-cloth">Cloth <b>'+esc(it.fabric||'—')+'</b>'+(it.lining?' &nbsp;·&nbsp; Lining <b>'+esc(it.lining)+'</b>':'')
-        + (hasDesign(it.design) ? '<div class="cell-sub">'+esc(it.design.code)+'</div>' : '')+'</div>'
+        + '</div>'
         + '<div class="g-tools">'
-        +   (it.product === 'Jacket' ? designButton('order', o.orderNum, ii, it.design, 'Jacket · order ' + o.orderNum) + ' ' : '')
         +   '<span class="tag">'+esc(statusLabel(it.status))+'</span>'
         +   '<span class="pill'+(it.paid?' st-paid':' st-unpaid')+'" onclick="toggleArchiveItemPaid('+ai+','+ii+')">'+(it.paid?'Paid':'Unpaid')+'</span>'
         + '</div></div>';
     });
-    html += designStrip(o);
+    html += pdfStrip(o);
     if (o.remarks) html += '<div class="oc-note">'+esc(o.remarks)+'</div>';
     html += '</article>';
   });

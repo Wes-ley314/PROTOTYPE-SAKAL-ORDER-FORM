@@ -20,7 +20,6 @@ js/
   lib/
     00-crud-screen.js CrudScreen — the shared list+modal machinery
   00-seed-data.js     the starting price list, stock, leads, invoices, ops, delta
-  01-jacket-form.js   the design configurator, held as one HTML string
   02-core.js          helpers, storage, sync with Apps Script, page routing
   03-orders.js        orders and the archive
   04-delta.js         Delta making charges
@@ -29,13 +28,22 @@ js/
   07-leads.js         leads                      <- CrudScreen
   08-customers.js     the customer book          <- CrudScreen
   09-ops.js           SIM and stored-value cards <- CrudScreen
-  10-design.js        the design handoff
+  10-attachments.js   the order-form PDF: picking it, sending it, the link back
   11-setup.js         connecting the sheet
   12-assistant.js     the AI assistant and the reports behind it
   13-invoicing.js     invoices
   99-boot.js          what runs on DOMContentLoaded
+apps-script/
+  SAKAL-BACKEND-V9.gs the Google Apps Script behind the sheet — the whole
+                      backend, kept here so it is versioned with the app.
+                      Paste it over the script project and redeploy.
 tools/
   smoke.js            boots the app headless and checks the wiring
+  pdf-check.js        the Attach PDF button, on the floor and in the archive
+  viewer-check.js     the in-app PDF viewer — open, replace, remove, Esc
+  backend-check.js    the Apps Script PDF path, run against a fake Drive
+  folderid-check.js   PDF_FOLDER_ID — filing order forms on a Shared Drive
+  gas-harness.js      the fake Drive/Sheet backend-check.js runs on
   compare.js          proves each rewritten screen behaves like the old one
   bundle.py           squashes everything back into one file
   reference/          the pre-refactor screens, kept for comparison
