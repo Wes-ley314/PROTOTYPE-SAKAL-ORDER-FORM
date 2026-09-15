@@ -1,5 +1,5 @@
 /*
- * Proves the Shared-Drive folder path in apps-script/SAKAL-BACKEND-V9.gs:
+ * Proves the Shared-Drive folder path in apps-script/SAKAL-BACKEND-V10.gs:
  * PDF_FOLDER_ID wins when set, a wrong id fails with a sentence a human can
  * act on, and a blank id still falls back to My Drive.
  *
@@ -15,7 +15,7 @@ const fs = require('fs'), path = require('path');
 const REPO = path.resolve(process.argv[2] || path.join(__dirname, '..'));
 require(path.join(REPO, 'tools', 'gas-harness.js'));   // installs the fake Google
 
-const SRC = fs.readFileSync(path.join(REPO, 'apps-script', 'SAKAL-BACKEND-V9.gs'), 'utf8')
+const SRC = fs.readFileSync(path.join(REPO, 'apps-script', 'SAKAL-BACKEND-V10.gs'), 'utf8')
   .replace(/^const SHEET_ID.*$/m, "const SHEET_ID = 'SHEET_ID';");
 
 /** Loads the backend with PDF_FOLDER_ID set to `id`, in a scope of its own. */

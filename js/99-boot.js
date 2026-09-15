@@ -5,7 +5,9 @@ window.addEventListener('DOMContentLoaded', function() {
   loadLocalModules();
   loadFromLocalStorage();
   fetchOrdersFromServer();
-  fetchModulesFromServer();
+  // Operation goes after the lists, so an old whole-list copy of the cards
+  // can seed this device before the first record-by-record sync.
+  fetchModulesFromServer().then(function(){ OpsSync.pull(true); OpsSync.start(); });
 
   updateSortButtons(); updateArchiveSortButtons();
   updateProductFilterButtons(); updateFilterButtons();
@@ -21,7 +23,7 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   // Close modals by clicking the backdrop
-  ['confirm-modal','del-modal','tl-modal','edit-modal','price-modal','stock-modal','lead-modal','invoice-modal','import-modal','cust-modal','ops-modal','setup-modal','install-modal']
+  ['confirm-modal','del-modal','tl-modal','edit-modal','price-modal','stock-modal','lead-modal','invoice-modal','import-modal','cust-modal','ops-modal','moto-modal','setup-modal','install-modal']
     .forEach(function(id) {
       var m = $(id);
       if (m) m.addEventListener('click', function(e){ if (e.target === this) this.classList.remove('open'); });

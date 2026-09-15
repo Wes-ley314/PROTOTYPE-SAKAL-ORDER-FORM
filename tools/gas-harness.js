@@ -1,5 +1,5 @@
 /*
- * A stand-in Apps Script — just real enough to run apps-script/SAKAL-BACKEND-V9.gs
+ * A stand-in Apps Script — just real enough to run apps-script/SAKAL-BACKEND-V10.gs
  * outside Google. Fake Drive, fake sheet, fake Utilities. Used by backend-check.js.
  *   node tools/backend-check.js
  */
@@ -103,10 +103,10 @@ global.__book = BOOK;
 global.__drive = DRIVE;
 
 const path = require('path');
-const GS = path.join(__dirname, '..', 'apps-script', 'SAKAL-BACKEND-V9.gs');
+const GS = path.join(__dirname, '..', 'apps-script', 'SAKAL-BACKEND-V10.gs');
 const SRC = fs.readFileSync(GS, 'utf8')
        .replace(/^const SHEET_ID.*$/m, "const SHEET_ID = 'SHEET_ID';");
 module.exports = eval(SRC + `
 ;({uploadPdf_, deletePdf_, invoiceRows_, saveModule_, getModules_, readModule_,
    ensureHeaders_, findOrderRow_, writePdfCell_, rebuildPdfColumn, doPost, HEADERS, INVOICE_HEAD,
-   PDF_FOLDER, MODULE_NAMES})`);
+   PDF_FOLDER, MODULE_NAMES, syncOperation_, getOperation_, readOperationDoc_, operationRows_})`);

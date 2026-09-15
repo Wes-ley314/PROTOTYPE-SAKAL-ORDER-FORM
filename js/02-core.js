@@ -35,6 +35,8 @@ var PAGES = {
 /* ── State ── */
 var orders = [], archivedOrders = [];
 var stock = [], invoices = [], pricelist = [], leads = [], customers = [], opitems = [], deltaOrders = [];
+/* motorcycle tax records — Operation page, synced with the cards by js/09-ops-sync.js */
+var vehicles = [];
 /* order number → the one order-form PDF filed against it, as a Drive link */
 var orderPdfs = {};
 var currentSort = 'newest', currentArchiveSort = 'newest', currentPage = 'invoice';
@@ -276,14 +278,16 @@ function readLocal(key, seed) {
   } catch(e) { return JSON.parse(JSON.stringify(seed)); }
 }
 
-/* name → [storage key, getter, setter] for everything that is not an order */
+/* name → [storage key, getter, setter] for everything that is not an order.
+   The Operation page (cards + motorcycles) is NOT here: it syncs record by
+   record through OpsSync (js/09-ops-sync.js), so two devices can edit it at
+   once without undoing each other. */
 var MODULES = {
   invoices:     ['sakal-invoices2',    function(){ return invoices;     }, function(v){ invoices = v || []; }],
   pricelist:    ['sakal-pricelist',    function(){ return pricelist;    }, function(v){ pricelist = v || []; }],
   stock:        ['sakal-stock3',       function(){ return stock;        }, function(v){ stock = v || []; }],
   leads:        ['sakal-leads',        function(){ return leads;        }, function(v){ leads = v || []; }],
   customers:    ['sakal-customers',    function(){ return customers;    }, function(v){ customers = v || []; }],
-  ops:          ['sakal-ops',          function(){ return opitems;      }, function(v){ opitems = v || []; }],
   delta:        ['sakal-delta-v2',     function(){ return deltaOrders;  }, function(v){ deltaOrders = v || []; }],
   attachments:  ['sakal-attachments',  function(){ return orderPdfs;    }, function(v){ orderPdfs = v || {}; }]
 };
@@ -299,6 +303,7 @@ function loadLocalModules() {
   }
   customers    = readLocal('sakal-customers', []);
   opitems      = readLocal('sakal-ops',       SEED_OPS);
+  vehicles     = readLocal('sakal-vehicles',  SEED_VEHICLES);
   deltaOrders  = readLocal('sakal-delta-v2',  SEED_DELTA);
   orderPdfs    = readLocal('sakal-attachments', {});
 }
@@ -313,7 +318,8 @@ function persistInvoices()     { persistModule('invoices'); }
 function persistPriceList()    { persistModule('pricelist'); }
 function persistLeads()        { persistModule('leads'); }
 function persistCustomers()    { persistModule('customers'); }
-function persistOps()          { persistModule('ops'); }
+function persistOps()          { OpsSync.persist(); }
+function persistVehicles()     { OpsSync.persist(); }
 function persistDelta()        { persistModule('delta'); }
 function persistAttachments()  { persistModule('attachments'); }
 
@@ -371,6 +377,8 @@ async function fetchModulesFromServer() {
     try { result = JSON.parse(text); } catch(_) { return false; }
     if (result.status !== 'success' || !result.modules) { modulesOnServer = false; return false; }
     var got = [];
+    /* the old whole-list copy of the cards, used once to seed this device */
+    if (result.modules.ops) OpsSync.adoptLegacy(result.modules.ops);
     Object.keys(MODULES).forEach(function(name) {
       var v = result.modules[name];
       if (v === undefined || v === null) return;
@@ -398,6 +406,7 @@ async function pushEverything() {
     if (await _pushModule(names[i])) ok++;
     await new Promise(function(r){ setTimeout(r, 250); });
   }
+  await OpsSync.push();
   setSync(ok === names.length ? '' : 'bad',
           ok === names.length ? 'All changes saved' : ok + ' of ' + names.length + ' lists saved');
   showToast(ok === names.length
@@ -405,11 +414,12 @@ async function pushEverything() {
     : 'Only ' + ok + ' of ' + names.length + ' lists reached the sheet');
 }
 
-function hasPendingModuleSync() { return modulePending > 0 || Object.keys(moduleTimers).length > 0; }
+function hasPendingModuleSync() { return modulePending > 0 || Object.keys(moduleTimers).length > 0 || OpsSync.hasPending(); }
 
 async function refreshEverything() {
   await fetchOrdersFromServer();
   await fetchModulesFromServer();
+  await OpsSync.pull(true);
   renderAll();
   setSync(modulesOnServer === false ? 'warn' : '',
           modulesOnServer === false ? 'Orders from the sheet · lists on this device' : 'All changes saved');
@@ -417,10 +427,12 @@ async function refreshEverything() {
 
 /* Wipe this device's copy and reload the numbers from the spreadsheets. */
 function resetSeedData() {
-  ['sakal-pricelist','sakal-stock3','sakal-leads','sakal-ops'].forEach(function(k){ localStorage.removeItem(k); });
+  /* Operation is shared live between devices, so a reset here would wipe
+     everyone's cards — it is left alone. */
+  ['sakal-pricelist','sakal-stock3','sakal-leads'].forEach(function(k){ localStorage.removeItem(k); });
   loadLocalModules(); renderAll();
-  ['pricelist','stock','leads','ops'].forEach(persistModule);
-  showToast('Price list, stock, leads and operation reset to the spreadsheets');
+  ['pricelist','stock','leads'].forEach(persistModule);
+  showToast('Price list, stock and leads reset to the spreadsheets');
 }
 
 /* ── One running number for the whole shop ───────────────── */
@@ -554,7 +566,10 @@ function renderPageActions(page) {
   if (page === 'price')     h = '<button class="btn" onclick="exportPriceList()">Export CSV</button>'
                               + '<button class="btn gold" onclick="openPriceModal()">+ Add fabric</button>';
   if (page === 'stock')     h = '<button class="btn gold" onclick="openStockModal()">+ Add stock item</button>';
-  if (page === 'ops')       h = '<button class="btn gold" onclick="openOpsModal()">+ Add card</button>';
+  if (page === 'ops')       h = '<button class="btn" onclick="OpsSync.pull(true)">Refresh</button>'
+                              + '<button class="btn" onclick="exportOperationJsonLd()">Export JSON-LD</button>'
+                              + '<button class="btn" onclick="openMotoModal()">+ Add motorcycle</button>'
+                              + '<button class="btn gold" onclick="openOpsModal()">+ Add card</button>';
   if (page === 'customers') h = '<button class="btn" onclick="exportCustomers()">Export CSV</button>'
                               + '<button class="btn gold" onclick="openCustModal()">+ New customer</button>';
   if (page === 'leads')     h = '<button class="btn" onclick="exportLeads()">Export CSV</button>'
@@ -586,7 +601,7 @@ function updateCounts() {
   $('ct-price').textContent   = pricelist.length;
   $('ct-stock').textContent     = stock.length;
   $('ct-delta').textContent     = deltaOrders.filter(function(o){ return !o.archived; }).length;
-  $('ct-ops').textContent       = opitems.length;
+  $('ct-ops').textContent       = opitems.length + vehicles.length;
   $('ct-customers').textContent = customers.length;
   $('ct-leads').textContent   = leads.filter(function(l){ return l.purchased !== 'Yes'; }).length;
   $('ct-invoice').textContent = invoices.filter(function(v){ return invoiceStatus(v) !== 'Paid'; }).length;

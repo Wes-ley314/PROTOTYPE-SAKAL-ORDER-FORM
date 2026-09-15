@@ -50,7 +50,7 @@ async function checkSheetLink(quiet) {
     : 'The sheet is not taking the lists yet, so they are on this device only. The five steps below fix that.')
     + (pdfOk
         ? ' Order-form PDFs are on.'
-        : ' Order-form PDFs are NOT on — the script is not on V9 yet, or Drive has not been allowed.');
+        : ' Order-form PDFs are NOT on — the script is not on V9 or later yet, or Drive has not been allowed.');
 
   if (!quiet) showToast(ok ? (pdfOk ? 'Connected' : 'Connected — but no PDFs yet') : 'Not connected yet');
   setSync(ok ? '' : 'warn', ok ? 'All changes saved' : 'Orders on the sheet · lists on this device');

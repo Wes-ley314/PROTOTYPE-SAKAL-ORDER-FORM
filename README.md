@@ -27,14 +27,15 @@ js/
   06-stock.js         stock                      <- CrudScreen
   07-leads.js         leads                      <- CrudScreen
   08-customers.js     the customer book          <- CrudScreen
-  09-ops.js           SIM and stored-value cards <- CrudScreen
+  09-ops.js           SIM cards, stored-value cards and motorcycle tax <- CrudScreen (x2)
+  09-ops-sync.js      Operation <-> the sheet, record by record (JSON-LD)
   10-attachments.js   the order-form PDF: picking it, sending it, the link back
   11-setup.js         connecting the sheet
   12-assistant.js     the AI assistant and the reports behind it
   13-invoicing.js     invoices
   99-boot.js          what runs on DOMContentLoaded
 apps-script/
-  SAKAL-BACKEND-V9.gs the Google Apps Script behind the sheet — the whole
+  SAKAL-BACKEND-V10.gs the Google Apps Script behind the sheet — the whole
                       backend, kept here so it is versioned with the app.
                       Paste it over the script project and redeploy.
 tools/
@@ -43,6 +44,7 @@ tools/
   viewer-check.js     the in-app PDF viewer — open, replace, remove, Esc
   backend-check.js    the Apps Script PDF path, run against a fake Drive
   folderid-check.js   PDF_FOLDER_ID — filing order forms on a Shared Drive
+  ops-sync-check.js   Operation shared between phones — two devices, one sheet
   gas-harness.js      the fake Drive/Sheet backend-check.js runs on
   compare.js          proves each rewritten screen behaves like the old one
   bundle.py           squashes everything back into one file
@@ -180,6 +182,24 @@ breaking something for no gain in readability.
 
 Split into their own files they are already far easier to work on than they
 were. Leave them unless a specific problem turns up.
+
+## Operation is shared live (V10)
+
+The Operation page — SIM cards, stored-value cards and **motorcycle tax**
+(`Punya Lia · Pajak 07 · Plat 2030`) — is one JSON-LD document on the sheet
+(hidden `Modules` tab, name `operation`; readable copy in the `Operation` tab).
+
+Unlike the other lists it is not saved whole. Each record has a version; a
+phone sends only what it changed, the sheet accepts it only if nobody changed
+that record first, and deletes travel as tombstones. So several people can use
+the page at once and nobody undoes anybody. It pulls every 20 s while the page
+is open, every 90 s otherwise, and on focus. Offline edits wait and go later.
+
+**To switch it on:** paste `apps-script/SAKAL-BACKEND-V10.gs` over the script,
+then Deploy → Manage deployments → edit → New version (keep the same URL).
+Until then the page says "On this device only" and never posts to the sheet.
+
+`npm run check:ops` runs two phones against the script on a fake sheet.
 
 Measurements, stock and invoices still save to the device only. The sync stub
 in `js/02-core.js` marks exactly what the Apps Script needs to accept them.

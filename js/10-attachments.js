@@ -100,7 +100,7 @@ async function uploadOrderPdf(num, file) {
   }
 
   if (!(await pdfBackendReady())) {
-    showToast('The sheet cannot take PDFs yet. Paste SAKAL-BACKEND-V9 into Apps Script and redeploy.');
+    showToast('The sheet cannot take PDFs yet. Paste SAKAL-BACKEND-V10 into Apps Script and redeploy.');
     setSync('warn', 'Sheet not ready for PDFs');
     return;
   }

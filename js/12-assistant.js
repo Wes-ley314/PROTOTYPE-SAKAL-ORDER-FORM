@@ -514,6 +514,14 @@ function shopSnapshot() {
       + (o.topup ? ' · topped up ' + o.topup + (o.amount !== '' ? ' at S$' + o.amount : '') : '');
   }).join('\n');
 
+  var motos = vehicles.map(function(v) {
+    return '- Punya ' + v.owner + (v.plate ? ' (' + v.plate + ')' : '')
+      + ' · Pajak ' + String(v.taxMonth || '?').padStart(2, '0') + ' (yearly tax month)'
+      + ' · Plat ' + (v.plateYear || '?') + ' (plate renewal year)'
+      + (v.taxPaidYear ? ' · pajak paid for ' + v.taxPaidYear : '')
+      + (v.note ? ' · ' + v.note : '');
+  }).join('\n');
+
   return [
     'Today is ' + todayYMD() + '. Next running number: ' + nextRunningNo() + '.',
     '', 'ORDERS ON THE FLOOR (' + orders.length + ' live, ' + archivedOrders.length + ' archived):', live || '(none)',
@@ -522,6 +530,7 @@ function shopSnapshot() {
     '', 'WITH DELTA (an outside maker — these are costs to the shop, not sales):', dl || '(none)',
     '', 'LEADS (' + leads.length + '):', ld || '(none)',
     '', 'OPERATION CARDS:', ops || '(none)',
+    '', 'MOTORCYCLE TAX:', motos || '(none)',
     '', 'PRICE LIST: ' + pricelist.length + ' entries across '
       + Array.from(new Set(pricelist.map(function(f){ return f.brand; }))).length + ' brands.',
     'CUSTOMERS: ' + customers.length + ' on file.'

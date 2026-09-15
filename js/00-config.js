@@ -5,4 +5,4 @@
    Loads before 02-core.js, which used to declare it.
    ══════════════════════════════════════════════════ */
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbxAga6yl8-K3FLjYwb0gFun48R2Pf6e9vZeNg3S7R7sqE2lq5qjn83o_z0evPhwvvZ7/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwTsQZuvS2wFBRZxSMXcvwvDX7Akfc8BSgUW-vjNROCDmf0_eaF8yAf6iCQNpgJrvng/exec';

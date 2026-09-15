@@ -328,14 +328,17 @@
       <div class="toolbar">
         <div class="search-wrap">
           <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
-          <input class="field" type="text" id="ops-search" placeholder="Number, provider, who holds it…" oninput="renderOps()" autocomplete="off">
+          <input class="field" type="text" id="ops-search" placeholder="Number, provider, who holds it, owner, plate…" oninput="renderOps()" autocomplete="off">
         </div>
         <button class="btn sm" data-opsfilter="all" onclick="setOpsFilter('all')">All</button>
         <button class="btn sm" data-opsfilter="SIM Card" onclick="setOpsFilter('SIM Card')">SIM Card</button>
         <button class="btn sm" data-opsfilter="Ez-Link Card" onclick="setOpsFilter('Ez-Link Card')">Ez-Link Card</button>
         <button class="btn sm" data-opsfilter="NETS Card" onclick="setOpsFilter('NETS Card')">NETS Card</button>
+        <button class="btn sm" data-opsfilter="Motorcycle" onclick="setOpsFilter('Motorcycle')">Motorcycle</button>
       </div>
+      <div id="ops-sync-note" style="font-size:11.5px;color:var(--faint);margin:-4px 0 12px"></div>
       <div id="ops-content"></div>
+      <div id="ops-moto"></div>
     </section>
 
     <!-- ─── ARCHIVE ─── -->
@@ -984,6 +987,60 @@
   </div>
 </div>
 
+<!-- Motorcycle tax record -->
+<div class="modal-wrap" id="moto-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="moto-modal-title">Add a motorcycle</div>
+      <div class="modal-msg">Whose bike, when the yearly pajak is due, and when the plate is renewed.</div>
+    </div>
+    <div class="modal-body">
+      <div class="stack">
+        <div class="row2">
+          <div>
+            <label class="field-label" for="moto-owner">Owner (punya)</label>
+            <input class="field" type="text" id="moto-owner" list="moto-owner-options" placeholder="Lia" autocomplete="off">
+            <div class="field-err" id="moto-owner-err">Whose motorcycle is it?</div>
+          </div>
+          <div>
+            <label class="field-label" for="moto-plate">Plate number</label>
+            <input class="field" type="text" id="moto-plate" placeholder="BP 1234 XY (optional)" autocomplete="off">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="field-label" for="moto-taxmonth">Pajak — yearly tax month</label>
+            <select class="field" id="moto-taxmonth"></select>
+            <div class="field-err" id="moto-taxmonth-err">Pick the month the pajak is due.</div>
+          </div>
+          <div>
+            <label class="field-label" for="moto-plateyear">Plat — renewal year</label>
+            <input class="field num" type="number" min="2000" max="2100" step="1" id="moto-plateyear" placeholder="2030">
+            <div class="field-err" id="moto-plateyear-err">A four-digit year, e.g. 2030.</div>
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="field-label" for="moto-paid">Pajak paid for year</label>
+            <input class="field num" type="number" min="2000" max="2100" step="1" id="moto-paid" placeholder="Optional — e.g. 2026">
+          </div>
+          <div>
+            <label class="field-label" for="moto-note">Note</label>
+            <input class="field" type="text" id="moto-note" placeholder="Honda Beat · kept in Batam">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost-danger" id="moto-delete" onclick="deleteMoto()">Delete</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="closeMotoModal()">Cancel</button>
+      <button class="btn btn-ink" onclick="saveMoto()">Save</button>
+    </div>
+  </div>
+</div>
+<datalist id="moto-owner-options"><option>Lia</option><option>Ares</option><option>Lina</option><option>Benjamin</option><option>Wesley</option><option>Kharsima</option></datalist>
+
 <!-- The order form PDF — full screen, so it behaves on a phone and an iPad -->
 <div class="sheet-over" id="pdf-over">
   <div class="sheet-over-bar">
@@ -1082,6 +1139,7 @@
 <script src="js/07-leads.js"></script>
 <script src="js/08-customers.js"></script>
 <script src="js/09-ops.js"></script>
+<script src="js/09-ops-sync.js"></script>
 <script src="js/10-attachments.js"></script>
 <script src="js/11-setup.js"></script>
 <script src="js/12-assistant.js"></script>

@@ -10,7 +10,8 @@
     "check:pdf": "node tools/pdf-check.js",
     "check:viewer": "node tools/viewer-check.js",
     "check:backend": "node tools/backend-check.js",
-    "check:folder": "node tools/folderid-check.js"
+    "check:folder": "node tools/folderid-check.js",
+    "check:ops": "node tools/ops-sync-check.js"
   },
   "devDependencies": {
     "jsdom": "^30.0.0"

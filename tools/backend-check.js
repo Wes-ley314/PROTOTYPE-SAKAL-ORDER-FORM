@@ -83,7 +83,7 @@ t('an invoice with no lines still lines up', empty[1].length === m.INVOICE_HEAD.
 
 /* ── the chip path ── */
 global.__enableChips();
-const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'apps-script', 'SAKAL-BACKEND-V9.gs'), 'utf8')
+const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'apps-script', 'SAKAL-BACKEND-V10.gs'), 'utf8')
   .replace(/^const SHEET_ID.*$/m, "const SHEET_ID='SHEET_ID';").replace("const PDF_CELL_MODE = 'link';", "const PDF_CELL_MODE = 'chip';");
 const chipMode = eval(src + ';({uploadPdf_})');
 const chipRes = JSON.parse(chipMode.uploadPdf_({orderNum: '2601', name: 'chip.pdf', data: B64}).getContent());
