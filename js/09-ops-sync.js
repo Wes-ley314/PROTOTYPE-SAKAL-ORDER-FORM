@@ -17,9 +17,11 @@
      and this one shows it.
    - Deletes travel as tombstones, so a record removed
      on one phone does not come back from another.
-   - The page pulls every 20 s while it is open (every
-     90 s otherwise), and when the app comes back into
-     focus. Nothing is pulled over unsent work.
+   - The document arrives with the boot's ?modules=1 answer.
+     After that the page pulls every 30 s while Operation is
+     open, and on focus. Nothing is pulled over unsent work,
+     and nothing at all on a V9 sheet (its ?operation=1
+     answer is the whole order list).
 
    Offline, everything is kept on the device and sent
    the next time the sheet answers.
@@ -207,6 +209,7 @@ var OpsSync = (function () {
     if (inFlight) { await inFlight; }
     if (!Object.keys(pending).length) return true;
     if (!backendOk || !meta.migrated) {
+      if (state === 'old-backend') { note(); return false; }   // V9: keep it on the device, don't ask again
       if (!(await pull(true, true))) return false;
     }
     var ids = Object.keys(pending);
@@ -311,7 +314,43 @@ var OpsSync = (function () {
     try { localStorage.setItem('sakal-ops', JSON.stringify(opitems)); } catch (e) {}
   }
 
+  /* take a document the sheet handed us, from ?operation=1 or from ?modules=1 */
+  function absorb(doc, force, fromPush) {
+    backendOk = true;
+    meta.oldBackendAt = 0;
+    var before = meta.version;
+    adopt(doc);
+    if (!meta.migrated) migrate();
+    rebuildLists();
+    saveState();
+    state = 'idle';
+    if (before !== meta.version || force) redraw(); else note();
+    if (!fromPush && Object.keys(pending).length) schedule(200);
+  }
+
+  /* The boot already asks for ?modules=1. A V10 sheet includes 'operation'
+     in that answer, so no second request is needed; a V9 sheet leaves it
+     out, which is how we know not to keep asking. */
+  function fromModules(modules) {
+    lastPull = Date.now();
+    if (modules && modules.operation && Array.isArray(modules.operation['@graph'])) {
+      if (!inFlight) absorb(modules.operation, true, false);
+      return;
+    }
+    oldBackend();
+  }
+  function oldBackend() {
+    backendOk = false;
+    state = 'old-backend';
+    meta.oldBackendAt = Date.now();
+    saveState();
+    note();
+  }
+
   async function pull(force, fromPush) {
+    /* On a V9 sheet ?operation=1 returns the WHOLE order list — never
+       ask it on a timer. Only a Refresh tap (force) or every 30 min. */
+    if (!force && !fromPush && state === 'old-backend' && Date.now() - (meta.oldBackendAt || 0) < 1800000) return false;
     if (!fromPush && backendOk && Object.keys(pending).length && !inFlight) { await push(); }
     if (inFlight && !fromPush) return false;
     lastPull = Date.now();
@@ -321,20 +360,11 @@ var OpsSync = (function () {
       try { res = JSON.parse(text); } catch (_) {}
       if (res.status !== 'success' || !res.doc) {
         // A V9 script answers ?operation=1 with the order list.
-        state = res.status === 'success' ? 'old-backend' : 'offline';
-        note();
+        if (res.status === 'success') oldBackend(); else { state = 'offline'; note(); }
         return false;
       }
-      backendOk = true;
       if (inFlight && !fromPush) return false;   // a save started meanwhile; its answer is newer
-      var before = meta.version;
-      adopt(res.doc);
-      if (!meta.migrated) migrate();
-      rebuildLists();
-      saveState();
-      state = 'idle';
-      if (before !== meta.version || force) redraw(); else note();
-      if (!fromPush && Object.keys(pending).length) schedule(200);
+      absorb(res.doc, force, fromPush);
       return true;
     } catch (err) {
       state = 'offline';
@@ -374,16 +404,19 @@ var OpsSync = (function () {
   function tick() {
     if (document.visibilityState !== 'visible') return;
     if (hasPending()) { if (!inFlight && !timer && Object.keys(pending).length) push(); return; }
-    var every = (typeof currentPage !== 'undefined' && currentPage === 'ops') ? 20000 : 90000;
-    if (Date.now() - lastPull >= every) pull();
+    if (state === 'old-backend') { note(); return; }
+    /* only while someone is looking at Operation; elsewhere the app
+       catches up on focus and when the page is opened */
+    var onOps = typeof currentPage !== 'undefined' && currentPage === 'ops';
+    if (onOps && Date.now() - lastPull >= 30000) pull();
     else note();
   }
   function start() {
     if (poller) return;
     poller = setInterval(tick, 5000);
-    window.addEventListener('focus', function () { if (Date.now() - lastPull > 5000) pull(); });
+    window.addEventListener('focus', function () { if (Date.now() - lastPull > 60000) pull(); });
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') { if (Date.now() - lastPull > 5000) pull(); }
+      if (document.visibilityState === 'visible') { if (Date.now() - lastPull > 60000) pull(); }
       else if (timer) { clearTimeout(timer); timer = null; push(); }
     });
   }
@@ -401,7 +434,9 @@ var OpsSync = (function () {
   }
 
   return {
-    persist: persist, push: push, pull: pull, start: start,
+    persist: persist, push: push, pull: pull, start: start, fromModules: fromModules,
+    /* opening the Operation page: catch up if the copy is more than 15 s old */
+    onOpen: function () { if (Date.now() - lastPull > 15000) pull(); else note(); },
     hasPending: hasPending, adoptLegacy: adoptLegacy, toJsonLd: toJsonLd,
     note: note,
     /* for the test harness */

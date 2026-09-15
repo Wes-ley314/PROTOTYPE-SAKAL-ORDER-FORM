@@ -7,7 +7,8 @@ window.addEventListener('DOMContentLoaded', function() {
   fetchOrdersFromServer();
   // Operation goes after the lists, so an old whole-list copy of the cards
   // can seed this device before the first record-by-record sync.
-  fetchModulesFromServer().then(function(){ OpsSync.pull(true); OpsSync.start(); });
+  // Operation comes back inside the ?modules=1 answer — no extra request.
+  fetchModulesFromServer().then(function(){ OpsSync.start(); });
 
   updateSortButtons(); updateArchiveSortButtons();
   updateProductFilterButtons(); updateFilterButtons();

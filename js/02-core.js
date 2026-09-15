@@ -379,6 +379,8 @@ async function fetchModulesFromServer() {
     var got = [];
     /* the old whole-list copy of the cards, used once to seed this device */
     if (result.modules.ops) OpsSync.adoptLegacy(result.modules.ops);
+    /* Operation rides along in this same answer on a V10 sheet */
+    OpsSync.fromModules(result.modules);
     Object.keys(MODULES).forEach(function(name) {
       var v = result.modules[name];
       if (v === undefined || v === null) return;
@@ -418,8 +420,7 @@ function hasPendingModuleSync() { return modulePending > 0 || Object.keys(module
 
 async function refreshEverything() {
   await fetchOrdersFromServer();
-  await fetchModulesFromServer();
-  await OpsSync.pull(true);
+  await fetchModulesFromServer();   // brings Operation with it
   renderAll();
   setSync(modulesOnServer === false ? 'warn' : '',
           modulesOnServer === false ? 'Orders from the sheet · lists on this device' : 'All changes saved');
@@ -482,7 +483,7 @@ function go(page) {
   if (page === 'archive') renderArchive();
   if (page === 'price')     renderPriceList();
   if (page === 'stock')     renderStock();
-  if (page === 'ops')       renderOps();
+  if (page === 'ops')       { renderOps(); OpsSync.onOpen(); }
   if (page === 'customers') renderCustomers();
   if (page === 'leads')     renderLeads();
   if (page === 'invoice')   renderInvoices();

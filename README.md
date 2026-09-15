@@ -192,8 +192,10 @@ The Operation page — SIM cards, stored-value cards and **motorcycle tax**
 Unlike the other lists it is not saved whole. Each record has a version; a
 phone sends only what it changed, the sheet accepts it only if nobody changed
 that record first, and deletes travel as tombstones. So several people can use
-the page at once and nobody undoes anybody. It pulls every 20 s while the page
-is open, every 90 s otherwise, and on focus. Offline edits wait and go later.
+the page at once and nobody undoes anybody. It arrives inside the boot-time
+`?modules=1` answer (no extra request), then refreshes every 30 s only while
+the Operation page is open, and on focus. Offline edits wait and go later.
+On a V9 sheet it never polls: there `?operation=1` returns the whole order list.
 
 **To switch it on:** paste `apps-script/SAKAL-BACKEND-V10.gs` over the script,
 then Deploy → Manage deployments → edit → New version (keep the same URL).
