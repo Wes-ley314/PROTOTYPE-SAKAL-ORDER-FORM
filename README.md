@@ -16,6 +16,7 @@ css/
   01-base.css         variables, layout, the rail, the topbar
   02-orders.css       order cards and the timeline
   03-modules.css      price list, leads, pickers, modals
+  04-responsive.css   loaded last: phone / tablet / landscape / desktop / print
 js/
   lib/
     00-crud-screen.js CrudScreen — the shared list+modal machinery

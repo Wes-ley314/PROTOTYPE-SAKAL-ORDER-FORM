@@ -1,0 +1,158 @@
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE LAYER — loaded last, so it has the final word.
+   One place for how the app reshapes itself:
+
+     ≥1600px   wide desktop — content stops stretching
+     941–1599  laptop / iPad landscape — rail on the left
+     701–940   tablet portrait — rail becomes a top bar with tabs
+     ≤700      phone — bottom tab bar, cards instead of tables
+     ≤380      small phone — tighter still
+     short + landscape — phone on its side: everything compacts
+
+   Plus: touch vs mouse, reduced motion, high contrast, print.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Fluid basics ── */
+:root {
+  --gutter: clamp(14px, 3.2vw, 30px);
+}
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, svg, video, canvas, iframe { max-width: 100%; }
+.page-title { font-size: clamp(21px, 2.6vw + 10px, 30px); }
+.main { min-width: 0; }
+.pane, .topbar { min-width: 0; }
+/* long names, emails and links never push the page sideways */
+.cell-strong, .cell-sub, .meta-val, .oc-num, .picker-name, .empty-body,
+.bubble, .modal-title, .modal-msg { overflow-wrap: anywhere; }
+.table-wrap, .tscroll { max-width: 100%; }
+
+/* ── Wide desktop: keep lines readable ── */
+@media (min-width: 1600px) {
+  .topbar, .pane { padding-left: 40px; padding-right: 40px; }
+  .pane > * { max-width: 1480px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+/* ── Laptop / iPad landscape: slimmer rail when space is tight ── */
+@media (min-width: 941px) and (max-width: 1180px) {
+  :root { --rail: 208px; }
+  .topbar, .pane { padding-left: 22px; padding-right: 22px; }
+}
+
+/* ── Tablet & phone: the rail is a header, never a full-height column.
+   (The 100dvh rule for the desktop rail used to win here and filled the
+   whole screen with the dark menu.) ── */
+@media (max-width: 940px) {
+  .rail { height: auto !important; min-height: 0; }
+  .shell { min-height: 100vh; }
+  @supports (height: 100dvh) { .shell { min-height: 100dvh; } }
+  .topbar { padding-left: var(--gutter); padding-right: var(--gutter); }
+  .pane   { padding-left: var(--gutter); padding-right: var(--gutter); }
+  .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .split-list { max-height: 40vh; }
+  /* search keeps a usable width; the filter buttons wrap below it if needed */
+  .search-wrap { min-width: min(100%, 340px); }
+}
+
+/* ── Phone ── */
+@media (max-width: 700px) {
+  /* header buttons share the row and wrap instead of running off-screen */
+  .topbar-actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+  .topbar-actions .btn { flex: 1 1 calc(50% - 4px); min-width: 0; padding: 0 10px; }
+  .topbar-actions .btn.gold { flex-basis: 100%; order: -1; }
+
+  /* filter buttons: one swipeable row rather than a wall of wrapped pills */
+  .toolbar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+             scrollbar-width: none; margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter));
+             padding: 2px var(--gutter) 4px; scroll-padding-inline: var(--gutter); }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .toolbar > * { flex-shrink: 0; }
+  .toolbar .toolbar-sep { display: none; }
+  /* a toolbar holding the search box: search gets its own full row,
+     its buttons wrap underneath (no sideways scroll to hide them) */
+  .toolbar:has(.search-wrap) { flex-wrap: wrap; overflow: visible; margin-left: 0; margin-right: 0; padding: 0; }
+  .toolbar .search-wrap { flex: 1 1 100%; min-width: 0; }
+  .topbar .eyebrow { display: none; }
+  .topbar { gap: 10px; }
+
+  .section-head { flex-wrap: wrap; align-items: center; row-gap: 8px; }
+  .empty { padding: 44px 18px; }
+  .order-card { border-radius: 12px; }
+  .oc-head { padding: 12px 14px; }
+  .stat { padding: 12px 13px; }
+  .modal-foot { flex-wrap: wrap; }
+  .modal-foot > span[style*="flex:1"] { display: none; }
+  .modal-foot .btn.ghost-danger { flex: 0 0 100%; order: 3; }
+  .more-actions { grid-template-columns: 1fr; }
+}
+
+/* ── Small phone (iPhone SE, older Androids) ── */
+@media (max-width: 380px) {
+  :root { --gutter: 12px; }
+  .stats { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .stat-val { font-size: 20px; }
+  .stat-sub { display: none; }
+  .tab-btn { font-size: 8.5px; letter-spacing: .02em; }
+  .tab-btn svg { width: 19px; height: 19px; }
+  table.grid td::before { flex-basis: 42%; }
+  .wordmark { font-size: 20px; }
+}
+
+/* ── Phone on its side: short screen, so every bar gets thinner ── */
+@media (orientation: landscape) and (max-height: 500px) {
+  .rail-head { padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: 6px; }
+  .wordmark { font-size: 18px; }
+  .topbar { padding-top: 8px; padding-bottom: 8px; gap: 10px; flex-direction: row; align-items: center; }
+  .eyebrow { display: none; }
+  .page-title { font-size: 20px; }
+  .topbar-actions { width: auto; flex-wrap: nowrap; }
+  .topbar-actions .btn { flex: 0 0 auto; }
+  .tab-btn { min-height: 44px; padding: 4px 2px; flex-direction: row; gap: 6px; }
+  .tab-btn .tab-dot { top: 2px; }
+  .modal, .modal.narrow { max-height: 96vh; }
+  @supports (height: 100dvh) { .modal, .modal.narrow { max-height: 96dvh; } }
+  .chat-pane { height: calc(100dvh - 110px); }
+  .stats { grid-template-columns: repeat(4, 1fr); }
+  .toast { bottom: calc(56px + env(safe-area-inset-bottom)); }
+}
+
+/* ── Touch: comfortable targets everywhere ── */
+@media (pointer: coarse) {
+  .btn, .icon-btn, .chip, .pill, .yn { touch-action: manipulation; }
+  .search-wrap .field { height: 44px; }
+}
+
+/* ── People who ask for less motion get none ── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ── High contrast / Windows forced colours ── */
+@media (prefers-contrast: more) {
+  :root { --line: #B9B4A8; --faint: #6E6A61; --muted: #4A473F; }
+}
+@media (forced-colors: active) {
+  .btn, .field, .pill, .chip, .tab-btn.on, .nav-item.on { border: 1px solid CanvasText; }
+  .sync-dot { forced-color-adjust: none; }
+}
+
+/* ── Print: just the page, full width ── */
+@media print {
+  .tabbar, .page-actions, .topbar-actions, #ops-sync-note { display: none !important; }
+  .pane > * { max-width: none; }
+  table.grid { display: table !important; }
+  table.grid thead { display: table-header-group !important; }
+  table.grid tr { display: table-row !important; }
+  table.grid td { display: table-cell !important; }
+  table.grid td::before { content: none !important; }
+}
+
+/* ── Sign-in page: scrolls instead of clipping on a short screen ── */
+.auth-over { overflow-y: auto; -webkit-overflow-scrolling: touch;
+             padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+.auth-over.open { align-items: safe center; }
+.auth-card { margin: auto; }
+@media (max-height: 500px) {
+  .auth-card { padding: 18px 22px; }
+  .auth-sub { margin: 4px 0 12px; }
+}
