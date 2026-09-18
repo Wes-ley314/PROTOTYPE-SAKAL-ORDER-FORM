@@ -20,7 +20,10 @@ css/
 js/
   lib/
     00-crud-screen.js CrudScreen — the shared list+modal machinery
+    vendor/           jsPDF, the logo art and the two fonts, loaded only
+                      when an invoice PDF is made (MIT / SIL OFL licences)
   00-seed-data.js     the starting price list, stock, leads, invoices, ops, delta
+  01-roles.js         who sees what — a 'delta' account sees only the Delta page, view only
   02-core.js          helpers, storage, sync with Apps Script, page routing
   03-orders.js        orders and the archive
   04-delta.js         Delta making charges
@@ -30,26 +33,12 @@ js/
   08-customers.js     the customer book          <- CrudScreen
   09-ops.js           SIM cards, stored-value cards and motorcycle tax <- CrudScreen (x2)
   09-ops-sync.js      Operation <-> the sheet, record by record (JSON-LD)
-  10-attachments.js   the order-form PDF: picking it, sending it, the link back
+  10-attachments.js   the PDFs: order forms and Delta orders (key DELTA-<no.>)
   11-setup.js         connecting the sheet
   12-assistant.js     the AI assistant and the reports behind it
   13-invoicing.js     invoices
+  14-invoice-pdf.js   the tax invoice PDF, and emailing it to the client
   99-boot.js          what runs on DOMContentLoaded
-apps-script/
-  SAKAL-BACKEND-V10.gs the Google Apps Script behind the sheet — the whole
-                      backend, kept here so it is versioned with the app.
-                      Paste it over the script project and redeploy.
-tools/
-  smoke.js            boots the app headless and checks the wiring
-  pdf-check.js        the Attach PDF button, on the floor and in the archive
-  viewer-check.js     the in-app PDF viewer — open, replace, remove, Esc
-  backend-check.js    the Apps Script PDF path, run against a fake Drive
-  folderid-check.js   PDF_FOLDER_ID — filing order forms on a Shared Drive
-  ops-sync-check.js   Operation shared between phones — two devices, one sheet
-  gas-harness.js      the fake Drive/Sheet backend-check.js runs on
-  compare.js          proves each rewritten screen behaves like the old one
-  bundle.py           squashes everything back into one file
-  reference/          the pre-refactor screens, kept for comparison
 ```
 
 Load order in `index.html` is the same order the code was in before, so
@@ -57,35 +46,14 @@ anything that worked before still works.
 
 ---
 
-## Running it
+## Running it locally
 
 ```bash
-npm install          # once, for the test tools
 npm run serve        # http://localhost:8080
-npm test             # headless boot + wiring check
-npm run compare      # old vs new, every converted screen
-npm run compare ops  # ...or just one
 ```
 
-`npm test` reports:
-
-- every `onclick=""` in the markup calls a function that actually exists
-- every `$('some-id')` in the code matches an element that actually exists
-- no uncaught errors during boot
-
-Run it before you push. It catches the two mistakes that hurt most in a
-no-build-step project: a typo'd function name and a renamed element id.
-
----
-
-## Going back to one file
-
-```bash
-npm run bundle       # writes dist/index.html
-```
-
-Useful if you ever need to email somebody a single self-contained file, or
-open the app straight off a USB stick with no web server.
+No install needed. The test tools that used to live in `tools/` were removed
+(they were only for checking the refactor and new features before pushing).
 
 ---
 
@@ -102,8 +70,7 @@ showToast(stockEditId ? 'Stock item updated' : 'Stock item added');   // always 
 
 The base class captures the flag before closing, so it now reads correctly on
 Stock, Leads, Customers, Operation and the Price list. That is the only
-behaviour that changed anywhere; `npm run compare` proves the rest is
-identical, step by step.
+behaviour that changed anywhere.
 
 ---
 
@@ -164,11 +131,9 @@ calls, so none of the 271 `onclick=""` handlers need touching. That is what
 lets you convert one screen without breaking the eleven you have not got to
 yet.
 
-**4. Prove it.** Save the old file to `tools/reference/<name>.js.orig`, add a
-block to the `SCREENS` map in `tools/compare.js` naming the elements to watch
-and the actions to drive, then run `npm run compare <name>`. It boots the app
-twice — old file and new — and diffs the page and the data after every step.
-If they match, the rewrite is safe to push.
+**4. Check it.** Open the screen, try the filters, search, add, edit and
+delete, and make sure the toasts and the list match what the old screen did
+before you push.
 
 ---
 
@@ -198,11 +163,73 @@ the page at once and nobody undoes anybody. It arrives inside the boot-time
 the Operation page is open, and on focus. Offline edits wait and go later.
 On a V9 sheet it never polls: there `?operation=1` returns the whole order list.
 
-**To switch it on:** paste `apps-script/SAKAL-BACKEND-V10.gs` over the script,
+**To switch it on:** paste the V10 backend script over the Apps Script project,
 then Deploy → Manage deployments → edit → New version (keep the same URL).
 Until then the page says "On this device only" and never posts to the sheet.
 
-`npm run check:ops` runs two phones against the script on a fake sheet.
-
 Measurements, stock and invoices still save to the device only. The sync stub
 in `js/02-core.js` marks exactly what the Apps Script needs to accept them.
+
+---
+
+## Where the PDFs go
+
+| PDFs | Drive folder | Set by |
+|---|---|---|
+| Order forms (Orders tab) | `PDF_FOLDER_ID`, or **ŠAKAL order forms** in the script account's My Drive when blank | backend script |
+| Delta orders (Delta tab) | **Sakal-Delta** (`1eqWxx4SONfewI0MaRHeooC7tdUeMXccF`) | `SAKAL-DELTA-PDF.gs` add-on |
+| Emailed invoices (a copy of each) | **ŠAKAL invoices** | `SAKAL-INVOICE-MAILER.gs` add-on |
+
+Delta files are named `DELTA-<delta no.> — <file>.pdf`, order forms
+`<order no.> — <file>.pdf`. The app sends both the same way; the Delta add-on
+picks out anything numbered `DELTA-` before the normal upload runs. Without
+the add-on, Delta PDFs fall back to the order-forms folder.
+
+Setting up the Delta folder (once): add `SAKAL-DELTA-PDF.gs` to the Apps
+Script project, put `if (isDeltaPdfUpload_(body)) return uploadDeltaPdf_(body);`
+in `doPost` just above the `UPLOAD_PDF` line, run `testDeltaPdfFolder`, then
+`moveDeltaPdfsToSakalDelta` to bring over the Delta PDFs already filed, and
+deploy a new version. The account the script runs as needs Editor (or
+Content manager) on Sakal-Delta. Moving keeps each file's id, so links the
+app already holds keep working.
+
+---
+
+## Emailing invoices
+
+Each invoice has **PDF** (preview / download) and **Email** buttons, on the
+list and inside the invoice form. The PDF is a full GST tax invoice drawn in
+the app: the ŠAKAL logo and name, SAKAL Pte Ltd, UEN, GST reg. no., line
+items, the GST included in the total, amount received and balance due. It
+carries no payment instructions — those are given to the client in person.
+What is printed on it — company details, the email wording — is set in
+`INVOICE_BUSINESS` in `js/00-config.js`; the logo is
+`js/lib/vendor/sakal-logo.js`.
+
+Sending needs the add-on **SAKAL-INVOICE-MAILER.gs** in the Apps Script
+project (steps at the top of that file: paste it in as a new script file,
+add one line to doPost and one to doGet, run `testInvoiceMail`, redeploy).
+It sends from suits@sakal.com.sg, keeps a copy of every sent PDF in the Drive
+folder **ŠAKAL invoices** (private), and lists each email on an
+**Invoice emails** tab. Until it is added the app says so and sends nothing.
+
+---
+
+## Delta accounts (view only)
+
+An account whose Role is **delta** (Users tab) signs in to the Delta page and
+nothing else: no orders, invoices, customers, leads, stock, price list,
+operation or assistant. It can open Delta PDFs but cannot change anything,
+and Delta charges are never sent to it.
+
+The screen is stripped to the list alone — no rail, no title bar, no count
+cards, no search or filters — with **Sign out** pinned to the top right
+corner (the `.ro-out` button in `index.html`; the rules live under
+"Restricted accounts" in `css/04-responsive.css`). A delta account has no
+way to change its own password from the app; an admin resets it in the
+Users tab of the sheet.
+
+The lock is in the Apps Script add-on **SAKAL-ROLES.gs** (steps at the top of
+that file: one hook line in doPost, one in doGet, run `testRoleGate`,
+redeploy). The app side (`js/01-roles.js`) only tidies the screen and wipes
+anything an admin left cached on a shared device.

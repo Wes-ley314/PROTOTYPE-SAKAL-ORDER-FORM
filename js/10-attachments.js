@@ -4,6 +4,12 @@
    folder beside the sheet and the order keeps the
    link, so every phone on the floor opens the same
    paper. Nothing heavy is ever stored on the device.
+
+   Delta orders use exactly the same path. Their key
+   is "DELTA-<delta number>", so the Drive file reads
+   "DELTA-19793 — form.pdf" and can never be mistaken
+   for (or binned along with) a shop order's form.
+   The Apps Script needs nothing new for this.
    ══════════════════════════════════════════════════ */
 
 var PDF_MAX_MB = 8;
@@ -28,7 +34,23 @@ async function pdfBackendReady(recheck) {
   return pdfBackend;
 }
 
+var DELTA_PDF_PREFIX = 'DELTA-';
+
 function pdfFor(num)  { return orderPdfs[String(num == null ? '' : num)] || null; }
+
+/* "order 260257" or "Delta 19793" — what a key is called in a sentence */
+function isDeltaPdfKey(key) { return String(key || '').indexOf(DELTA_PDF_PREFIX) === 0; }
+function pdfKeyLabel(key) {
+  key = String(key == null ? '' : key);
+  return isDeltaPdfKey(key) ? 'Delta ' + key.slice(DELTA_PDF_PREFIX.length) : 'order ' + key;
+}
+function pdfKeyTitle(key) { var l = pdfKeyLabel(key); return l.charAt(0).toUpperCase() + l.slice(1); }
+
+/* every screen that shows a PDF button */
+function renderPdfHosts() {
+  renderOrders(); renderArchive();
+  if (typeof renderDelta === 'function') renderDelta();
+}
 function hasPdf(num)  { return !!pdfFor(num); }
 
 /* Moving an attachment when the order is renumbered in the edit modal. */
@@ -43,6 +65,10 @@ function renameOrderPdf(oldNum, newNum) {
 /* ── The control on an order card ── */
 function pdfButton(num) {
   var key = String(num == null ? '' : num), q = esc(key), p = pdfFor(key);
+
+  if (isReadOnly()) {
+    return p ? '<button class="btn sm" onclick="openOrderPdf(\''+q+'\')" title="'+esc(p.name || 'PDF')+'">Open PDF</button>' : '';
+  }
 
   if (pdfBusy[key]) {
     return '<button class="btn sm" disabled>Uploading…</button>';
@@ -74,6 +100,7 @@ function pdfStrip(o) {
 
 /* ── Picking, sending, opening, removing ── */
 function pickOrderPdf(num) {
+  if (denyIfReadOnly()) return;
   var key = String(num == null ? '' : num);
   var inp = document.createElement('input');
   inp.type = 'file';
@@ -89,6 +116,7 @@ function pickOrderPdf(num) {
 }
 
 async function uploadOrderPdf(num, file) {
+  if (denyIfReadOnly()) return;
   var key = String(num == null ? '' : num);
   if (!key) return;
 
@@ -107,7 +135,7 @@ async function uploadOrderPdf(num, file) {
 
   var p = pdfFor(key);          // what was there before, if anything
   pdfBusy[key] = true;
-  renderOrders(); renderArchive();
+  renderPdfHosts();
   setSync('warn', (p ? 'Replacing the PDF…' : 'Sending the PDF…'));
 
   try {
@@ -138,12 +166,12 @@ async function uploadOrderPdf(num, file) {
 
     // Replaced from inside the viewer? Show the new one where the old was.
     if (pdfViewing === key) {
-      $('pdf-sub').textContent = 'Order ' + key + ' · ' + orderPdfs[key].name;
+      $('pdf-sub').textContent = pdfKeyTitle(key) + ' · ' + orderPdfs[key].name;
       $('pdf-fallback').classList.remove('show');
       $('pdf-frame').src = drivePreviewUrl(orderPdfs[key]);
     }
 
-    showToast(p ? 'PDF replaced on order ' + key : 'PDF attached to order ' + key);
+    showToast(p ? 'PDF replaced on ' + pdfKeyLabel(key) : 'PDF attached to ' + pdfKeyLabel(key));
   } catch (err) {
     console.error('PDF upload failed:', err);
     pdfBackend = null;            // ask again next time; the script may have just been fixed
@@ -154,7 +182,7 @@ async function uploadOrderPdf(num, file) {
       + String(err && err.message ? err.message : err));
   } finally {
     delete pdfBusy[key];
-    renderOrders(); renderArchive();
+    renderPdfHosts();
   }
 }
 
@@ -183,7 +211,8 @@ function openOrderPdf(num) {
   var key = String(num == null ? '' : num), p = pdfFor(key); if (!p) return;
 
   pdfViewing = key;
-  $('pdf-sub').textContent = 'Order ' + key + ' · ' + p.name;
+  if ($('pdf-title')) $('pdf-title').textContent = isDeltaPdfKey(key) ? 'Delta PDF' : 'Order form';
+  $('pdf-sub').textContent = pdfKeyTitle(key) + ' · ' + p.name;
   $('pdf-fallback').classList.remove('show');
 
   var f = $('pdf-frame');
@@ -218,9 +247,10 @@ function replaceViewedPdf() { if (pdfViewing) pickOrderPdf(pdfViewing); }
 function removeViewedPdf()  { if (pdfViewing) confirmRemovePdf(pdfViewing); }
 
 function confirmRemovePdf(num) {
+  if (denyIfReadOnly()) return;
   var key = String(num == null ? '' : num), p = pdfFor(key); if (!p) return;
   $('confirm-title').textContent = 'Remove this PDF?';
-  $('confirm-msg').innerHTML = '<strong>'+esc(p.name)+'</strong> comes off order <strong>'+esc(key)
+  $('confirm-msg').innerHTML = '<strong>'+esc(p.name)+'</strong> comes off <strong>'+esc(pdfKeyLabel(key))
     + '</strong> and goes to the bin in Drive.';
   var b = $('confirm-go');
   b.textContent = 'Remove'; b.className = 'btn btn-danger';
@@ -231,12 +261,13 @@ function confirmRemovePdf(num) {
 /* The link comes off the order either way. A Drive that refuses to bin the
    file is worth saying out loud, but it must not strand the order. */
 async function removeOrderPdf(num) {
+  if (denyIfReadOnly()) return;
   var key = String(num == null ? '' : num), p = pdfFor(key); if (!p) return;
   if (pdfViewing === key) closePdfViewer();
   delete orderPdfs[key];
   persistAttachments();
-  renderOrders(); renderArchive();
-  showToast('PDF removed from order ' + key);
+  renderPdfHosts();
+  showToast('PDF removed from ' + pdfKeyLabel(key));
 
   if (!p.id) return;
   try {

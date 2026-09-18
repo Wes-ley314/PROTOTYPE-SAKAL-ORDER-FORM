@@ -24,6 +24,7 @@ var deltaView = 'active', deltaSortAsc = false, deltaFilters = {}, deltaEdit = -
 var deltaShowCharge = false;
 try { deltaShowCharge = localStorage.getItem('sakal-delta-charge') === '1'; } catch(e) {}
 function toggleDeltaCharge() {
+  if (isReadOnly()) return;
   deltaShowCharge = !deltaShowCharge;
   try { localStorage.setItem('sakal-delta-charge', deltaShowCharge ? '1' : '0'); } catch(e) {}
   var b = $('delta-charge-btn');
@@ -35,6 +36,15 @@ function deltaTotal(o) {
   return (DELTA_CANVAS[o.canvas] || 0)
        + (o.addons || []).reduce(function(s,a){ return s + (DELTA_ADDONS[a] || 0); }, 0);
 }
+/* The Delta order's PDF lives in the same attachment map as the shop
+   orders' (js/10-attachments.js), under "DELTA-<number>". */
+function deltaPdfKey(o) { return DELTA_PDF_PREFIX + String(o && o.orderNum != null ? o.orderNum : ''); }
+function deltaPdfLine(o) {
+  var p = pdfFor(deltaPdfKey(o)); if (!p) return '';
+  return '<div class="cell-sub delta-pdf"><a class="link-out" href="'+esc(p.url)+'" target="_blank" rel="noopener" '
+    + 'onclick="event.preventDefault();openOrderPdf(\''+esc(deltaPdfKey(o))+'\')">'+esc(p.name)+'</a></div>';
+}
+
 function deltaStage(o) {
   var s = DELTA_STAGES.find(function(x){ return o[x.k]; });
   return s ? s.l : 'Not started';
@@ -63,6 +73,8 @@ function deltaMatches(o, k) { return !!o[k]; }
 
 function renderDelta() {
   var el = $('delta-content'); if (!el) return;
+  var ro = isReadOnly();
+  if (ro) deltaShowCharge = false;          // charges are never shown to a view-only account
   var term = ($('delta-search') ? $('delta-search').value : '').trim().toLowerCase();
   var wantArch = deltaView === 'archive';
 
@@ -73,7 +85,8 @@ function renderDelta() {
   var rows = list.filter(function(x) {
     if (!wantArch && keys.length && !keys.some(function(k){ return deltaMatches(x.o, k); })) return false;
     if (!term) return true;
-    return hit(x.o.orderNum, term) || hit(x.o.canvas, term)
+    var pf = pdfFor(deltaPdfKey(x.o));
+    return hit(x.o.orderNum, term) || hit(x.o.canvas, term) || (pf && hit(pf.name, term))
         || (x.o.addons || []).some(function(a){ return hit(a, term); });
   }).sort(function(a,b) {
     var da = a.o.dueDate || (deltaSortAsc ? '9999' : '0000');
@@ -100,7 +113,7 @@ function renderDelta() {
       ? emptyState(wantArch ? 'Nothing archived' : 'Nothing with Delta',
           wantArch ? 'Orders you close off from the list land here.'
                    : 'Log what has gone out to Delta and what it costs to have it made.',
-          wantArch ? '' : '<button class="btn gold" onclick="openDeltaModal()">+ New Delta order</button>')
+          (wantArch || ro) ? '' : '<button class="btn gold" onclick="openDeltaModal()">+ New Delta order</button>')
       : emptyState('Nothing matches', 'Try another chip, or clear the search.');
     updateCounts(); return;
   }
@@ -112,13 +125,14 @@ function renderDelta() {
       ? o.addons.map(function(a){ return '<span class="tag">'+esc(a)+'</span>'; }).join(' ')
       : '<span style="color:var(--faint)">—</span>';
     var stages = DELTA_STAGES.map(function(s) {
-      return '<span class="pill'+(o[s.k] ? ' ' + s.cls : '')+'" style="min-width:88px" '
-           + 'onclick="toggleDeltaStage('+i+',\'' + s.k + '\')">' + s.l + '</span>';
+      return '<span class="pill'+(o[s.k] ? ' ' + s.cls : '')+(ro ? ' ro' : '')+'" style="min-width:88px"'
+           + (ro ? '' : ' onclick="toggleDeltaStage('+i+',\'' + s.k + '\')"') + '>' + s.l + '</span>';
     }).join(' ');
     return '<tr class="'+(urgent ? 'row-flag' : '')+'">'
       + '<td><div class="cell-strong num">'+esc(o.orderNum)+'</div>'
-      +   '<div class="cell-sub">placed '+esc(o.date || '—')+'</div></td>'
-      + '<td class="tap-date" onclick="openDeltaDate('+i+',this)">'
+      +   '<div class="cell-sub">placed '+esc(o.date || '—')+'</div>'
+      +   deltaPdfLine(o) + '</td>'
+      + (ro ? '<td>' : '<td class="tap-date" onclick="openDeltaDate('+i+',this)">')
       +   '<span class="dd-disp"'+(urgent ? ' style="color:var(--danger);font-weight:600"' : '')+'>'
       +   esc(o.dueDate ? formatDisplayDate(o.dueDate) : '—')+'</span>'
       +   '<input type="date" class="dd-pick" style="display:none" value="'+esc(o.dueDate||'')+'" '
@@ -128,12 +142,14 @@ function renderDelta() {
       + (deltaShowCharge ? '<td class="num">S$ '+money0(o.total)+'</td>' : '')
       + '<td>'+stages+'</td>'
       + '<td class="acts">'
-      +   '<button class="btn sm" onclick="openDeltaModal('+i+')">Edit</button> '
+      +   '<span class="delta-pdf-btns">' + pdfButton(deltaPdfKey(o)) + '</span> '
+      + (ro ? '' :
+          '<button class="btn sm" onclick="openDeltaModal('+i+')">Edit</button> '
       +   (wantArch
             ? '<button class="btn sm" onclick="restoreDelta('+i+')">Restore</button> '
             : '<button class="btn sm" onclick="archiveDelta('+i+')">Archive</button> ')
       +   '<button class="icon-btn danger" onclick="deleteDelta('+i+')" aria-label="Delete">'
-      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>'
+      +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>')
       + '</td></tr>';
   }).join('');
 
@@ -152,6 +168,7 @@ function renderDelta() {
 
 /* Back-End, Bin and Delivered are one after another, not all at once. */
 function toggleDeltaStage(i, k) {
+  if (denyIfReadOnly()) return;
   var o = deltaOrders[i]; if (!o) return;
   var was = o[k];
   DELTA_STAGES.forEach(function(s){ o[s.k] = false; });
@@ -159,15 +176,17 @@ function toggleDeltaStage(i, k) {
   persistDelta(); renderDelta();
 }
 function toggleDeltaFlag(i, k) {
+  if (denyIfReadOnly()) return;
   var o = deltaOrders[i]; if (!o) return;
   o[k] = !o[k];
   persistDelta(); renderDelta();
 }
-function archiveDelta(i) { deltaOrders[i].archived = true;  persistDelta(); renderDelta(); showToast('Delta ' + deltaOrders[i].orderNum + ' archived'); }
-function restoreDelta(i) { deltaOrders[i].archived = false; persistDelta(); renderDelta(); showToast('Delta ' + deltaOrders[i].orderNum + ' restored'); }
+function archiveDelta(i) { if (denyIfReadOnly()) return; deltaOrders[i].archived = true;  persistDelta(); renderDelta(); showToast('Delta ' + deltaOrders[i].orderNum + ' archived'); }
+function restoreDelta(i) { if (denyIfReadOnly()) return; deltaOrders[i].archived = false; persistDelta(); renderDelta(); showToast('Delta ' + deltaOrders[i].orderNum + ' restored'); }
 
 var deltaDelPending = -1;
 function deleteDelta(i) {
+  if (denyIfReadOnly()) return;
   deltaDelPending = i;
   $('confirm-title').textContent = 'Delete this Delta order?';
   $('confirm-msg').innerHTML = 'Delta <strong>'+esc(deltaOrders[i].orderNum)+'</strong> and its charge come off the list for good.';
@@ -182,12 +201,14 @@ function deleteDelta(i) {
 }
 
 function openDeltaDate(i, cell) {
+  if (denyIfReadOnly()) return;
   cell.querySelector('.dd-disp').style.display = 'none';
   var p = cell.querySelector('.dd-pick');
   p.style.display = 'inline-block'; p.focus();
   try { p.showPicker(); } catch(e) {}
 }
-function saveDeltaDate(i, pick) { deltaOrders[i].dueDate = pick.value; persistDelta(); renderDelta(); }
+function saveDeltaDate(i, pick) {
+  if (denyIfReadOnly()) return; deltaOrders[i].dueDate = pick.value; persistDelta(); renderDelta(); }
 function closeDeltaDate() { setTimeout(renderDelta, 150); }
 
 /* ── The form ── */
@@ -209,6 +230,7 @@ function updateDeltaTotal() {
 }
 
 function openDeltaModal(i) {
+  if (denyIfReadOnly()) return;
   deltaEdit = (i === undefined || i === null) ? -1 : i;
   var o = deltaEdit >= 0 ? deltaOrders[deltaEdit] : null;
   $('delta-modal-title').textContent = o ? 'Delta ' + o.orderNum : 'New Delta order';
@@ -232,6 +254,7 @@ function openDeltaModal(i) {
 function closeDeltaModal() { $('delta-modal').classList.remove('open'); deltaEdit = -1; }
 
 function saveDeltaOrder() {
+  if (denyIfReadOnly()) return;
   var num = $('dm-num').value.trim();
   var err = $('dm-num-err');
   if (!num) { err.textContent = 'Give the order its Delta number.'; err.classList.add('show'); $('dm-num').classList.add('err'); $('dm-num').focus(); return; }
@@ -244,6 +267,8 @@ function saveDeltaOrder() {
   payload.total = deltaTotal(payload);
 
   if (deltaEdit >= 0) {
+    var oldNum = deltaOrders[deltaEdit].orderNum;
+    if (String(oldNum) !== num) renameOrderPdf(DELTA_PDF_PREFIX + oldNum, DELTA_PDF_PREFIX + num);
     deltaOrders[deltaEdit] = Object.assign(deltaOrders[deltaEdit], payload);
     showToast('Delta ' + num + ' updated and saved');
   } else {
@@ -263,10 +288,12 @@ function deleteDeltaFromModal() {
 }
 
 function exportDelta() {
-  var rows = [['Delta no.','Placed','Due','Canvas','Add-ons','Charge','Stage','Archived']];
+  if (denyIfReadOnly()) return;
+  var rows = [['Delta no.','Placed','Due','Canvas','Add-ons','Charge','Stage','Archived','PDF']];
   deltaOrders.forEach(function(o) {
+    var p = pdfFor(deltaPdfKey(o));
     rows.push([o.orderNum, o.date, o.dueDate, o.canvas, (o.addons||[]).join(' · '),
-               o.total, deltaStage(o), o.archived ? 'Yes' : 'No']);
+               o.total, deltaStage(o), o.archived ? 'Yes' : 'No', p ? p.url : '']);
   });
   downloadCsv('sakal-delta.csv', rows);
 }
@@ -308,6 +335,7 @@ function extractDeltaList(obj) {
 }
 
 function openDeltaImport() {
+  if (denyIfReadOnly()) return;
   deltaIncoming = null;
   $('di-paste').value = '';
   $('di-file').value = '';
@@ -357,6 +385,7 @@ function takeDeltaText(text, where) {
 }
 
 function applyDeltaImport(mode) {
+  if (denyIfReadOnly()) return;
   if (!deltaIncoming) return;
   if (mode === 'replace') {
     deltaOrders = deltaIncoming.slice();
@@ -374,6 +403,7 @@ function applyDeltaImport(mode) {
 
 /* Puts back the eighteen that shipped with the app. */
 function resetDeltaToFile() {
+  if (denyIfReadOnly()) return;
   deltaOrders = JSON.parse(JSON.stringify(SEED_DELTA)).map(normaliseDelta);
   closeDeltaImport(); persistDelta(); renderDelta(); updateCounts();
   showToast('Delta reset to the list from the dashboard file');

@@ -24,6 +24,7 @@ var SakalAuth = (function () {
     name:    function () { return session ? session.name : ''; },
     role:    function () { return session ? session.role : ''; },
     isOwner: function () { return !!session && session.role === 'owner'; },
+    isDelta: function () { return !!session && String(session.role || '').trim().toLowerCase() === 'delta'; },
     signOut: function () { toDoor('out'); },
     /* the sheet stopped accepting the token — nothing to do but ask again */
     expire:  function () { if (session) { session = null; toDoor('expired'); } }
@@ -85,7 +86,7 @@ function renderAuthChip() {
   var who = String(s.name || s.username || '');
   chip.innerHTML =
       '<span class="auth-who">' + (typeof esc === 'function' ? esc(who) : who)
-    + (s.role === 'owner' ? '' : ' \u00b7 floor') + '</span>'
+    + (s.role === 'owner' ? '' : (SakalAuth.isDelta() ? ' \u00b7 Delta (view only)' : ' \u00b7 floor')) + '</span>'
     + '<button class="auth-link" onclick="openPasswordChange()">Password</button>'
     + '<button class="auth-link" onclick="SakalAuth.signOut()">Sign out</button>';
 }

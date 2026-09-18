@@ -57,8 +57,13 @@ function todayYMD() { var t = new Date(); return t.getFullYear()+'-'+String(t.ge
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 /* Long messages — a refusal from the sheet, say — need longer on screen than
    "Saved" does, and a tap to dismiss once they have been read. */
-function showToast(msg) {
+function showToast(msg, hold) {
   var t = $('toast');
+  /* An important message (hold = ms) is not covered by the routine
+     "Saved" / "Up to date" that follows a moment later. */
+  var now = Date.now();
+  if (!hold && t._holdUntil && now < t._holdUntil && /^(Saved|Up to date|Deleted)$/.test(String(msg))) return;
+  t._holdUntil = hold ? now + hold : 0;
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(t._h);
@@ -212,6 +217,7 @@ async function _doSync(payload, isDelete) {
 }
 
 async function fetchOrdersFromServer() {
+  if (isRestricted()) { orders = []; archivedOrders = []; return; }
   setSync('warn','Loading…');
   try {
     var r = await fetch(API_URL, {redirect:'follow'});
@@ -241,6 +247,7 @@ async function fetchOrdersFromServer() {
    signal, and pushed to the same Google Sheet the orders come from so
    nothing lives on one phone only. */
 function loadFromLocalStorage() {
+  if (isRestricted()) { orders = []; archivedOrders = []; renderAll(); return; }
   try {
     var saved = localStorage.getItem('sakal-orders');
     if (saved) {
@@ -252,6 +259,7 @@ function loadFromLocalStorage() {
   renderAll();
 }
 function saveToLocalStorage() {
+  if (isRestricted()) return;
   try { localStorage.setItem('sakal-orders', JSON.stringify({orders:orders, archived:archivedOrders, lastSaved:new Date().toISOString()})); }
   catch(e) { console.log('Cache write failed'); }
 }
@@ -306,10 +314,12 @@ function loadLocalModules() {
   vehicles     = readLocal('sakal-vehicles',  SEED_VEHICLES);
   deltaOrders  = readLocal('sakal-delta-v2',  SEED_DELTA);
   orderPdfs    = readLocal('sakal-attachments', {});
+  restrictLoadedData();
 }
 
 function persistModule(name) {
   var m = MODULES[name]; if (!m) return;
+  if (isReadOnly()) return;             // a view-only account never writes
   try { localStorage.setItem(m[0], JSON.stringify(m[1]())); } catch(e) { console.log('Cache write failed for ' + name); }
   syncModule(name, m[1]());
 }
@@ -377,12 +387,16 @@ async function fetchModulesFromServer() {
     try { result = JSON.parse(text); } catch(_) { return false; }
     if (result.status !== 'success' || !result.modules) { modulesOnServer = false; return false; }
     var got = [];
-    /* the old whole-list copy of the cards, used once to seed this device */
-    if (result.modules.ops) OpsSync.adoptLegacy(result.modules.ops);
-    /* Operation rides along in this same answer on a V10 sheet */
-    OpsSync.fromModules(result.modules);
+    if (!isRestricted()) {
+      /* the old whole-list copy of the cards, used once to seed this device */
+      if (result.modules.ops) OpsSync.adoptLegacy(result.modules.ops);
+      /* Operation rides along in this same answer on a V10 sheet */
+      OpsSync.fromModules(result.modules);
+    }
     Object.keys(MODULES).forEach(function(name) {
+      if (!mayHoldModule(name)) return;
       var v = result.modules[name];
+      if (name === 'attachments') v = restrictAttachments(v);
       if (v === undefined || v === null) return;
       var empty = Array.isArray(v) ? v.length === 0 : Object.keys(v).length === 0;
       if (empty) return;
@@ -391,7 +405,7 @@ async function fetchModulesFromServer() {
       got.push(name);
     });
     modulesOnServer = true;
-    if (got.length) { renderAll(); }
+    if (got.length) { restrictLoadedData(); renderAll(); }
     return true;
   } catch(err) {
     modulesOnServer = false;
@@ -402,6 +416,7 @@ async function fetchModulesFromServer() {
 /* Sends every list up in one go — use it the first time the Apps Script
    gains its SAVE_MODULE handler, to seed the sheet from this device. */
 async function pushEverything() {
+  if (denyIfReadOnly()) return;
   var names = Object.keys(MODULES), ok = 0;
   for (var i = 0; i < names.length; i++) {
     setSync('warn', 'Saving ' + names[i] + ' (' + (i+1) + ' of ' + names.length + ')…');
@@ -419,6 +434,14 @@ async function pushEverything() {
 function hasPendingModuleSync() { return modulePending > 0 || Object.keys(moduleTimers).length > 0 || OpsSync.hasPending(); }
 
 async function refreshEverything() {
+  if (isRestricted()) {
+    setSync('warn', 'Loading…');
+    var ok = await fetchModulesFromServer();
+    renderAll();
+    setSync(ok ? '' : 'bad', ok ? 'Up to date' : 'Could not reach the sheet');
+    showToast(ok ? 'Up to date' : 'Could not reach the sheet. Showing the last copy.');
+    return;
+  }
   await fetchOrdersFromServer();
   await fetchModulesFromServer();   // brings Operation with it
   renderAll();
@@ -428,6 +451,7 @@ async function refreshEverything() {
 
 /* Wipe this device's copy and reload the numbers from the spreadsheets. */
 function resetSeedData() {
+  if (denyIfReadOnly()) return;
   /* Operation is shared live between devices, so a reset here would wipe
      everyone's cards — it is left alone. */
   ['sakal-pricelist','sakal-stock3','sakal-leads'].forEach(function(k){ localStorage.removeItem(k); });
@@ -469,6 +493,7 @@ function nextRunningNo() { return yearPrefix() + (highestSeq() + 1); }
 
 /* ── Navigation ── */
 function go(page) {
+  if (!canSeePage(page)) page = homePage();
   currentPage = page;
   Object.keys(PAGES).forEach(function(p) {
     var pane = $('pane-' + p), nav = $('nav-' + p);
@@ -509,7 +534,7 @@ function navCount(page) {
 
 function renderTabbar() {
   var bar = $('tabbar'); if (!bar) return;
-  var html = TABBAR.map(function(p) {
+  var html = TABBAR.filter(canSeePage).map(function(p) {
     var n = navCount(p);
     return '<button class="tab-btn'+(currentPage === p ? ' on' : '')+'" onclick="go(\''+p+'\')">'
       + navIcon(p)
@@ -525,7 +550,7 @@ function renderTabbar() {
 
 function openMore() {
   $('more-list').innerHTML = Object.keys(PAGES).filter(function(p) {
-    return TABBAR.indexOf(p) === -1;
+    return TABBAR.indexOf(p) === -1 && canSeePage(p);
   }).map(function(p) {
     var n = navCount(p);
     return '<button class="more-row" onclick="closeMore();go(\''+p+'\')">'
@@ -559,6 +584,12 @@ function labelTableCells(root) {
 
 function renderPageActions(page) {
   var el = $('page-actions'), h = '';
+  if (isRestricted()) {
+    /* view only: the whole bar is hidden for these accounts — the list is
+       all they see, and Sign out sits in the corner of the page */
+    el.innerHTML = '';
+    return;
+  }
   if (page === 'orders')    h = '<button class="btn" onclick="fetchOrdersFromServer()">Refresh from sheet</button>';
   if (page === 'chat')      h = '<button class="btn" onclick="openAiSettings()">Settings</button>';
   if (page === 'delta')     h = '<button class="btn" onclick="openDeltaImport()">Import</button>'

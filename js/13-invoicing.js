@@ -47,7 +47,8 @@ function renderInvoices() {
       if (v.orderNum && findOrder(v.orderNum)) return false;
     } else if (invFilter !== 'all' && st !== invFilter) return false;
     if (!term) return true;
-    return [v.no, v.orderNum, v.client, v.email, v.phone, v.staff].some(function(x){ return hit(x, term); });
+    return [v.no, v.orderNum, v.client, v.email, v.phone, v.staff].some(function(x){ return hit(x, term); })
+        || (v.emails || []).some(function(e){ return hit(e.to, term); });
   }).sort(function(a,b){ return String(b.issued||'').localeCompare(String(a.issued||'')) || String(b.no||'').localeCompare(String(a.no||'')); });
 
   if (rows.length === 0) {
@@ -66,7 +67,8 @@ function renderInvoices() {
       +   (onFloor ? 'Order ' + esc(v.orderNum) : 'Not on the floor')+'</div></td>'
       + '<td><div class="cell-strong">'+esc(v.client||'—')+'</div>'
       +   (contact ? '<div class="cell-sub">'+esc(contact)+'</div>' : '')
-      +   (v.staff ? '<div class="cell-sub">Handled by '+esc(v.staff)+'</div>' : '')+'</td>'
+      +   (v.staff ? '<div class="cell-sub">Handled by '+esc(v.staff)+'</div>' : '')
+      +   invoiceEmailLine(v) + '</td>'
       + '<td>'+esc(formatDisplayDate(v.issued))+'</td>'
       + '<td>'+esc(formatDisplayDate(v.due))+'</td>'
       + '<td class="num">S$ '+money(invoiceTotal(v))+'</td>'
@@ -74,6 +76,9 @@ function renderInvoices() {
       + '<td class="acts">'
       +   (v.sent ? '' : '<button class="btn sm" onclick="markSent(\''+esc(v.id)+'\')">Mark sent</button> ')
       +   (onFloor ? '' : '<button class="btn sm" onclick="quickOrderFromInvoice(\''+esc(v.id)+'\')">Create order</button> ')
+      +   '<button class="btn sm" onclick="previewInvoicePdf(\''+esc(v.id)+'\')">PDF</button> '
+      +   '<button class="btn sm'+((v.emails||[]).length ? '' : ' gold')+'" onclick="openInvoiceEmail(\''+esc(v.id)+'\')">'
+      +     ((v.emails||[]).length ? 'Email again' : 'Email') + '</button> '
       +   '<button class="btn sm" onclick="openInvoiceModal(\''+esc(v.id)+'\')">Edit</button>'
       + '</td></tr>';
   }).join('');
@@ -136,6 +141,8 @@ function openInvoiceModal(id) {
   $('inv-client').value   = v ? (v.client||'')   : '';
   $('inv-email').value    = v ? (v.email||'')    : '';
   $('inv-phone').value    = v ? (v.phone||'')    : '';
+  $('inv-address').value  = v ? (v.address||'')  : '';
+  $('inv-paid').value     = v && Number(v.paid) ? v.paid : '';
   $('inv-issued').value   = v ? (v.issued||'')   : todayYMD();
   $('inv-due').value      = v ? (v.due||'')      : '';
   $('inv-fitting').value  = v ? (v.fitting||'')  : '';
@@ -147,6 +154,7 @@ function openInvoiceModal(id) {
   var lastStaff = ''; try { lastStaff = localStorage.getItem('sakal-last-staff') || ''; } catch(e) {}
   setInvStaff(v ? (v.staff || '') : lastStaff);
   $('inv-delete').style.display = v ? '' : 'none';
+  $('inv-email-label').textContent = v && (v.emails||[]).length ? 'Email again' : 'Email';
   renderInvLines(); recalcInvoice(); updateInvOrderHint();
   $('invoice-modal').classList.add('open');
 }
@@ -428,10 +436,21 @@ function removeInvLine(i){ invLines.splice(i,1); if (!invLines.length) invLines 
 function recalcInvoice() {
   var draft = { lines: invLines, discount: Number($('inv-discount').value)||0 };
   var sub = invoiceSubtotal(draft), disc = draft.discount, tot = invoiceTotal(draft);
+  draft.paid = Number($('inv-paid').value) || 0;
+  var F = invoiceFigures(draft);
   $('inv-totals').innerHTML =
       '<div class="total-row"><span>Subtotal</span><span>S$ '+money(sub)+'</span></div>'
     + (disc ? '<div class="total-row"><span>Discount</span><span>− S$ '+money(disc)+'</span></div>' : '')
-    + '<div class="total-row grand"><span>Total</span><span>S$ '+money(tot)+'</span></div>';
+    + '<div class="total-row grand"><span>Total</span><span>S$ '+money(F.total)+'</span></div>'
+    + (F.rate ? '<div class="total-row"><span>' + (INVOICE_BUSINESS.pricesIncludeGst ? 'Includes GST ' : 'GST ') + F.rate + '%</span><span>S$ '+money(F.gst)+'</span></div>' : '')
+    + (F.paid ? '<div class="total-row"><span>Received</span><span>− S$ '+money(F.paid)+'</span></div>'
+              + '<div class="total-row balance"><span>Balance due</span><span>S$ '+money(F.balance)+'</span></div>' : '');
+}
+/* One tap: the client has paid the whole invoice. */
+function markInvoicePaidInFull() {
+  var draft = { lines: invLines, discount: Number($('inv-discount').value)||0, paid: 0 };
+  $('inv-paid').value = invoiceFigures(draft).total.toFixed(2);
+  recalcInvoice();
 }
 
 function saveInvoice() {
@@ -463,6 +482,7 @@ function saveInvoice() {
 
   var payload = {
     no: no, client: client, email: $('inv-email').value.trim(), phone: $('inv-phone').value.trim(),
+    address: $('inv-address').value.trim(), paid: Number($('inv-paid').value) || 0,
     staff: invStaff, orderNum: orderNum,
     issued: $('inv-issued').value, due: $('inv-due').value, fitting: $('inv-fitting').value,
     lines: lines.length ? lines : invLines,
@@ -476,7 +496,7 @@ function saveInvoice() {
     var i = invoices.findIndex(function(x){ return x.id === invEditId; });
     if (i > -1) { invoices[i] = Object.assign(invoices[i], payload); saved = invoices[i]; }
   } else {
-    payload.id = uid(); payload.sent = false; payload.imported = false; payload.paid = 0;
+    payload.id = uid(); payload.sent = false; payload.imported = false;
     invoices.unshift(payload); saved = payload;
   }
 
@@ -487,6 +507,7 @@ function saveInvoice() {
   if (result && result.created) showToast('Invoice ' + saved.no + ' saved — order ' + result.order.orderNum + ' opened');
   else if (result)             showToast('Invoice ' + saved.no + ' saved — order ' + result.order.orderNum + ' updated');
   else                         showToast(invEditId ? 'Invoice ' + saved.no + ' updated' : 'Invoice ' + saved.no + ' created');
+  return saved;
 }
 
 /* ══════════════════════════════════════════════════

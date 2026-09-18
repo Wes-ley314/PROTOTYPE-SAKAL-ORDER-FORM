@@ -26,6 +26,94 @@ img, svg, video, canvas, iframe { max-width: 100%; }
 .bubble, .modal-title, .modal-msg { overflow-wrap: anywhere; }
 .table-wrap, .tscroll { max-width: 100%; }
 
+/* Delta rows: the PDF controls stay together */
+.delta-pdf-btns { display: inline-flex; gap: 6px; align-items: center; vertical-align: middle; }
+.delta-pdf a { display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+               white-space: nowrap; vertical-align: bottom; }
+
+/* ── Delta's table is the widest in the app (stage pills + PDF + actions),
+   so it turns into cards earlier than the others: on tablets too. ── */
+@media (min-width: 761px) and (max-width: 1100px) {
+  #delta-content .tscroll { overflow-x: visible; }
+  #delta-content table.grid { display: block; min-width: 0 !important; }
+  #delta-content table.grid thead { display: none; }
+  #delta-content table.grid tbody { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+  #delta-content table.grid tr { display: block; padding: 13px 15px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line-soft); }
+  #delta-content table.grid tbody tr:hover { background: none; }
+  #delta-content table.grid td {
+    display: flex; gap: 14px; align-items: baseline; justify-content: space-between;
+    width: 100%; border: none; padding: 5px 0; text-align: right;
+  }
+  #delta-content table.grid td::before {
+    content: attr(data-label); font-size: 9px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--faint); flex: 0 0 30%; text-align: left; white-space: nowrap;
+  }
+  #delta-content table.grid td:first-child { display: block; text-align: left; padding-bottom: 9px; }
+  #delta-content table.grid td:first-child::before { display: none; }
+  #delta-content table.grid td.acts { justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding-top: 11px; }
+  #delta-content table.grid td.acts::before { display: none; }
+}
+/* the stage pills and PDF controls wrap neatly inside a card */
+@media (max-width: 1100px) {
+  #delta-content td:has(.pill) { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  #delta-content td:has(.tag) { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  #delta-content td:has(.tag)::before { flex-basis: 100%; }
+  #delta-content td.acts .delta-pdf-btns { margin-right: auto; }
+}
+
+/* Invoice PDF + email */
+.inv-head-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.link-btn { background: none; border: none; padding: 6px 0 0; font-size: 11.5px; color: var(--gold);
+            text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.attach-row { display: flex; align-items: center; gap: 12px; padding: 11px 13px;
+              border: 1px solid var(--line); border-radius: var(--r-md); background: var(--card-2); }
+.attach-row > svg { width: 22px; height: 22px; color: var(--gold); flex-shrink: 0; }
+.attach-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attach-sub { font-size: 11.5px; color: var(--muted); }
+.mail-warn { display: none; padding: 10px 12px; border-radius: var(--r-sm); font-size: 12.5px; line-height: 1.5;
+             background: var(--danger-bg); border: 1px solid var(--danger-ln); color: var(--danger); }
+.mail-warn.show { display: block; }
+.inv-emailed { color: var(--st-store) !important; }
+.sheet-over-acts { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+#invpdf-frame { width: 100%; height: 100%; border: 0; background: #525659; }
+@media (max-width: 700px) {
+  .inv-head-acts { width: 100%; }
+  .inv-head-acts .btn { flex: 1; }
+  .sheet-over-bar { flex-wrap: wrap; }
+}
+
+/* ── Restricted accounts (Delta): the list, and nothing else ──
+   No rail, no title bar, no counts, no search or filters — the
+   orders as they stand, and a way out in the corner. */
+html.role-restricted .admin-only,
+html.role-restricted .rail,
+html.role-restricted .rail-new,
+html.role-restricted .rail-group,
+html.role-restricted .nav-item:not(#nav-delta),
+html.role-restricted .topbar,
+html.role-restricted .tabbar,
+html.role-restricted #delta-stats,
+html.role-restricted #pane-delta .toolbar { display: none !important; }
+html.role-restricted .shell { display: block; }
+html.role-restricted .pane { padding: 62px 26px 40px; }
+
+/* the way out, pinned to the corner since there is no bar to hold it */
+.ro-out { display: none; }
+html.role-restricted .ro-out {
+  display: inline-flex; position: fixed; z-index: 60;
+  top: calc(16px + env(safe-area-inset-top));
+  right: calc(20px + env(safe-area-inset-right));
+  box-shadow: 0 1px 2px rgba(22, 21, 15, .06);
+}
+
+html.role-readonly .pill.ro { cursor: default; }
+html.role-readonly .pill.ro:not([class*="st-"]) { opacity: .55; }
+@media (max-width: 700px) {
+  html.role-restricted .pane { padding: 58px 12px calc(28px + env(safe-area-inset-bottom)); }
+  html.role-restricted .toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
+  html.role-restricted .ro-out { top: calc(12px + env(safe-area-inset-top)); right: calc(12px + env(safe-area-inset-right)); }
+}
+
 /* ── Wide desktop: keep lines readable ── */
 @media (min-width: 1600px) {
   .topbar, .pane { padding-left: 40px; padding-right: 40px; }
