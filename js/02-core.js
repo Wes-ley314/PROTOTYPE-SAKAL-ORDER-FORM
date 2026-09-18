@@ -417,6 +417,13 @@ async function fetchModulesFromServer() {
    gains its SAVE_MODULE handler, to seed the sheet from this device. */
 async function pushEverything() {
   if (denyIfReadOnly()) return;
+  /* This device's lists may simply be empty — nothing is seeded into the app
+     any more. Writing that emptiness over the sheet would take the shop's
+     records with it, so the sheet has to have been read at least once first. */
+  if (modulesOnServer !== true) {
+    showToast('Read the sheet first — press "Refresh from sheet", then try again.');
+    return;
+  }
   var names = Object.keys(MODULES), ok = 0;
   for (var i = 0; i < names.length; i++) {
     setSync('warn', 'Saving ' + names[i] + ' (' + (i+1) + ' of ' + names.length + ')…');

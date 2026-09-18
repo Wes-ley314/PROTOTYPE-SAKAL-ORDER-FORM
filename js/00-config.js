@@ -5,7 +5,7 @@
    Loads before 02-core.js, which used to declare it.
    ══════════════════════════════════════════════════ */
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwe0hyqJid1Wxh20dgYLIAx9TAc3v7xQNwK1hgH2cEl59JMWjMNbCL_lP9fEFEPV0Ir9w/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzlmSGjfVeiMwA9aWAvLIFf2Lo5P08dK9hQxXEN45c6XlYhpbc4THrE-Qp6YJKGuVuLCg/exec';
 
 /* ══════════════════════════════════════════════════
    WHO THE INVOICES ARE FROM

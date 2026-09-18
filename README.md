@@ -22,7 +22,8 @@ js/
     00-crud-screen.js CrudScreen — the shared list+modal machinery
     vendor/           jsPDF, the logo art and the two fonts, loaded only
                       when an invoice PDF is made (MIT / SIL OFL licences)
-  00-seed-data.js     the starting price list, stock, leads, invoices, ops, delta
+  00-seed-data.js     the tier card, and empty seed lists — see "Nothing real
+                      in the code" below
   01-roles.js         who sees what — a 'delta' account sees only the Delta page, view only
   02-core.js          helpers, storage, sync with Apps Script, page routing
   03-orders.js        orders and the archive
@@ -212,6 +213,26 @@ add one line to doPost and one to doGet, run `testInvoiceMail`, redeploy).
 It sends from suits@sakal.com.sg, keeps a copy of every sent PDF in the Drive
 folder **ŠAKAL invoices** (private), and lists each email on an
 **Invoice emails** tab. Until it is added the app says so and sends nothing.
+
+---
+
+## Nothing real in the code
+
+Every file in this folder is served to anyone who opens the site, signed in or
+not, and the repository it lives in is visible to anyone who can see it on
+GitHub. So no customer name, phone number, invoice, charge or SIM card number
+may be written into a file here. All of that lives on the Google Sheet and
+reaches the app only after someone signs in.
+
+`js/00-seed-data.js` used to hold the shop's real leads, invoices and Delta
+orders as first-run fallbacks. They were taken out; the lists are empty and
+must stay empty. `PRICE_TIERS` in that file is the exception — the app reads
+it directly and it is not kept on the sheet.
+
+Because the app no longer carries a copy of anything, **"Save all to sheet"
+refuses to run until this device has read the sheet at least once** — otherwise
+a phone that could not reach the sheet would write its emptiness over the
+shop's records.
 
 ---
 
